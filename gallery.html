@@ -25,7 +25,7 @@
 <body>
 <header>
   <h1>LANTERN ISLES · ART DATASET</h1>
-  <p>Every asset below was rendered by one pipeline: a fixed 2:1 dimetric camera, one sun, a shared 256-colour palette, and separate shadow layers. That is the pre-rendered method of late-90s isometric strategy games. All models are original. <a href="index.html">Play the game →</a></p>
+  <p>Every asset below was rendered by one pipeline: a fixed 2:1 dimetric camera, one sun, a shared 256-colour palette, and separate shadow layers. That is the pre-rendered method of late-90s isometric strategy games. All models are original. <a href="index.html">Play Lantern Isles →</a></p>
 </header>
 <h2>Standard</h2><div class="spec" id="spec"></div>
 <h2>Palette (256)</h2><div id="pal"></div>
@@ -57,13 +57,13 @@ const load = src => new Promise(r => { const i = new Image(); i.onload = () => r
     const name = S.terrain.types.find(q => q.id === t.id); document.getElementById('terrain').insertAdjacentHTML('beforeend', `<div class="card" id="t-${t.id}"></div>`);
     const card = document.getElementById('t-' + t.id); card.appendChild(c); card.insertAdjacentHTML('beforeend', `<div class="n">${name.name}</div><div class="d">priority ${name.priority} · ${name.blend}${name.walkable ? '' : ' · impassable'}</div>`);
   }
-  const cats = [['unit', 'Units (animated, all 8 directions)'], ['building', 'Buildings'], ['ruin', 'Ruins'], ['prop', 'Props & collectibles'], ['resource', 'Resources'], ['nature', 'Nature'], ['decor', 'Ground decor']];
+  const cats = [['unit', 'Units: idle, walk, attack and death, all 8 directions'], ['structure', 'Survival structures (player-built)'], ['icon', 'Item icons'], ['building', 'Buildings'], ['ruin', 'Ruins'], ['prop', 'Props & collectibles'], ['resource', 'Resources'], ['nature', 'Nature'], ['decor', 'Ground decor']];
   const anim = [];
   for (const [cat, title] of cats) {
     const list = M.assets.filter(a => a.category === cat); if (!list.length) continue;
     document.getElementById('cats').insertAdjacentHTML('beforeend', `<h2>${title} <span style="opacity:.6;font-size:14px">(${list.length})</span></h2><div class="grid" id="c-${cat}"></div>`);
     for (const a of list) {
-      const body = await load(ATLAS.images[a.name]), sh = await load(ATLAS.images[a.name + '_shadow']);
+      const body = await load(ATLAS.images[a.name]), sh = ATLAS.images[a.name + '_shadow'] ? await load(ATLAS.images[a.name + '_shadow']) : null;
       const sc = a.w > 300 ? 1 : 2, c = document.createElement('canvas'); c.width = a.w * sc; c.height = a.h * sc; const x = c.getContext('2d'); x.imageSmoothingEnabled = false;
       const card = document.createElement('div'); card.className = 'card'; card.appendChild(c);
       card.insertAdjacentHTML('beforeend', `<div class="n">${a.name}</div><div class="d">${a.description}<br>${a.w}×${a.h}px · footprint ${a.footprint.join('×')}${a.frames > 1 ? ' · ' + a.frames + ' frames' : ''}${a.dirs ? ' · ' + a.dirs.length + ' dirs' : ''}</div>`);
@@ -77,10 +77,14 @@ const load = src => new Promise(r => { const i = new Image(); i.onload = () => r
     for (const { a, body, sh, x, sc } of anim) {
       x.fillStyle = x.createPattern(grass, 'repeat'); x.setTransform(sc, 0, 0, sc, 0, 0); x.fillRect(0, 0, a.w, a.h);
       let row = 0, col = 0, flip = false;
-      if (a.dirs) { const d = dirs[Math.floor(t / 48) % 8], src = a.mirrored[d] || d; flip = !!a.mirrored[d]; row = a.dirs.indexOf(src); col = 1 + Math.floor(t / 5) % (a.frames - 1); }
+      if (a.dirs) {
+        const d = dirs[Math.floor(t / 96) % 8], src = a.mirrored[d] || d; flip = !!a.mirrored[d]; row = a.dirs.indexOf(src);
+        const ph = t % 96, an = a.anim || { walk: [1, a.frames - 1] };
+        col = !a.anim || ph < 48 ? an.walk[0] + Math.floor(t / 5) % an.walk[1] : ph < 80 ? an.attack[0] + Math.floor((ph - 48) / 8) % an.attack[1] : an.dead[0];
+      }
       else if (a.frames > 1) col = Math.floor(t / 6) % a.frames;
       if (flip) { x.translate(a.w, 0); x.scale(-1, 1); }
-      x.drawImage(sh, col * a.w, row * a.h, a.w, a.h, 0, 0, a.w, a.h); x.drawImage(body, col * a.w, row * a.h, a.w, a.h, 0, 0, a.w, a.h);
+      if (sh) x.drawImage(sh, col * a.w, row * a.h, a.w, a.h, 0, 0, a.w, a.h); x.drawImage(body, col * a.w, row * a.h, a.w, a.h, 0, 0, a.w, a.h);
     }
     requestAnimationFrame(tick);
   })();

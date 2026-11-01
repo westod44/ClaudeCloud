@@ -33,7 +33,7 @@ const ROOT = path.resolve(__dirname, '..');
   const b64 = d => Buffer.from(d.split(',')[1], 'base64');
   if (subset) {
     fs.mkdirSync('/tmp/bake-preview', { recursive: true });
-    for (const a of res.assets) { fs.writeFileSync(`/tmp/bake-preview/${a.name}.png`, b64(a.body)); fs.writeFileSync(`/tmp/bake-preview/${a.name}_shadow.png`, b64(a.shadow)); }
+    for (const a of res.assets) { fs.writeFileSync(`/tmp/bake-preview/${a.name}.png`, b64(a.body)); if (a.shadow) fs.writeFileSync(`/tmp/bake-preview/${a.name}_shadow.png`, b64(a.shadow)); }
     for (const [id, d] of Object.entries(res.terrain)) fs.writeFileSync(`/tmp/bake-preview/terrain_${id}.png`, b64(d));
     console.log('previews in /tmp/bake-preview'); return;
   }
@@ -44,11 +44,11 @@ const ROOT = path.resolve(__dirname, '..');
   const atlas = { manifest: null, images: {} };
   for (const a of res.assets) {
     fs.writeFileSync(path.join(sp, a.name + '.png'), b64(a.body));
-    fs.writeFileSync(path.join(sp, a.name + '_shadow.png'), b64(a.shadow));
+    if (a.shadow) fs.writeFileSync(path.join(sp, a.name + '_shadow.png'), b64(a.shadow));
     const { body, shadow, ...meta } = a;
-    meta.files = { body: `assets/sprites/${a.name}.png`, shadow: `assets/sprites/${a.name}_shadow.png` };
+    meta.files = { body: `assets/sprites/${a.name}.png`, shadow: shadow ? `assets/sprites/${a.name}_shadow.png` : null };
     manifest.assets.push(meta);
-    atlas.images[a.name] = body; atlas.images[a.name + '_shadow'] = shadow;
+    atlas.images[a.name] = body; if (shadow) atlas.images[a.name + '_shadow'] = shadow;
   }
   for (const [id, d] of Object.entries(res.terrain)) {
     fs.writeFileSync(path.join(tp, id + '.png'), b64(d));

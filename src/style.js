@@ -76,7 +76,7 @@
       shingle: '#6e4a38', stone: '#9a9384', wood: '#8a6440', cloth: '#8a7a60',
       skin: '#c99272', hair: '#3b2a1e', leather: '#6a4a2c', metal: '#8d939a',
       gold: '#d8ad3c', fur: '#8b5e36', wool: '#ddd6c4', fire: '#ffb040',
-      berry: '#a8243a', flower: '#e0c040', canvasRed: '#a83a2c',
+      berry: '#a8243a', flower: '#e0c040', spirit: '#8fe8ff',
     },
     rampSteps: [0.35, 0.52, 0.68, 0.84, 1.0, 1.16, 1.34],
     rampCool: '#202a48', rampWarm: '#fff4dc',
@@ -116,12 +116,14 @@
       // world facing angle (radians, atan2(j,i)) for each rendered screen direction
       facing: { S: Math.PI / 4, SW: Math.PI / 2, W: 3 * Math.PI / 4, NW: Math.PI, N: 5 * Math.PI / 4 },
       animation: {
-        walk: { frames: 8, fps: 12 }, idle: { frames: 1 }, fire: { frames: 6, fps: 10 },
+        walk: { frames: 8, fps: 12 }, idle: { frames: 1 }, attack: { frames: 4, seconds: 0.5 }, dead: { frames: 1 }, fire: { frames: 6, fps: 10 },
+        unitLayout: 'rows = 5 rendered directions; columns: 0 idle, 1-8 walk, 9-12 attack, 13 dead',
         note: 'AoE2 originals use 10 keyframes x 5 directions per animation at 10-20 fps',
       },
       scale: { // heights in world units (tiles)
         human: 0.62, deer: 0.62, sheep: 0.38, oak: 1.55, pine: 1.75, palm: 1.6,
-        cottage: 1.35, tower: 2.5, windmill: 2.3, column: 0.6,
+        cottage: 1.35, tower: 2.5, windmill: 2.3, column: 0.6, wolf: 0.5, boar: 0.42, hollow: 0.72, hollowBrute: 1.0,
+        icons: 'items rendered at 3x scale, body layer only',
       },
       anchor: 'world origin (ground contact / footprint centre) — stored per asset in pixels',
       layers: ['body', 'shadow'],

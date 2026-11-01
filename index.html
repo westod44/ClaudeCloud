@@ -3,54 +3,165 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Lantern Isles</title>
+<title>Lantern Isles — Survival</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya+Sans:wght@400;700&display=swap" rel="stylesheet">
 <style>
-  :root{--panel:#2b2219;--dark:#17120d;--gold:#b08a3e;--golddk:#5b4524;--text:#f1e3c0;--accent:#ffd36a}
+  :root{--gold:#b08a3e;--golddk:#5b4524;--dark:#17120d;--text:#f1e3c0;--accent:#ffd36a;--red:#c8433a}
+  *{box-sizing:border-box}
   html,body{margin:0;height:100%;background:#000;overflow:hidden;color:var(--text);font-family:'Alegreya Sans',Georgia,serif;touch-action:none;user-select:none;-webkit-user-select:none}
   canvas#game{display:block;width:100vw;height:100vh;image-rendering:pixelated}
-  .frame{background:linear-gradient(180deg,#3a2d20,#21180f);border:2px solid var(--gold);box-shadow:0 0 0 2px var(--dark),inset 0 0 0 1px var(--golddk),0 4px 14px rgba(0,0,0,.6)}
-  #bar-top{position:fixed;left:0;right:0;top:0;height:38px;display:flex;align-items:center;gap:18px;padding:0 14px;border-width:0 0 2px 0;font-size:15px;overflow-x:auto;white-space:nowrap}
-  #bar-top .title{font-family:Cinzel,serif;font-weight:700;letter-spacing:3px;color:var(--accent);font-size:15px;margin-right:6px}
-  .res{display:flex;align-items:center;gap:6px}
-  .ico{width:16px;height:16px;border-radius:2px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.6)}
-  .res b{color:var(--accent);font-weight:700;min-width:28px}
-  #msg{position:fixed;left:14px;top:50px;font-size:17px;color:#fff3c9;text-shadow:0 1px 0 #000,0 0 6px #000;opacity:0;transition:opacity .5s;pointer-events:none;max-width:70vw}
-  #minibox{position:fixed;right:10px;bottom:10px;padding:8px;border-radius:4px}
-  #mini{display:block;width:300px;height:150px;image-rendering:pixelated;cursor:pointer}
-  #ctrls{position:fixed;left:10px;bottom:10px;display:flex;gap:6px}
-  #ctrls button{font:700 18px Cinzel,serif;color:var(--accent);width:44px;height:44px;border-radius:3px;cursor:pointer;padding:0}
-  #help{position:fixed;left:10px;bottom:62px;font-size:13px;padding:6px 10px;opacity:.92;pointer-events:none}
-  #loading{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(#2b2219,#0b0805);z-index:20}
-  #loading h1{font-family:Cinzel,serif;letter-spacing:6px;color:var(--accent);margin:0 0 18px;font-size:34px;text-shadow:0 2px 0 #000}
-  #bar{width:280px;height:12px;padding:2px}#bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#c9962f,#ffd36a)}
-  #lmsg{margin-top:10px;font-size:14px;opacity:.8}
-  #win{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.55);z-index:15}
-  #win div{padding:24px 34px;text-align:center;font-size:17px}#win h2{font-family:Cinzel,serif;color:var(--accent);margin:0 0 10px}
-  @media (max-width:700px){#mini{width:180px;height:90px}#help{display:none}#bar-top{font-size:13px;gap:12px}#bar-top .title{display:none}}
+  button{font-family:inherit;color:var(--text);cursor:pointer}
+  .frame{background:linear-gradient(180deg,#3a2d20,#21180f);border:2px solid var(--gold);box-shadow:0 0 0 2px var(--dark),inset 0 0 0 1px var(--golddk),0 4px 14px rgba(0,0,0,.6);border-radius:3px}
+  .hidden{display:none!important}
+  /* top-left: day & relics */
+  #tl{position:fixed;left:10px;top:10px;padding:6px 12px;font-size:15px;display:flex;gap:14px;align-items:center}
+  #tl b{color:var(--accent);font-family:Cinzel,serif}
+  #clock{width:26px;height:26px}
+  #msgs{position:fixed;left:12px;top:56px;font-size:16px;color:#fff3c9;text-shadow:0 1px 0 #000,0 0 6px #000;pointer-events:none;max-width:70vw}
+  #msgs div{transition:opacity .6s;margin-bottom:3px}
+  /* stats */
+  #stats{position:fixed;left:10px;bottom:10px;padding:8px 10px;width:220px}
+  .stat{display:flex;align-items:center;gap:6px;margin:3px 0;font-size:12px}
+  .stat span{width:54px;opacity:.9}
+  .bar{flex:1;height:10px;background:#120d09;border:1px solid #000;position:relative;overflow:hidden}
+  .bar i{position:absolute;left:0;top:0;bottom:0;transition:width .25s}
+  .stat.low span{color:#ff8a7a;animation:blink 1s infinite}
+  @keyframes blink{50%{opacity:.4}}
+  /* actions */
+  #actions{position:fixed;left:50%;bottom:10px;transform:translateX(-50%);display:flex;gap:6px;align-items:flex-end}
+  .act{width:62px;height:62px;padding:2px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;line-height:1.05;position:relative}
+  .act img{width:34px;height:30px;object-fit:contain;image-rendering:pixelated}
+  .act .k{position:absolute;right:3px;top:1px;font-size:10px;opacity:.6}
+  .act .n{position:absolute;right:3px;bottom:16px;font-size:11px;color:var(--accent)}
+  .act.on{box-shadow:0 0 0 2px #ffb347,0 0 14px #ff9a30}
+  .act:disabled{opacity:.45}
+  #use{width:120px}
+  #prompt{position:fixed;left:50%;bottom:82px;transform:translateX(-50%);font-size:15px;color:#fff3c9;text-shadow:0 1px 0 #000,0 0 5px #000;pointer-events:none;white-space:nowrap}
+  /* minimap */
+  #minibox{position:fixed;right:10px;bottom:10px;padding:6px}
+  #mini{display:block;width:260px;height:130px;image-rendering:pixelated;cursor:pointer}
+  #tr{position:fixed;right:10px;top:10px;display:flex;gap:6px}
+  #tr button{width:40px;height:40px;font:700 17px Cinzel,serif;color:var(--accent)}
+  /* panels */
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:30}
+  .panel{width:min(860px,96vw);max-height:90vh;overflow:auto;padding:14px 16px}
+  .panel h2{font-family:Cinzel,serif;color:var(--accent);margin:0 0 10px;font-size:20px;letter-spacing:2px;display:flex;justify-content:space-between;align-items:center}
+  .panel h3{font-family:Cinzel,serif;color:var(--accent);font-size:14px;margin:12px 0 6px;letter-spacing:1px}
+  .x{width:34px;height:34px;font-size:18px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:6px}
+  .slot{height:84px;background:#1b140e;border:1px solid var(--golddk);display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;font-size:11px;padding:2px;text-align:center}
+  .slot img{width:46px;height:40px;object-fit:contain;image-rendering:pixelated}
+  .slot .c{position:absolute;right:4px;top:2px;color:var(--accent);font-weight:700;font-size:13px}
+  .slot.eq{border-color:#ffb347;box-shadow:inset 0 0 0 1px #ffb347}
+  .slot:hover{border-color:var(--gold)}
+  .recipes{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:6px}
+  .rec{display:flex;gap:8px;align-items:center;background:#1b140e;border:1px solid var(--golddk);padding:6px}
+  .rec img.o{width:44px;height:38px;object-fit:contain;image-rendering:pixelated}
+  .rec .t{flex:1;font-size:13px}.rec .t b{color:var(--accent)}
+  .cost{display:flex;gap:6px;flex-wrap:wrap;margin-top:2px;font-size:12px}
+  .cost span{display:flex;align-items:center;gap:2px}.cost img{width:18px;height:16px;object-fit:contain}
+  .cost .no{color:#ff8a7a}
+  .rec button{padding:6px 10px;font-weight:700}
+  .rec button:disabled{opacity:.4}
+  .bthumb{width:72px;height:56px;image-rendering:pixelated}
+  .tabs{display:flex;gap:6px;margin-bottom:8px}.tabs button{padding:6px 14px;font:700 14px Cinzel,serif}.tabs button.on{color:var(--accent);border-color:#ffd36a}
+  .big{padding:10px 26px;font:700 18px Cinzel,serif;color:var(--accent);margin:6px;min-width:220px}
+  #title,#dead,#win,#loading{z-index:40}
+  .screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,rgba(30,22,14,.88),rgba(5,3,2,.97));text-align:center;padding:20px}
+  .screen h1{font-family:Cinzel,serif;color:var(--accent);letter-spacing:6px;font-size:clamp(28px,6vw,52px);margin:0 0 6px;text-shadow:0 3px 0 #000}
+  .screen p{max-width:640px;font-size:17px;opacity:.9}
+  #bar{width:280px;height:12px;padding:2px;margin-top:10px}#bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#c9962f,#ffd36a)}
+  #help ul{text-align:left;font-size:15px;line-height:1.5}
+  #placebar{position:fixed;left:50%;top:60px;transform:translateX(-50%);padding:6px 10px;display:flex;gap:10px;align-items:center;z-index:20}
+  #placebar button{padding:6px 12px}
+  #hurt{position:fixed;inset:0;pointer-events:none;box-shadow:inset 0 0 120px 40px rgba(180,0,0,.0);transition:box-shadow .15s}
+  #sleepfade{position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity 1s;z-index:25;display:flex;align-items:center;justify-content:center;font:700 26px Cinzel,serif;color:var(--accent)}
+  @media (max-width:760px){
+    #stats{width:150px;padding:5px 7px}.stat span{width:40px;font-size:10px}.stat{margin:1px 0}.bar{height:8px}
+    #mini{width:140px;height:70px}#minibox{bottom:auto;top:48px;right:6px;padding:4px}
+    .act{width:52px;height:56px;font-size:10px}#use{width:96px}.act .k{display:none}
+    #actions{bottom:118px;left:auto;right:6px;transform:none;flex-wrap:wrap;justify-content:flex-end;width:178px}
+    #prompt{display:none}
+    #tl{font-size:12px;gap:7px;padding:3px 7px;left:6px;top:6px;max-width:calc(100vw - 160px);flex-wrap:wrap}
+    #clock{width:20px;height:20px}
+    #tr{top:6px;right:6px;gap:4px}#tr button{width:34px;height:34px;font-size:15px}
+    #msgs{top:auto;bottom:250px;left:8px;font-size:14px;max-width:calc(100vw - 200px)}
+  }
 </style>
 </head>
 <body>
 <canvas id="game"></canvas>
-<div id="bar-top" class="frame">
-  <span class="title">LANTERN ISLES</span>
-  <span class="res" title="Relics"><span class="ico" style="background:radial-gradient(#fff6c8,#e0a92e)"></span>Relics <b id="r-relic">0/0</b></span>
-  <span class="res" title="Gold"><span class="ico" style="background:linear-gradient(135deg,#ffe58a,#b07a18)"></span>Gold <b id="r-gold">0</b></span>
-  <span class="res" title="Places discovered"><span class="ico" style="background:linear-gradient(135deg,#d8cdb0,#7a6a48)"></span>Discoveries <b id="r-disc">0/0</b></span>
-  <span class="res" title="Map explored"><span class="ico" style="background:linear-gradient(135deg,#6b8a3a,#1f4f78)"></span>Explored <b id="r-expl">0%</b></span>
+<div id="hurt"></div>
+<div id="tl" class="frame"><canvas id="clock" width="52" height="52"></canvas><span>Day <b id="day">1</b></span><span id="tod">Morning</span><span>Relics <b id="relics">0/8</b></span></div>
+<div id="msgs"></div>
+<div id="tr"><button id="btn-menu" class="frame" title="Menu (Esc)">☰</button><button id="zin" class="frame">+</button><button id="zout" class="frame">−</button><button id="center" class="frame" title="Centre (C)">◎</button></div>
+<div id="stats" class="frame"></div>
+<div id="prompt"></div>
+<div id="actions">
+  <button id="b-weapon" class="act frame" title="Switch weapon (Q)"><img alt=""><span class="lbl">Fists</span><span class="k">Q</span><span class="n"></span></button>
+  <button id="b-attack" class="act frame" title="Attack (F / Space)"><img alt=""><span>Attack</span><span class="k">F</span></button>
+  <button id="use" class="act frame" title="Use / interact (E)"><img alt=""><span class="lbl">Use</span><span class="k">E</span></button>
+  <button id="b-torch" class="act frame" title="Torch (T)"><img alt=""><span>Torch</span><span class="k">T</span><span class="n"></span></button>
+  <button id="b-pack" class="act frame" title="Pack & crafting (I / Tab)"><img alt=""><span>Pack</span><span class="k">I</span></button>
+  <button id="b-build" class="act frame" title="Build (B)"><img alt=""><span>Build</span><span class="k">B</span></button>
 </div>
-<div id="msg"></div>
 <div id="minibox" class="frame"><canvas id="mini" width="384" height="192"></canvas></div>
-<div id="help" class="frame">Tap/click to walk · WASD to steer · drag to look around · scroll or pinch to zoom · Space to re-centre</div>
-<div id="ctrls"><button id="zin" class="frame">+</button><button id="zout" class="frame">−</button><button id="center" class="frame" title="Centre on explorer">◎</button></div>
-<div id="win"><div class="frame"><h2>The Lanterns Burn Again</h2>All eight relics recovered.<br>Keep exploring, there is more to find.</div></div>
-<div id="loading"><h1>LANTERN ISLES</h1><div id="bar" class="frame"><i></i></div><div id="lmsg">loading pre-rendered sprites…</div></div>
+<div id="placebar" class="frame hidden"><span id="placetxt">Place</span><button id="place-cancel" class="frame">Done</button></div>
+
+<div id="pack" class="modal hidden"><div class="panel frame">
+  <h2><span>Pack</span><button class="x frame" data-close>✕</button></h2>
+  <div class="tabs"><button class="frame on" data-tab="inv">Inventory</button><button class="frame" data-tab="craft">Crafting</button></div>
+  <div id="tab-inv"><div class="grid" id="invgrid"></div><p id="invhint" style="font-size:13px;opacity:.8">Tap an item to eat, drink, equip or use it.</p></div>
+  <div id="tab-craft" class="hidden"><div class="recipes" id="recipes"></div></div>
+</div></div>
+<div id="build" class="modal hidden"><div class="panel frame">
+  <h2><span>Build</span><button class="x frame" data-close>✕</button></h2>
+  <div class="recipes" id="blist"></div>
+</div></div>
+<div id="storage" class="modal hidden"><div class="panel frame">
+  <h2><span>Storage crate</span><button class="x frame" data-close>✕</button></h2>
+  <div style="display:flex;gap:8px;margin-bottom:8px"><button id="st-put" class="frame big" style="min-width:0;font-size:14px">Store all materials</button><button id="st-take" class="frame big" style="min-width:0;font-size:14px">Take everything</button></div>
+  <h3>In the crate</h3><div class="grid" id="stgrid"></div>
+</div></div>
+<div id="menu" class="modal hidden"><div class="panel frame" style="width:min(420px,94vw);text-align:center">
+  <h2><span>Paused</span><button class="x frame" data-close>✕</button></h2>
+  <button class="frame big" data-close>Resume</button><br>
+  <button class="frame big" id="m-save">Save game</button><br>
+  <button class="frame big" id="m-help">How to survive</button><br>
+  <button class="frame big" id="m-sound">Sound: on</button><br>
+  <button class="frame big" id="m-quit">Quit to title</button>
+</div></div>
+<div id="help" class="modal hidden"><div class="panel frame" style="width:min(640px,94vw)">
+  <h2><span>How to survive</span><button class="x frame" data-close>✕</button></h2>
+  <ul>
+    <li><b>Move:</b> tap or click the ground, or use WASD. Tap a tree, rock, bush, animal or building to walk over and use it.</li>
+    <li><b>Stay alive:</b> watch your health, food, water, stamina and energy. Drink at water or wells, eat berries and <i>cooked</i> meat.</li>
+    <li><b>Start:</b> gather sticks and fiber from bushes and stones from rocks with your bare hands. Then craft <b>Rope</b> and a <b>Stone axe</b> (Pack → Crafting).</li>
+    <li><b>Build:</b> chop trees for logs. Build a campfire, then a lean-to for sleeping and saving. Palisade walls and spike traps protect your base.</li>
+    <li><b>Night:</b> the <b>Hollows</b> come out of the dark. They fear fire, so stay near your fires or carry a torch. Brutes appear from day 4.</li>
+    <li><b>Goal:</b> find the <b>8 relics</b> in the island's shrines, build the <b>Signal Beacon</b>, light it, and survive until dawn to be rescued.</li>
+    <li><b>Keys:</b> E use · F/Space attack · Q switch weapon · T torch · I pack · B build · C centre · Esc menu · +/− zoom.</li>
+  </ul>
+</div></div>
+
+<div id="title" class="screen hidden">
+  <h1>LANTERN ISLES</h1>
+  <p>Washed ashore on an island whose lanterns went dark long ago. By day, gather, hunt and build. By night, keep your fire burning. <b>The Hollows</b> walk where the light does not reach.</p>
+  <button class="frame big" id="t-new">New game</button>
+  <button class="frame big hidden" id="t-cont">Continue</button>
+  <button class="frame big" id="t-help">How to survive</button>
+  <p style="font-size:13px;opacity:.6">Your progress saves when you sleep, at each dawn, and from the menu.</p>
+</div>
+<div id="dead" class="screen hidden"><h1 style="color:#e0675a">YOU DIED</h1><p id="deadtxt"></p><button class="frame big" id="d-load">Load last save</button><button class="frame big" id="d-new">New game</button></div>
+<div id="win" class="screen hidden"><h1>RESCUED</h1><p id="wintxt"></p><button class="frame big" id="w-cont">Keep exploring</button><button class="frame big" id="w-new">New game</button></div>
+<div id="sleepfade"></div>
+<div id="loading" class="screen"><h1>LANTERN ISLES</h1><div id="bar" class="frame"><i></i></div><p id="lmsg" style="font-size:14px">loading pre-rendered sprites…</p></div>
+
 <script src="src/style.js"></script>
 <script src="src/palette.js"></script>
 <script src="src/noise.js"></script>
 <script src="assets/atlas.js"></script>
 <script src="src/game.js"></script>
-<script>document.getElementById('win').onclick=e=>e.currentTarget.style.display='none';</script>
 </body>
 </html>

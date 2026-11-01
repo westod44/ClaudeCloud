@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-01T08:32:20.877Z",
+ "generated": "2026-11-01T09:17:23.991Z",
  "style": "dataset/style.json",
  "palette": "dataset/palette.json",
  "assets": [
@@ -18,7 +18,7 @@
    "ay": 154,
    "frames": 1,
    "fps": 0,
-   "bakeMs": 696,
+   "bakeMs": 732,
    "files": {
     "body": "assets/sprites/oak_1.png",
     "shadow": "assets/sprites/oak_1_shadow.png"
@@ -39,7 +39,7 @@
    "ay": 150,
    "frames": 1,
    "fps": 0,
-   "bakeMs": 528,
+   "bakeMs": 623,
    "files": {
     "body": "assets/sprites/oak_2.png",
     "shadow": "assets/sprites/oak_2_shadow.png"
@@ -60,7 +60,7 @@
    "ay": 154,
    "frames": 1,
    "fps": 0,
-   "bakeMs": 601,
+   "bakeMs": 595,
    "files": {
     "body": "assets/sprites/oak_3.png",
     "shadow": "assets/sprites/oak_3_shadow.png"
@@ -81,7 +81,7 @@
    "ay": 151,
    "frames": 1,
    "fps": 0,
-   "bakeMs": 586,
+   "bakeMs": 496,
    "files": {
     "body": "assets/sprites/oak_4.png",
     "shadow": "assets/sprites/oak_4_shadow.png"
@@ -102,7 +102,7 @@
    "ay": 170,
    "frames": 1,
    "fps": 0,
-   "bakeMs": 425,
+   "bakeMs": 539,
    "files": {
     "body": "assets/sprites/birch_1.png",
     "shadow": "assets/sprites/birch_1_shadow.png"
@@ -123,7 +123,7 @@
    "ay": 174,
    "frames": 1,
    "fps": 0,
-   "bakeMs": 424,
+   "bakeMs": 442,
    "files": {
     "body": "assets/sprites/birch_2.png",
     "shadow": "assets/sprites/birch_2_shadow.png"
@@ -144,7 +144,7 @@
    "ay": 181,
    "frames": 1,
    "fps": 0,
-   "bakeMs": 396,
+   "bakeMs": 489,
    "files": {
     "body": "assets/sprites/pine_1.png",
     "shadow": "assets/sprites/pine_1_shadow.png"
@@ -165,7 +165,7 @@
    "ay": 165,
    "frames": 1,
    "fps": 0,
-   "bakeMs": 373,
+   "bakeMs": 333,
    "files": {
     "body": "assets/sprites/pine_2.png",
     "shadow": "assets/sprites/pine_2_shadow.png"
@@ -186,7 +186,7 @@
    "ay": 165,
    "frames": 1,
    "fps": 0,
-   "bakeMs": 346,
+   "bakeMs": 321,
    "files": {
     "body": "assets/sprites/pine_3.png",
     "shadow": "assets/sprites/pine_3_shadow.png"
@@ -207,7 +207,7 @@
    "ay": 189,
    "frames": 1,
    "fps": 0,
-   "bakeMs": 611,
+   "bakeMs": 522,
    "files": {
     "body": "assets/sprites/palm_1.png",
     "shadow": "assets/sprites/palm_1_shadow.png"
@@ -228,7 +228,7 @@
    "ay": 189,
    "frames": 1,
    "fps": 0,
-   "bakeMs": 544,
+   "bakeMs": 496,
    "files": {
     "body": "assets/sprites/palm_2.png",
     "shadow": "assets/sprites/palm_2_shadow.png"
@@ -249,7 +249,7 @@
    "ay": 136,
    "frames": 1,
    "fps": 0,
-   "bakeMs": 95,
+   "bakeMs": 125,
    "files": {
     "body": "assets/sprites/dead_tree.png",
     "shadow": "assets/sprites/dead_tree_shadow.png"
@@ -270,7 +270,7 @@
    "ay": 69,
    "frames": 1,
    "fps": 0,
-   "bakeMs": 66,
+   "bakeMs": 80,
    "files": {
     "body": "assets/sprites/bush_1.png",
     "shadow": "assets/sprites/bush_1_shadow.png"
@@ -291,7 +291,7 @@
    "ay": 69,
    "frames": 1,
    "fps": 0,
-   "bakeMs": 58,
+   "bakeMs": 83,
    "files": {
     "body": "assets/sprites/bush_2.png",
     "shadow": "assets/sprites/bush_2_shadow.png"
@@ -312,7 +312,7 @@
    "ay": 69,
    "frames": 1,
    "fps": 0,
-   "bakeMs": 83,
+   "bakeMs": 80,
    "files": {
     "body": "assets/sprites/berry_bush.png",
     "shadow": "assets/sprites/berry_bush_shadow.png"
@@ -333,7 +333,7 @@
    "ay": 74,
    "frames": 1,
    "fps": 0,
-   "bakeMs": 90,
+   "bakeMs": 153,
    "files": {
     "body": "assets/sprites/boulder_1.png",
     "shadow": "assets/sprites/boulder_1_shadow.png"
@@ -354,7 +354,7 @@
    "ay": 74,
    "frames": 1,
    "fps": 0,
-   "bakeMs": 79,
+   "bakeMs": 138,
    "files": {
     "body": "assets/sprites/boulder_2.png",
     "shadow": "assets/sprites/boulder_2_shadow.png"
@@ -375,7 +375,7 @@
    "ay": 74,
    "frames": 1,
    "fps": 0,
-   "bakeMs": 116,
+   "bakeMs": 84,
    "files": {
     "body": "assets/sprites/boulder_3.png",
     "shadow": "assets/sprites/boulder_3_shadow.png"
@@ -396,7 +396,7 @@
    "ay": 65,
    "frames": 1,
    "fps": 0,
-   "bakeMs": 104,
+   "bakeMs": 69,
    "files": {
     "body": "assets/sprites/stone_pile.png",
     "shadow": "assets/sprites/stone_pile_shadow.png"
@@ -417,7 +417,7 @@
    "ay": 65,
    "frames": 1,
    "fps": 0,
-   "bakeMs": 145,
+   "bakeMs": 102,
    "files": {
     "body": "assets/sprites/gold_vein.png",
     "shadow": "assets/sprites/gold_vein_shadow.png"
@@ -438,7 +438,7 @@
    "ay": 74,
    "frames": 1,
    "fps": 0,
-   "bakeMs": 171,
+   "bakeMs": 116,
    "files": {
     "body": "assets/sprites/gold_boulder.png",
     "shadow": "assets/sprites/gold_boulder_shadow.png"
@@ -459,7 +459,7 @@
    "ay": 39,
    "frames": 1,
    "fps": 0,
-   "bakeMs": 28,
+   "bakeMs": 19,
    "files": {
     "body": "assets/sprites/flowers_yellow.png",
     "shadow": "assets/sprites/flowers_yellow_shadow.png"
@@ -480,7 +480,7 @@
    "ay": 39,
    "frames": 1,
    "fps": 0,
-   "bakeMs": 21,
+   "bakeMs": 16,
    "files": {
     "body": "assets/sprites/flowers_white.png",
     "shadow": "assets/sprites/flowers_white_shadow.png"
@@ -501,7 +501,7 @@
    "ay": 39,
    "frames": 1,
    "fps": 0,
-   "bakeMs": 20,
+   "bakeMs": 15,
    "files": {
     "body": "assets/sprites/flowers_purple.png",
     "shadow": "assets/sprites/flowers_purple_shadow.png"
@@ -522,7 +522,7 @@
    "ay": 36,
    "frames": 1,
    "fps": 0,
-   "bakeMs": 25,
+   "bakeMs": 20,
    "files": {
     "body": "assets/sprites/grass_tuft.png",
     "shadow": "assets/sprites/grass_tuft_shadow.png"
@@ -543,7 +543,7 @@
    "ay": 36,
    "frames": 1,
    "fps": 0,
-   "bakeMs": 20,
+   "bakeMs": 14,
    "files": {
     "body": "assets/sprites/grass_tuft_dry.png",
     "shadow": "assets/sprites/grass_tuft_dry_shadow.png"
@@ -564,7 +564,7 @@
    "ay": 65,
    "frames": 1,
    "fps": 0,
-   "bakeMs": 64,
+   "bakeMs": 63,
    "files": {
     "body": "assets/sprites/reeds.png",
     "shadow": "assets/sprites/reeds_shadow.png"
@@ -585,7 +585,7 @@
    "ay": 159,
    "frames": 1,
    "fps": 0,
-   "bakeMs": 584,
+   "bakeMs": 528,
    "files": {
     "body": "assets/sprites/cottage_thatch.png",
     "shadow": "assets/sprites/cottage_thatch_shadow.png"
@@ -606,7 +606,7 @@
    "ay": 159,
    "frames": 1,
    "fps": 0,
-   "bakeMs": 468,
+   "bakeMs": 428,
    "files": {
     "body": "assets/sprites/cottage_timber.png",
     "shadow": "assets/sprites/cottage_timber_shadow.png"
@@ -627,7 +627,7 @@
    "ay": 285,
    "frames": 1,
    "fps": 0,
-   "bakeMs": 436,
+   "bakeMs": 482,
    "files": {
     "body": "assets/sprites/watchtower.png",
     "shadow": "assets/sprites/watchtower_shadow.png"
@@ -648,7 +648,7 @@
    "ay": 114,
    "frames": 1,
    "fps": 0,
-   "bakeMs": 329,
+   "bakeMs": 281,
    "files": {
     "body": "assets/sprites/well.png",
     "shadow": "assets/sprites/well_shadow.png"
@@ -669,7 +669,7 @@
    "ay": 118,
    "frames": 1,
    "fps": 0,
-   "bakeMs": 413,
+   "bakeMs": 330,
    "files": {
     "body": "assets/sprites/market_stall.png",
     "shadow": "assets/sprites/market_stall_shadow.png"
@@ -690,7 +690,7 @@
    "ay": 278,
    "frames": 1,
    "fps": 0,
-   "bakeMs": 1099,
+   "bakeMs": 903,
    "files": {
     "body": "assets/sprites/windmill.png",
     "shadow": "assets/sprites/windmill_shadow.png"
@@ -711,7 +711,7 @@
    "ay": 65,
    "frames": 6,
    "fps": 10,
-   "bakeMs": 810,
+   "bakeMs": 723,
    "files": {
     "body": "assets/sprites/campfire.png",
     "shadow": "assets/sprites/campfire_shadow.png"
@@ -732,7 +732,7 @@
    "ay": 95,
    "frames": 1,
    "fps": 0,
-   "bakeMs": 41,
+   "bakeMs": 35,
    "files": {
     "body": "assets/sprites/signpost.png",
     "shadow": "assets/sprites/signpost_shadow.png"
@@ -753,7 +753,7 @@
    "ay": 42,
    "frames": 1,
    "fps": 0,
-   "bakeMs": 10,
+   "bakeMs": 12,
    "files": {
     "body": "assets/sprites/chest.png",
     "shadow": "assets/sprites/chest_shadow.png"
@@ -774,7 +774,7 @@
    "ay": 98,
    "frames": 1,
    "fps": 0,
-   "bakeMs": 143,
+   "bakeMs": 207,
    "files": {
     "body": "assets/sprites/shrine_lit.png",
     "shadow": "assets/sprites/shrine_lit_shadow.png"
@@ -795,7 +795,7 @@
    "ay": 98,
    "frames": 1,
    "fps": 0,
-   "bakeMs": 136,
+   "bakeMs": 137,
    "files": {
     "body": "assets/sprites/shrine_empty.png",
     "shadow": "assets/sprites/shrine_empty_shadow.png"
@@ -816,7 +816,7 @@
    "ay": 110,
    "frames": 1,
    "fps": 0,
-   "bakeMs": 143,
+   "bakeMs": 124,
    "files": {
     "body": "assets/sprites/column_1.png",
     "shadow": "assets/sprites/column_1_shadow.png"
@@ -837,7 +837,7 @@
    "ay": 86,
    "frames": 1,
    "fps": 0,
-   "bakeMs": 119,
+   "bakeMs": 84,
    "files": {
     "body": "assets/sprites/column_2.png",
     "shadow": "assets/sprites/column_2_shadow.png"
@@ -858,7 +858,7 @@
    "ay": 98,
    "frames": 1,
    "fps": 0,
-   "bakeMs": 153,
+   "bakeMs": 107,
    "files": {
     "body": "assets/sprites/column_3.png",
     "shadow": "assets/sprites/column_3_shadow.png"
@@ -879,7 +879,7 @@
    "ay": 74,
    "frames": 1,
    "fps": 0,
-   "bakeMs": 58,
+   "bakeMs": 33,
    "files": {
     "body": "assets/sprites/column_fallen_1.png",
     "shadow": "assets/sprites/column_fallen_1_shadow.png"
@@ -900,7 +900,7 @@
    "ay": 74,
    "frames": 1,
    "fps": 0,
-   "bakeMs": 37,
+   "bakeMs": 34,
    "files": {
     "body": "assets/sprites/column_fallen_2.png",
     "shadow": "assets/sprites/column_fallen_2_shadow.png"
@@ -921,7 +921,7 @@
    "ay": 104,
    "frames": 1,
    "fps": 0,
-   "bakeMs": 181,
+   "bakeMs": 148,
    "files": {
     "body": "assets/sprites/ruin_wall_1.png",
     "shadow": "assets/sprites/ruin_wall_1_shadow.png"
@@ -942,7 +942,7 @@
    "ay": 104,
    "frames": 1,
    "fps": 0,
-   "bakeMs": 229,
+   "bakeMs": 141,
    "files": {
     "body": "assets/sprites/ruin_wall_2.png",
     "shadow": "assets/sprites/ruin_wall_2_shadow.png"
@@ -963,7 +963,7 @@
    "ay": 158,
    "frames": 1,
    "fps": 0,
-   "bakeMs": 518,
+   "bakeMs": 333,
    "files": {
     "body": "assets/sprites/ruin_arch.png",
     "shadow": "assets/sprites/ruin_arch_shadow.png"
@@ -984,7 +984,7 @@
    "ay": 117,
    "frames": 1,
    "fps": 0,
-   "bakeMs": 152,
+   "bakeMs": 89,
    "files": {
     "body": "assets/sprites/standing_stone_1.png",
     "shadow": "assets/sprites/standing_stone_1_shadow.png"
@@ -1005,7 +1005,7 @@
    "ay": 111,
    "frames": 1,
    "fps": 0,
-   "bakeMs": 120,
+   "bakeMs": 97,
    "files": {
     "body": "assets/sprites/standing_stone_2.png",
     "shadow": "assets/sprites/standing_stone_2_shadow.png"
@@ -1026,25 +1026,256 @@
    "ay": 118,
    "frames": 1,
    "fps": 0,
-   "bakeMs": 104,
+   "bakeMs": 92,
    "files": {
     "body": "assets/sprites/standing_stone_3.png",
     "shadow": "assets/sprites/standing_stone_3_shadow.png"
    }
   },
   {
-   "name": "explorer",
-   "category": "unit",
-   "description": "Explorer (player colour tunic, lantern)",
+   "name": "stump",
+   "category": "nature",
+   "description": "Tree stump (felled tree)",
    "footprint": [
     1,
     1
    ],
    "blocks": false,
-   "w": 139,
-   "h": 98,
-   "ax": 42,
-   "ay": 76,
+   "w": 89,
+   "h": 56,
+   "ax": 34,
+   "ay": 38,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 13,
+   "files": {
+    "body": "assets/sprites/stump.png",
+    "shadow": "assets/sprites/stump_shadow.png"
+   }
+  },
+  {
+   "name": "cabin",
+   "category": "building",
+   "description": "Log cabin (player-built)",
+   "footprint": [
+    2,
+    2
+   ],
+   "blocks": true,
+   "w": 322,
+   "h": 214,
+   "ax": 108,
+   "ay": 159,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 507,
+   "files": {
+    "body": "assets/sprites/cabin.png",
+    "shadow": "assets/sprites/cabin_shadow.png"
+   }
+  },
+  {
+   "name": "lean_to",
+   "category": "structure",
+   "description": "Lean-to shelter — sleep & save",
+   "footprint": [
+    2,
+    2
+   ],
+   "blocks": true,
+   "w": 303,
+   "h": 192,
+   "ax": 111,
+   "ay": 135,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 442,
+   "files": {
+    "body": "assets/sprites/lean_to.png",
+    "shadow": "assets/sprites/lean_to_shadow.png"
+   }
+  },
+  {
+   "name": "palisade",
+   "category": "structure",
+   "description": "Palisade wall block",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": true,
+   "w": 225,
+   "h": 159,
+   "ax": 66,
+   "ay": 125,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 885,
+   "files": {
+    "body": "assets/sprites/palisade.png",
+    "shadow": "assets/sprites/palisade_shadow.png"
+   }
+  },
+  {
+   "name": "spike_trap",
+   "category": "structure",
+   "description": "Spike trap",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": false,
+   "w": 152,
+   "h": 94,
+   "ax": 60,
+   "ay": 63,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 77,
+   "files": {
+    "body": "assets/sprites/spike_trap.png",
+    "shadow": "assets/sprites/spike_trap_shadow.png"
+   }
+  },
+  {
+   "name": "crate",
+   "category": "structure",
+   "description": "Storage crate",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": true,
+   "w": 152,
+   "h": 99,
+   "ax": 54,
+   "ay": 71,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 36,
+   "files": {
+    "body": "assets/sprites/crate.png",
+    "shadow": "assets/sprites/crate_shadow.png"
+   }
+  },
+  {
+   "name": "rain_collector",
+   "category": "structure",
+   "description": "Rain collector (water)",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": true,
+   "w": 172,
+   "h": 117,
+   "ax": 56,
+   "ay": 88,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 129,
+   "files": {
+    "body": "assets/sprites/rain_collector.png",
+    "shadow": "assets/sprites/rain_collector_shadow.png"
+   }
+  },
+  {
+   "name": "standing_torch",
+   "category": "structure",
+   "description": "Standing torch (animated)",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": false,
+   "w": 156,
+   "h": 128,
+   "ax": 28,
+   "ay": 113,
+   "frames": 4,
+   "fps": 8,
+   "bakeMs": 264,
+   "files": {
+    "body": "assets/sprites/standing_torch.png",
+    "shadow": "assets/sprites/standing_torch_shadow.png"
+   }
+  },
+  {
+   "name": "campfire_out",
+   "category": "structure",
+   "description": "Campfire (burnt out)",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": true,
+   "w": 102,
+   "h": 63,
+   "ax": 41,
+   "ay": 41,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 25,
+   "files": {
+    "body": "assets/sprites/campfire_out.png",
+    "shadow": "assets/sprites/campfire_out_shadow.png"
+   }
+  },
+  {
+   "name": "beacon",
+   "category": "structure",
+   "description": "Signal beacon (unlit)",
+   "footprint": [
+    2,
+    2
+   ],
+   "blocks": true,
+   "w": 365,
+   "h": 234,
+   "ax": 130,
+   "ay": 168,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 468,
+   "files": {
+    "body": "assets/sprites/beacon.png",
+    "shadow": "assets/sprites/beacon_shadow.png"
+   }
+  },
+  {
+   "name": "beacon_lit",
+   "category": "structure",
+   "description": "Signal beacon (burning)",
+   "footprint": [
+    2,
+    2
+   ],
+   "blocks": true,
+   "w": 445,
+   "h": 313,
+   "ax": 130,
+   "ay": 247,
+   "frames": 6,
+   "fps": 10,
+   "bakeMs": 14971,
+   "files": {
+    "body": "assets/sprites/beacon_lit.png",
+    "shadow": "assets/sprites/beacon_lit_shadow.png"
+   }
+  },
+  {
+   "name": "explorer",
+   "category": "unit",
+   "description": "Survivor, unarmed (player colour tunic)",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": false,
+   "w": 224,
+   "h": 138,
+   "ax": 98,
+   "ay": 98,
    "dirs": [
     "S",
     "SW",
@@ -1057,14 +1288,191 @@
     "E": "W",
     "NE": "NW"
    },
-   "frames": 9,
-   "layout": "rows=directions, col0=idle, cols1..=walk",
+   "frames": 14,
+   "layout": "rows = 5 rendered directions; columns: 0 idle, 1-8 walk, 9-12 attack, 13 dead",
+   "anim": {
+    "idle": [
+     0,
+     1
+    ],
+    "walk": [
+     1,
+     8
+    ],
+    "attack": [
+     9,
+     4
+    ],
+    "dead": [
+     13,
+     1
+    ]
+   },
    "fps": 12,
    "speed": 2.6,
-   "bakeMs": 4187,
+   "bakeMs": 9020,
    "files": {
     "body": "assets/sprites/explorer.png",
     "shadow": "assets/sprites/explorer_shadow.png"
+   }
+  },
+  {
+   "name": "explorer_axe",
+   "category": "unit",
+   "description": "Survivor with stone axe",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": false,
+   "w": 224,
+   "h": 138,
+   "ax": 98,
+   "ay": 98,
+   "dirs": [
+    "S",
+    "SW",
+    "W",
+    "NW",
+    "N"
+   ],
+   "mirrored": {
+    "SE": "SW",
+    "E": "W",
+    "NE": "NW"
+   },
+   "frames": 14,
+   "layout": "rows = 5 rendered directions; columns: 0 idle, 1-8 walk, 9-12 attack, 13 dead",
+   "anim": {
+    "idle": [
+     0,
+     1
+    ],
+    "walk": [
+     1,
+     8
+    ],
+    "attack": [
+     9,
+     4
+    ],
+    "dead": [
+     13,
+     1
+    ]
+   },
+   "fps": 12,
+   "speed": 2.6,
+   "bakeMs": 11269,
+   "files": {
+    "body": "assets/sprites/explorer_axe.png",
+    "shadow": "assets/sprites/explorer_axe_shadow.png"
+   }
+  },
+  {
+   "name": "explorer_spear",
+   "category": "unit",
+   "description": "Survivor with spear",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": false,
+   "w": 224,
+   "h": 138,
+   "ax": 98,
+   "ay": 98,
+   "dirs": [
+    "S",
+    "SW",
+    "W",
+    "NW",
+    "N"
+   ],
+   "mirrored": {
+    "SE": "SW",
+    "E": "W",
+    "NE": "NW"
+   },
+   "frames": 14,
+   "layout": "rows = 5 rendered directions; columns: 0 idle, 1-8 walk, 9-12 attack, 13 dead",
+   "anim": {
+    "idle": [
+     0,
+     1
+    ],
+    "walk": [
+     1,
+     8
+    ],
+    "attack": [
+     9,
+     4
+    ],
+    "dead": [
+     13,
+     1
+    ]
+   },
+   "fps": 12,
+   "speed": 2.6,
+   "bakeMs": 11385,
+   "files": {
+    "body": "assets/sprites/explorer_spear.png",
+    "shadow": "assets/sprites/explorer_spear_shadow.png"
+   }
+  },
+  {
+   "name": "explorer_bow",
+   "category": "unit",
+   "description": "Survivor with bow",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": false,
+   "w": 224,
+   "h": 138,
+   "ax": 98,
+   "ay": 98,
+   "dirs": [
+    "S",
+    "SW",
+    "W",
+    "NW",
+    "N"
+   ],
+   "mirrored": {
+    "SE": "SW",
+    "E": "W",
+    "NE": "NW"
+   },
+   "frames": 14,
+   "layout": "rows = 5 rendered directions; columns: 0 idle, 1-8 walk, 9-12 attack, 13 dead",
+   "anim": {
+    "idle": [
+     0,
+     1
+    ],
+    "walk": [
+     1,
+     8
+    ],
+    "attack": [
+     9,
+     4
+    ],
+    "dead": [
+     13,
+     1
+    ]
+   },
+   "fps": 12,
+   "speed": 2.6,
+   "bakeMs": 14491,
+   "files": {
+    "body": "assets/sprites/explorer_bow.png",
+    "shadow": "assets/sprites/explorer_bow_shadow.png"
    }
   },
   {
@@ -1076,10 +1484,10 @@
     1
    ],
    "blocks": false,
-   "w": 139,
-   "h": 98,
-   "ax": 42,
-   "ay": 76,
+   "w": 224,
+   "h": 138,
+   "ax": 98,
+   "ay": 98,
    "dirs": [
     "S",
     "SW",
@@ -1092,11 +1500,29 @@
     "E": "W",
     "NE": "NW"
    },
-   "frames": 9,
-   "layout": "rows=directions, col0=idle, cols1..=walk",
+   "frames": 14,
+   "layout": "rows = 5 rendered directions; columns: 0 idle, 1-8 walk, 9-12 attack, 13 dead",
+   "anim": {
+    "idle": [
+     0,
+     1
+    ],
+    "walk": [
+     1,
+     8
+    ],
+    "attack": [
+     9,
+     4
+    ],
+    "dead": [
+     13,
+     1
+    ]
+   },
    "fps": 12,
    "speed": 1.2,
-   "bakeMs": 2479,
+   "bakeMs": 5927,
    "files": {
     "body": "assets/sprites/villager_1.png",
     "shadow": "assets/sprites/villager_1_shadow.png"
@@ -1111,10 +1537,10 @@
     1
    ],
    "blocks": false,
-   "w": 139,
-   "h": 98,
-   "ax": 42,
-   "ay": 76,
+   "w": 224,
+   "h": 138,
+   "ax": 98,
+   "ay": 98,
    "dirs": [
     "S",
     "SW",
@@ -1127,11 +1553,29 @@
     "E": "W",
     "NE": "NW"
    },
-   "frames": 9,
-   "layout": "rows=directions, col0=idle, cols1..=walk",
+   "frames": 14,
+   "layout": "rows = 5 rendered directions; columns: 0 idle, 1-8 walk, 9-12 attack, 13 dead",
+   "anim": {
+    "idle": [
+     0,
+     1
+    ],
+    "walk": [
+     1,
+     8
+    ],
+    "attack": [
+     9,
+     4
+    ],
+    "dead": [
+     13,
+     1
+    ]
+   },
    "fps": 12,
    "speed": 1.2,
-   "bakeMs": 2177,
+   "bakeMs": 5620,
    "files": {
     "body": "assets/sprites/villager_2.png",
     "shadow": "assets/sprites/villager_2_shadow.png"
@@ -1146,10 +1590,10 @@
     1
    ],
    "blocks": false,
-   "w": 139,
-   "h": 98,
-   "ax": 42,
-   "ay": 76,
+   "w": 224,
+   "h": 138,
+   "ax": 98,
+   "ay": 98,
    "dirs": [
     "S",
     "SW",
@@ -1162,11 +1606,29 @@
     "E": "W",
     "NE": "NW"
    },
-   "frames": 9,
-   "layout": "rows=directions, col0=idle, cols1..=walk",
+   "frames": 14,
+   "layout": "rows = 5 rendered directions; columns: 0 idle, 1-8 walk, 9-12 attack, 13 dead",
+   "anim": {
+    "idle": [
+     0,
+     1
+    ],
+    "walk": [
+     1,
+     8
+    ],
+    "attack": [
+     9,
+     4
+    ],
+    "dead": [
+     13,
+     1
+    ]
+   },
    "fps": 12,
    "speed": 1.2,
-   "bakeMs": 2176,
+   "bakeMs": 5877,
    "files": {
     "body": "assets/sprites/villager_3.png",
     "shadow": "assets/sprites/villager_3_shadow.png"
@@ -1181,10 +1643,10 @@
     1
    ],
    "blocks": false,
-   "w": 191,
-   "h": 127,
-   "ax": 64,
-   "ay": 94,
+   "w": 251,
+   "h": 149,
+   "ax": 114,
+   "ay": 103,
    "dirs": [
     "S",
     "SW",
@@ -1197,11 +1659,29 @@
     "E": "W",
     "NE": "NW"
    },
-   "frames": 9,
-   "layout": "rows=directions, col0=idle, cols1..=walk",
+   "frames": 14,
+   "layout": "rows = 5 rendered directions; columns: 0 idle, 1-8 walk, 9-12 attack, 13 dead",
+   "anim": {
+    "idle": [
+     0,
+     1
+    ],
+    "walk": [
+     1,
+     8
+    ],
+    "attack": [
+     9,
+     4
+    ],
+    "dead": [
+     13,
+     1
+    ]
+   },
    "fps": 12,
    "speed": 3.2,
-   "bakeMs": 7159,
+   "bakeMs": 13028,
    "files": {
     "body": "assets/sprites/deer.png",
     "shadow": "assets/sprites/deer_shadow.png"
@@ -1216,10 +1696,10 @@
     1
    ],
    "blocks": false,
-   "w": 164,
-   "h": 102,
-   "ax": 64,
-   "ay": 69,
+   "w": 198,
+   "h": 125,
+   "ax": 82,
+   "ay": 84,
    "dirs": [
     "S",
     "SW",
@@ -1232,14 +1712,664 @@
     "E": "W",
     "NE": "NW"
    },
-   "frames": 9,
-   "layout": "rows=directions, col0=idle, cols1..=walk",
+   "frames": 14,
+   "layout": "rows = 5 rendered directions; columns: 0 idle, 1-8 walk, 9-12 attack, 13 dead",
+   "anim": {
+    "idle": [
+     0,
+     1
+    ],
+    "walk": [
+     1,
+     8
+    ],
+    "attack": [
+     9,
+     4
+    ],
+    "dead": [
+     13,
+     1
+    ]
+   },
    "fps": 12,
    "speed": 1,
-   "bakeMs": 2604,
+   "bakeMs": 5613,
    "files": {
     "body": "assets/sprites/sheep.png",
     "shadow": "assets/sprites/sheep_shadow.png"
+   }
+  },
+  {
+   "name": "wolf",
+   "category": "unit",
+   "description": "Grey wolf (pack hunter)",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": false,
+   "w": 207,
+   "h": 125,
+   "ax": 91,
+   "ay": 84,
+   "dirs": [
+    "S",
+    "SW",
+    "W",
+    "NW",
+    "N"
+   ],
+   "mirrored": {
+    "SE": "SW",
+    "E": "W",
+    "NE": "NW"
+   },
+   "frames": 14,
+   "layout": "rows = 5 rendered directions; columns: 0 idle, 1-8 walk, 9-12 attack, 13 dead",
+   "anim": {
+    "idle": [
+     0,
+     1
+    ],
+    "walk": [
+     1,
+     8
+    ],
+    "attack": [
+     9,
+     4
+    ],
+    "dead": [
+     13,
+     1
+    ]
+   },
+   "fps": 12,
+   "speed": 3,
+   "bakeMs": 9112,
+   "files": {
+    "body": "assets/sprites/wolf.png",
+    "shadow": "assets/sprites/wolf_shadow.png"
+   }
+  },
+  {
+   "name": "boar",
+   "category": "unit",
+   "description": "Wild boar (charges when provoked)",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": false,
+   "w": 198,
+   "h": 125,
+   "ax": 82,
+   "ay": 84,
+   "dirs": [
+    "S",
+    "SW",
+    "W",
+    "NW",
+    "N"
+   ],
+   "mirrored": {
+    "SE": "SW",
+    "E": "W",
+    "NE": "NW"
+   },
+   "frames": 14,
+   "layout": "rows = 5 rendered directions; columns: 0 idle, 1-8 walk, 9-12 attack, 13 dead",
+   "anim": {
+    "idle": [
+     0,
+     1
+    ],
+    "walk": [
+     1,
+     8
+    ],
+    "attack": [
+     9,
+     4
+    ],
+    "dead": [
+     13,
+     1
+    ]
+   },
+   "fps": 12,
+   "speed": 2.4,
+   "bakeMs": 9604,
+   "files": {
+    "body": "assets/sprites/boar.png",
+    "shadow": "assets/sprites/boar_shadow.png"
+   }
+  },
+  {
+   "name": "hollow",
+   "category": "unit",
+   "description": "Hollow — night creature, fears fire",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": false,
+   "w": 258,
+   "h": 158,
+   "ax": 113,
+   "ay": 112,
+   "dirs": [
+    "S",
+    "SW",
+    "W",
+    "NW",
+    "N"
+   ],
+   "mirrored": {
+    "SE": "SW",
+    "E": "W",
+    "NE": "NW"
+   },
+   "frames": 14,
+   "layout": "rows = 5 rendered directions; columns: 0 idle, 1-8 walk, 9-12 attack, 13 dead",
+   "anim": {
+    "idle": [
+     0,
+     1
+    ],
+    "walk": [
+     1,
+     8
+    ],
+    "attack": [
+     9,
+     4
+    ],
+    "dead": [
+     13,
+     1
+    ]
+   },
+   "fps": 12,
+   "speed": 2.3,
+   "bakeMs": 12335,
+   "files": {
+    "body": "assets/sprites/hollow.png",
+    "shadow": "assets/sprites/hollow_shadow.png"
+   }
+  },
+  {
+   "name": "hollow_brute",
+   "category": "unit",
+   "description": "Hollow brute (1.4x), appears from day 4",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": false,
+   "w": 358,
+   "h": 218,
+   "ax": 156,
+   "ay": 155,
+   "dirs": [
+    "S",
+    "SW",
+    "W",
+    "NW",
+    "N"
+   ],
+   "mirrored": {
+    "SE": "SW",
+    "E": "W",
+    "NE": "NW"
+   },
+   "frames": 14,
+   "layout": "rows = 5 rendered directions; columns: 0 idle, 1-8 walk, 9-12 attack, 13 dead",
+   "anim": {
+    "idle": [
+     0,
+     1
+    ],
+    "walk": [
+     1,
+     8
+    ],
+    "attack": [
+     9,
+     4
+    ],
+    "dead": [
+     13,
+     1
+    ]
+   },
+   "fps": 12,
+   "speed": 1.8,
+   "bakeMs": 28572,
+   "files": {
+    "body": "assets/sprites/hollow_brute.png",
+    "shadow": "assets/sprites/hollow_brute_shadow.png"
+   }
+  },
+  {
+   "name": "icon_log",
+   "category": "icon",
+   "description": "log",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": false,
+   "w": 110,
+   "h": 81,
+   "ax": 55,
+   "ay": 59,
+   "frames": 1,
+   "bakeMs": 46,
+   "files": {
+    "body": "assets/sprites/icon_log.png",
+    "shadow": null
+   }
+  },
+  {
+   "name": "icon_stick",
+   "category": "icon",
+   "description": "stick",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": false,
+   "w": 74,
+   "h": 62,
+   "ax": 36,
+   "ay": 38,
+   "frames": 1,
+   "bakeMs": 27,
+   "files": {
+    "body": "assets/sprites/icon_stick.png",
+    "shadow": null
+   }
+  },
+  {
+   "name": "icon_stone",
+   "category": "icon",
+   "description": "stone",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": false,
+   "w": 71,
+   "h": 53,
+   "ax": 35,
+   "ay": 42,
+   "frames": 1,
+   "bakeMs": 83,
+   "files": {
+    "body": "assets/sprites/icon_stone.png",
+    "shadow": null
+   }
+  },
+  {
+   "name": "icon_fiber",
+   "category": "icon",
+   "description": "fiber",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": false,
+   "w": 95,
+   "h": 55,
+   "ax": 44,
+   "ay": 34,
+   "frames": 1,
+   "bakeMs": 63,
+   "files": {
+    "body": "assets/sprites/icon_fiber.png",
+    "shadow": null
+   }
+  },
+  {
+   "name": "icon_rope",
+   "category": "icon",
+   "description": "rope",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": false,
+   "w": 70,
+   "h": 56,
+   "ax": 35,
+   "ay": 41,
+   "frames": 1,
+   "bakeMs": 69,
+   "files": {
+    "body": "assets/sprites/icon_rope.png",
+    "shadow": null
+   }
+  },
+  {
+   "name": "icon_berries",
+   "category": "icon",
+   "description": "berries",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": false,
+   "w": 59,
+   "h": 38,
+   "ax": 30,
+   "ay": 27,
+   "frames": 1,
+   "bakeMs": 49,
+   "files": {
+    "body": "assets/sprites/icon_berries.png",
+    "shadow": null
+   }
+  },
+  {
+   "name": "icon_meat_raw",
+   "category": "icon",
+   "description": "meat_raw",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": false,
+   "w": 75,
+   "h": 44,
+   "ax": 35,
+   "ay": 35,
+   "frames": 1,
+   "bakeMs": 47,
+   "files": {
+    "body": "assets/sprites/icon_meat_raw.png",
+    "shadow": null
+   }
+  },
+  {
+   "name": "icon_meat_cooked",
+   "category": "icon",
+   "description": "meat_cooked",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": false,
+   "w": 75,
+   "h": 44,
+   "ax": 35,
+   "ay": 35,
+   "frames": 1,
+   "bakeMs": 61,
+   "files": {
+    "body": "assets/sprites/icon_meat_cooked.png",
+    "shadow": null
+   }
+  },
+  {
+   "name": "icon_hide",
+   "category": "icon",
+   "description": "hide",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": false,
+   "w": 98,
+   "h": 56,
+   "ax": 50,
+   "ay": 31,
+   "frames": 1,
+   "bakeMs": 92,
+   "files": {
+    "body": "assets/sprites/icon_hide.png",
+    "shadow": null
+   }
+  },
+  {
+   "name": "icon_cloth",
+   "category": "icon",
+   "description": "cloth",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": false,
+   "w": 98,
+   "h": 66,
+   "ax": 49,
+   "ay": 41,
+   "frames": 1,
+   "bakeMs": 54,
+   "files": {
+    "body": "assets/sprites/icon_cloth.png",
+    "shadow": null
+   }
+  },
+  {
+   "name": "icon_herb",
+   "category": "icon",
+   "description": "herb",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": false,
+   "w": 66,
+   "h": 36,
+   "ax": 25,
+   "ay": 27,
+   "frames": 1,
+   "bakeMs": 69,
+   "files": {
+    "body": "assets/sprites/icon_herb.png",
+    "shadow": null
+   }
+  },
+  {
+   "name": "icon_relic",
+   "category": "icon",
+   "description": "relic",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": false,
+   "w": 58,
+   "h": 83,
+   "ax": 29,
+   "ay": 69,
+   "frames": 1,
+   "bakeMs": 117,
+   "files": {
+    "body": "assets/sprites/icon_relic.png",
+    "shadow": null
+   }
+  },
+  {
+   "name": "icon_arrow",
+   "category": "icon",
+   "description": "arrow",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": false,
+   "w": 73,
+   "h": 57,
+   "ax": 36,
+   "ay": 36,
+   "frames": 1,
+   "bakeMs": 24,
+   "files": {
+    "body": "assets/sprites/icon_arrow.png",
+    "shadow": null
+   }
+  },
+  {
+   "name": "icon_axe",
+   "category": "icon",
+   "description": "axe",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": false,
+   "w": 82,
+   "h": 58,
+   "ax": 45,
+   "ay": 33,
+   "frames": 1,
+   "bakeMs": 29,
+   "files": {
+    "body": "assets/sprites/icon_axe.png",
+    "shadow": null
+   }
+  },
+  {
+   "name": "icon_spear",
+   "category": "icon",
+   "description": "spear",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": false,
+   "w": 90,
+   "h": 69,
+   "ax": 46,
+   "ay": 42,
+   "frames": 1,
+   "bakeMs": 26,
+   "files": {
+    "body": "assets/sprites/icon_spear.png",
+    "shadow": null
+   }
+  },
+  {
+   "name": "icon_bow",
+   "category": "icon",
+   "description": "bow",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": false,
+   "w": 96,
+   "h": 54,
+   "ax": 56,
+   "ay": 36,
+   "frames": 1,
+   "bakeMs": 73,
+   "files": {
+    "body": "assets/sprites/icon_bow.png",
+    "shadow": null
+   }
+  },
+  {
+   "name": "icon_torch",
+   "category": "icon",
+   "description": "torch",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": false,
+   "w": 90,
+   "h": 45,
+   "ax": 46,
+   "ay": 33,
+   "frames": 1,
+   "bakeMs": 31,
+   "files": {
+    "body": "assets/sprites/icon_torch.png",
+    "shadow": null
+   }
+  },
+  {
+   "name": "icon_salve",
+   "category": "icon",
+   "description": "salve",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": false,
+   "w": 68,
+   "h": 55,
+   "ax": 34,
+   "ay": 37,
+   "frames": 1,
+   "bakeMs": 72,
+   "files": {
+    "body": "assets/sprites/icon_salve.png",
+    "shadow": null
+   }
+  },
+  {
+   "name": "icon_bandage",
+   "category": "icon",
+   "description": "bandage",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": false,
+   "w": 66,
+   "h": 58,
+   "ax": 33,
+   "ay": 48,
+   "frames": 1,
+   "bakeMs": 52,
+   "files": {
+    "body": "assets/sprites/icon_bandage.png",
+    "shadow": null
+   }
+  },
+  {
+   "name": "icon_waterskin",
+   "category": "icon",
+   "description": "waterskin",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": false,
+   "w": 55,
+   "h": 52,
+   "ax": 27,
+   "ay": 46,
+   "frames": 1,
+   "bakeMs": 81,
+   "files": {
+    "body": "assets/sprites/icon_waterskin.png",
+    "shadow": null
+   }
+  },
+  {
+   "name": "icon_armor",
+   "category": "icon",
+   "description": "armor",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": false,
+   "w": 104,
+   "h": 62,
+   "ax": 52,
+   "ay": 38,
+   "frames": 1,
+   "bakeMs": 60,
+   "files": {
+    "body": "assets/sprites/icon_armor.png",
+    "shadow": null
    }
   }
  ],

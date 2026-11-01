@@ -51,14 +51,15 @@ The machine-readable version of this guide is [`dataset/style.json`](../dataset/
 | Fill lights | Sky `#a9bedf` × 0.64 (from above), earth bounce `#7d6a48` × 0.22 (from below), ambient occlusion. |
 | Shadows | Separate layer, colour `#10141c`, max alpha 0.5, 4 quantised levels, soft penumbra. |
 | Sprites | 2×2 supersampled. **Binary alpha** (coverage ≥ 50%). **No outlines.** Snapped to the palette. |
-| Palette | 31 material ramps × 7 steps (shadows shift cool, highlights shift warm) + 8 greys + 8 player colours × 3 = 249 used of 256. |
+| Palette | 31 material ramps × 7 steps (including `spirit`, the Hollows' pale glow) (shadows shift cool, highlights shift warm) + 8 greys + 8 player colours × 3 = 249 used of 256. |
 | Player colours | blue, red, green, yellow, teal, purple, grey, orange. |
-| Units | 5 rendered directions (S, SW, W, NW, N), mirrored to SE, E, NE. Column 0 is idle and columns 1–8 are the walk cycle at 12 fps. |
+| Units | 5 rendered directions (S, SW, W, NW, N), mirrored to SE, E, NE. Columns: 0 idle, 1–8 walk (12 fps), 9–12 attack, 13 death pose (the same model laid on its side). |
+| Item icons | The same models and lights rendered at 3× scale, body layer only, cropped. |
 | Terrain | 11 tileable top-down textures, 384² px = 4×4 tiles (96 texels per tile), sampled in world space so there are no seams. |
 | Fog | Unexplored areas are black. Explored areas out of sight are dimmed to 48%. Vision radius 7 tiles (+2 on high ground). |
 
 ### Scale reference (world units, 1 = one tile)
-human 0.62 · deer 0.62 · sheep 0.38 · oak 1.55 · pine 1.75 · palm 1.6 · cottage 1.35 (2×2 footprint) · watchtower 2.5–3.0 · windmill 2.3 (2×2).
+human 0.62 · Hollow 0.72 (brute ×1.4) · wolf 0.5 · boar 0.42 · deer 0.62 · sheep 0.38 · oak 1.55 · pine 1.75 · palm 1.6 · cottage 1.35 (2×2 footprint) · watchtower 2.5–3.0 · windmill 2.3 (2×2).
 
 ---
 
@@ -85,7 +86,7 @@ human 0.62 · deer 0.62 · sheep 0.38 · oak 1.55 · pine 1.75 · palm 1.6 · co
 | `assets/terrain/*.png` | The 11 tileable terrain textures. |
 | `assets/atlas.js` | Everything above inlined, for the browser. |
 
-**Asset count:** 55 sprite assets (6 units × 45 frames, 6 buildings, 11 ruins, 5 props, 4 resources, 17 nature, 6 decor) and 11 terrain textures.
+**Asset count:** 94 sprite assets: 13 units × 70 frames (5 directions × idle, 8 walk, 4 attack, 1 death), 9 survival structures, 7 buildings, 11 ruins, 5 props, 4 resources, 18 nature, 6 decor and 21 item icons. Plus 11 terrain textures.
 
 ---
 

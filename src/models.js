@@ -51,7 +51,8 @@
   // ---------------------------------------------------------------- materials
   const M = { BARK: 1, LEAF: 2, PINE: 3, BIRCH: 4, ROCK: 5, STONE: 6, PLASTER: 7, TIMBER: 8, THATCH: 9, SHINGLE: 10, WOOD: 11,
     CLOTH: 12, TEAM: 13, SKIN: 14, HAIR: 15, LEATHER: 16, METAL: 17, GOLD: 18, FUR: 19, WOOL: 20, FIRE: 21, GLOW: 22, WATER: 23,
-    BERRY: 24, FLOWER: 25, CANVAS: 26, GLASS: 27, MARBLE: 28, WALL: 29, SAIL: 30, CONESHINGLE: 31, FURDARK: 32, DARK: 33, PALMBARK: 34, CLOTH2: 35 };
+    BERRY: 24, FLOWER: 25, CANVAS: 26, GLASS: 27, MARBLE: 28, WALL: 29, SAIL: 30, CONESHINGLE: 31, FURDARK: 32, DARK: 33, PALMBARK: 34, CLOTH2: 35,
+    WOLF: 36, BOAR: 37, HOLLOW: 38, SPIRIT: 39, MEAT: 40, MEATCOOKED: 41, FIRE2: 42, LOG: 43 };
   const out = [0, 0, 0, 0, 0];
   function set(c, mul = 1, emit = 0, spec = 0) { out[0] = c[0] * mul; out[1] = c[1] * mul; out[2] = c[2] * mul; out[3] = emit; out[4] = spec; return out; }
   function mixc(a, b, t) { return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]; }
@@ -118,7 +119,15 @@
       case M.WATER: return set(C.deep, 1.1, 0, S.lighting.specular.water);
       case M.BERRY: return set(C.berry, 1, 0, 0.3);
       case M.FLOWER: return set(ctx.flowerColor || C.flower, 1);
-      case M.CANVAS: return (Math.floor((y + 1) * 9) & 1) ? set(C.canvasRed, 1) : set(C.plaster, 1.05);
+      case M.CANVAS: return (Math.floor((y + 1) * 9) & 1) ? set(C.berry, 1.05) : set(C.plaster, 1.05);
+      case M.WOLF: { const base = mixc(C.rock, C.hair, 0.25), n = noise3(x * 55, y * 55, z * 55, 5); if (nz < -0.3) return set(C.wool, 0.8 + 0.2 * n); return set(base, (nz > 0.6 ? 0.72 : 0.92) + 0.3 * (n - 0.5)); }
+      case M.BOAR: return set(mixc(C.hair, C.fur, 0.35), 0.72 + 0.45 * noise3(x * 70, y * 70, z * 30, 6));
+      case M.HOLLOW: { const r = Math.abs(noise3(x * 13, y * 13, z * 13, 7) - 0.5); if (r < 0.025) return set(C.spirit, 0.5, 1); return set(mixc(C.hair, C.rock, 0.3), 0.55 + 0.35 * noise3(x * 45, y * 45, z * 45, 3)); }
+      case M.SPIRIT: return set(C.spirit, 1.15, 1);
+      case M.MEAT: return noise3(x * 40, y * 40, z * 40, 2) > 0.68 ? set(C.wool, 0.95) : set(mixc(C.berry, C.skin, 0.45), 0.9 + 0.2 * noise3(x * 20, y * 20, z * 20, 4), 0, 0.3);
+      case M.MEATCOOKED: return set(mixc(C.bark, C.fur, 0.5), 0.85 + 0.35 * noise3(x * 40, y * 40, z * 40, 2), 0, 0.2);
+      case M.FIRE2: { const t = clamp((z - (ctx.fireZ || 0)) / (ctx.fireH || 0.3), 0, 1); return set(mixc(hexf('#fff3b0'), hexf('#e2461c'), t), 1, 1); }
+      case M.LOG: { const fz = frac(z * 13); return set(mixc(C.bark, C.wood, 0.35), 0.5 + 0.55 * Math.sin(fz * Math.PI) * (0.85 + 0.3 * noise3(x * 8, y * 8, z * 60, 3))); }
       case M.SAIL: return (frac(x * 9) < 0.12 || frac(z * 9) < 0.12) ? set(C.timber, 1) : set(C.plaster, 0.95);
       case M.GLASS: return set(GLASS, 1, 0, 0.4);
       case M.DARK: return set(DARK, 1);
@@ -267,7 +276,7 @@
 
   // ================================================================ BUILDINGS (footprint centred on origin)
   function cottage(variant) {
-    const roofM = variant === 1 ? M.SHINGLE : M.THATCH;
+    const roofM = variant >= 1 ? M.SHINGLE : M.THATCH;
     const wallMat = (m, x, y, z, nx, ny, nz, ctx) => {
       if (m !== M.WALL) return shade(m, x, y, z, nx, ny, nz, ctx);
       const longSide = Math.abs(ny) > 0.5, gable = Math.abs(nx) > 0.5;
@@ -278,6 +287,7 @@
       }
       if (gable && nx > 0 && Math.abs(y) < 0.075 && z > 0.48 && z < 0.62) return Math.abs(y) > 0.06 || z < 0.495 || z > 0.605 ? shade(M.TIMBER, x, y, z, nx, ny, nz, ctx) : set(GLASS, 1);
       if (variant === 1) return shade(M.WOOD, x, y, z, nx, ny, nz, ctx);
+      if (variant === 2) return shade(M.LOG, x, y, z, nx, ny, nz, ctx);
       // timber framing
       const beam = (longSide && Math.abs(x) > 0.6) || (gable && Math.abs(y) > 0.4) || Math.abs(z - 0.44) < 0.022 || (z > 0.69 && z < 0.73) || z < 0.16;
       const stud = longSide && (Math.abs(x + 0.32) < 0.02 || Math.abs(x) < 0.02 || Math.abs(x - 0.32) < 0.02 || Math.abs(x - 0.6) < 0.02);
@@ -466,17 +476,43 @@
   }
 
   // ================================================================ UNITS (local +x = facing)
+  // oriented box: point p relative to centre, axes u (len hu), v (len hv), w (len hw)
+  function obox(px, py, pz, u, v, w, hu, hv, hw, r = 0) {
+    return box(px * u[0] + py * u[1] + pz * u[2], px * v[0] + py * v[1] + pz * v[2], px * w[0] + py * w[1] + pz * w[2], hu, hv, hw, r);
+  }
+  const nrm = v => { const l = Math.hypot(v[0], v[1], v[2]) || 1; return [v[0] / l, v[1] / l, v[2] / l]; };
+  const deg = Math.PI / 180;
+  /**
+   * human(phase, o): phase = walk phase (radians) or null for idle.
+   * o.attack: 0..1 attack progress (or null); o.weapon: 'axe' | 'spear' | 'bow' | null
+   */
   function human(phase, o = {}) {
-    const walk = phase !== null, ph = walk ? phase : 0;
+    const walk = phase !== null && phase !== undefined, ph = walk ? phase : 0, att = o.attack == null ? null : o.attack;
     const sw = walk ? Math.sin(ph) : 0, bob = walk ? Math.abs(Math.sin(ph)) * 0.012 : 0;
     const legs = [[0.045, sw], [-0.045, -sw]].map(([ly, s]) => {
       const fx = s * 0.085, lift = walk ? Math.max(0, Math.cos(ph + (ly > 0 ? 0 : Math.PI))) * 0.035 : 0;
       return { hip: [0, ly, 0.3 + bob], knee: [fx * 0.5 + 0.02, ly, 0.16 + lift * 0.6], foot: [fx, ly, 0.035 + lift] };
     });
-    const arms = [[0.105, -sw], [-0.105, sw]].map(([ay, s]) => ({ sh: [0, ay, 0.46 + bob], el: [s * 0.04, ay * 1.08, 0.37 + bob], hand: [s * 0.075 + 0.02, ay * 1.08, 0.3 + bob] }));
-    const tunic = o.team ? M.TEAM : M.CLOTH;
-    const hatted = o.hat !== false;
-    return model([-0.22, -0.22, 0, 0.22, 0.22, 0.68], (x, y, z, mo) => {
+    const sh0 = [0, 0.105, 0.46 + bob], sh1 = [0, -0.105, 0.46 + bob];
+    let h0 = [-sw * 0.075 + 0.02, 0.113, 0.3 + bob], h1 = [sw * 0.075 + 0.02, -0.113, 0.3 + bob];
+    let wdir = o.weapon === 'spear' ? nrm([0.12, 0, 1]) : nrm([0.45, 0, 0.9]), pull = null, lean = 0;
+    if (att !== null) {
+      if (o.weapon === 'spear') { const t = Math.sin(Math.PI * att); h0 = [0.05 + 0.17 * t, 0.07, 0.38]; h1 = [0.0 + 0.12 * t, -0.02, 0.36]; wdir = nrm([1, 0, 0.06]); lean = 0.03 * t; }
+      else if (o.weapon === 'bow') { h1 = [0.2, -0.03, 0.46]; h0 = [0.19 - 0.16 * Math.min(1, att * 1.6), 0.0, 0.47]; pull = h0; }
+      else {
+        const th = (att < 0.35 ? -20 + 140 * (att / 0.35) : 120 - 165 * ((att - 0.35) / 0.65)) * deg;
+        h0 = [sh0[0] + 0.19 * Math.cos(th), 0.085, sh0[2] + 0.19 * Math.sin(th)];
+        wdir = [Math.cos(th + 25 * deg), 0, Math.sin(th + 25 * deg)]; lean = att > 0.35 ? 0.025 : -0.01;
+      }
+    }
+    const elbow = (s, h) => [(s[0] + h[0]) / 2 - 0.01, s[1] * 1.06, (s[2] + h[2]) / 2 - 0.025];
+    const e0 = elbow(sh0, h0), e1 = elbow(sh1, h1);
+    const tunic = o.team ? M.TEAM : M.CLOTH, hatted = o.hat !== false, weapon = o.weapon;
+    const perp = [wdir[2], 0, -wdir[0]];
+    // bow geometry (held in hand 1)
+    const bowPts = []; if (weapon === 'bow') for (let k = 0; k <= 4; k++) { const t = -1 + k / 2; bowPts.push([h1[0] + 0.05 * (1 - t * t) * (att !== null ? 1 : 0.6), h1[1], h1[2] + 0.17 * t]); }
+    return model([-0.3, -0.3, 0, 0.42, 0.3, 0.8], (x, y, z, mo) => {
+      x -= lean;
       let d = 1e9, m = M.CLOTH2, e;
       for (const L of legs) {
         e = cap(x, y, z, L.hip[0], L.hip[1], L.hip[2], L.knee[0], L.knee[1], L.knee[2], 0.034, 0.03); if (e < d) { d = e; m = M.CLOTH2; }
@@ -486,10 +522,10 @@
       e = rcone(x + 0.005, y, z - 0.25 - bob, 0.088, 0.078, 0.24); if (e < d) { d = e; m = tunic; }
       e = cylZ(x, y, z - 0.31 - bob, 0.09, 0.03); if (e < d) { d = e; m = M.LEATHER; }
       if (o.pack !== false) { e = box(x + 0.085, y, z - 0.42 - bob, 0.035, 0.065, 0.075, 0.02); if (e < d) { d = e; m = M.LEATHER; } }
-      for (const A of arms) {
-        e = cap(x, y, z, A.sh[0], A.sh[1], A.sh[2], A.el[0], A.el[1], A.el[2], 0.029, 0.026); if (e < d) { d = e; m = tunic; }
-        e = cap(x, y, z, A.el[0], A.el[1], A.el[2], A.hand[0], A.hand[1], A.hand[2], 0.025, 0.022); if (e < d) { d = e; m = tunic; }
-        e = sph(x - A.hand[0], y - A.hand[1], z - A.hand[2], 0.024); if (e < d) { d = e; m = M.SKIN; }
+      for (const [S0, E0, H0] of [[sh0, e0, h0], [sh1, e1, h1]]) {
+        e = cap(x, y, z, S0[0], S0[1], S0[2], E0[0], E0[1], E0[2], 0.029, 0.026); if (e < d) { d = e; m = tunic; }
+        e = cap(x, y, z, E0[0], E0[1], E0[2], H0[0], H0[1], H0[2], 0.025, 0.022); if (e < d) { d = e; m = tunic; }
+        e = sph(x - H0[0], y - H0[1], z - H0[2], 0.024); if (e < d) { d = e; m = M.SKIN; }
       }
       e = sph(x, y, z - 0.545 - bob, 0.056); if (e < d) { d = e; m = M.SKIN; }
       e = sph(x + 0.012, y, z - 0.56 - bob, 0.056); if (e < d) { d = e; m = M.HAIR; }
@@ -497,61 +533,269 @@
         e = cylZ(x, y, z - 0.585 - bob, 0.1, 0.012); if (e < d) { d = e; m = M.LEATHER; }
         e = rcone(x, y, z - 0.59 - bob, 0.056, 0.046, 0.05); if (e < d) { d = e; m = M.LEATHER; }
       }
-      if (o.lantern) { const h = arms[0].hand; e = box(x - h[0], y - h[1], z - h[2] + 0.06, 0.02, 0.02, 0.032, 0.006); if (e < d) { d = e; m = M.GLOW; } }
+      if (weapon === 'axe') {
+        e = cap(x, y, z, h0[0] - wdir[0] * 0.04, h0[1], h0[2] - wdir[2] * 0.04, h0[0] + wdir[0] * 0.24, h0[1], h0[2] + wdir[2] * 0.24, 0.012); if (e < d) { d = e; m = M.WOOD; }
+        const c = [h0[0] + wdir[0] * 0.2 + perp[0] * 0.03, h0[1], h0[2] + wdir[2] * 0.2 + perp[2] * 0.03];
+        e = obox(x - c[0], y - c[1], z - c[2], perp, [0, 1, 0], wdir, 0.042, 0.009, 0.03, 0.004); if (e < d) { d = e; m = M.ROCK; }
+      } else if (weapon === 'spear') {
+        e = cap(x, y, z, h0[0] - wdir[0] * 0.22, h0[1], h0[2] - wdir[2] * 0.22, h0[0] + wdir[0] * 0.42, h0[1], h0[2] + wdir[2] * 0.42, 0.01); if (e < d) { d = e; m = M.WOOD; }
+        e = cap(x, y, z, h0[0] + wdir[0] * 0.41, h0[1], h0[2] + wdir[2] * 0.41, h0[0] + wdir[0] * 0.5, h0[1], h0[2] + wdir[2] * 0.5, 0.018, 0.002); if (e < d) { d = e; m = M.ROCK; }
+      } else if (weapon === 'bow') {
+        for (let k = 0; k < 4; k++) { const a = bowPts[k], b = bowPts[k + 1]; e = cap(x, y, z, a[0], a[1], a[2], b[0], b[1], b[2], 0.009); if (e < d) { d = e; m = M.WOOD; } }
+        const top = bowPts[4], bot = bowPts[0], mid = pull || [h1[0], h1[1], h1[2]];
+        e = Math.min(cap(x, y, z, top[0], top[1], top[2], mid[0], mid[1], mid[2], 0.003), cap(x, y, z, mid[0], mid[1], mid[2], bot[0], bot[1], bot[2], 0.003)); if (e < d) { d = e; m = M.WOOL; }
+        if (pull) { e = cap(x, y, z, pull[0], pull[1], pull[2], h1[0] + 0.12, h1[1], pull[2], 0.005); if (e < d) { d = e; m = M.WOOD; } }
+      }
       mo.m = m; return d;
     }, { team: o.team, clothColor: o.cloth ? hexf(o.cloth) : null, cloth2Color: o.trousers ? hexf(o.trousers) : null, hairColor: o.hair ? hexf(o.hair) : null },
     (m, x, y, z, nx, ny, nz, ctx) => {
-      if (m === M.HAIR && !hatted && nx > 0.35 && z < 0.575) return shade(M.SKIN, x, y, z, nx, ny, nz, ctx); // face of hatless villagers
+      if (m === M.HAIR && !hatted && nx > 0.35 && z < 0.575) return shade(M.SKIN, x, y, z, nx, ny, nz, ctx);
       if (m === M.HAIR && hatted && nx > 0.2) return shade(M.SKIN, x, y, z, nx, ny, nz, ctx);
       return shade(m, x, y, z, nx, ny, nz, ctx);
     });
   }
-  function quadruped(phase, kind) {
-    const deer = kind === 'deer', walk = phase !== null, ph = walk ? phase : 0, graze = !walk;
-    const bz = deer ? 0.34 : 0.24, bx = deer ? 0.19 : 0.15, legX = deer ? 0.12 : 0.09;
-    const legs = [[legX, 0.045, 0], [legX, -0.045, Math.PI], [-legX, 0.045, Math.PI], [-legX, -0.045, 0]].map(([lx, ly, off]) => {
-      const s = walk ? Math.sin(ph + off) * 0.07 : 0, lift = walk ? Math.max(0, Math.cos(ph + off)) * 0.035 : 0;
-      return { top: [lx, ly, bz - 0.03], knee: [lx + s * 0.5, ly, bz * 0.5 + lift], hoof: [lx + s, ly, 0.012 + lift] };
+
+  // The Hollow: an original night creature — a gaunt, ash-skinned husk with long arms and pale glowing eyes.
+  function hollow(phase, o = {}) {
+    const walk = phase !== null && phase !== undefined, ph = walk ? phase : 0, att = o.attack == null ? null : o.attack;
+    const sw = walk ? Math.sin(ph) : 0, bob = walk ? Math.abs(Math.sin(ph)) * 0.015 : 0, hunch = 0.09;
+    const legs = [[0.05, sw], [-0.05, -sw]].map(([ly, s]) => {
+      const fx = s * 0.1, lift = walk ? Math.max(0, Math.cos(ph + (ly > 0 ? 0 : Math.PI))) * 0.04 : 0;
+      return { hip: [0, ly, 0.34 + bob], knee: [fx * 0.5 + 0.05, ly * 1.2, 0.19 + lift * 0.6], foot: [fx, ly, 0.03 + lift] };
     });
-    const neckTop = deer ? (graze ? [0.3, 0, 0.16] : [0.25, 0, 0.53]) : (graze ? [0.24, 0, 0.12] : [0.22, 0, 0.32]);
-    const head = deer ? (graze ? [0.33, 0, 0.1] : [0.29, 0, 0.55]) : (graze ? [0.27, 0, 0.08] : [0.25, 0, 0.32]);
-    return model([-0.34, -0.34, 0, 0.34, 0.34, deer ? 0.78 : 0.45], (x, y, z, mo) => {
-      let d, m, e;
-      if (deer) { d = ell(x, y, z - bz, bx, 0.075, 0.085); d = smin(d, ell(x - 0.11, y, z - bz - 0.01, 0.09, 0.07, 0.09), 0.05); m = M.FUR; }
-      else { d = ell(x, y, z - bz, bx, 0.1, 0.1); if (d < 0.05) d += (noise3(x * 30, y * 30, z * 30, 3) - 0.5) * 0.03; m = M.WOOL; }
-      e = cap(x, y, z, bx * 0.75, 0, bz + 0.02, neckTop[0], neckTop[1], neckTop[2], deer ? 0.035 : 0.04, deer ? 0.028 : 0.035); if (e < d) { d = e; m = deer ? M.FUR : M.WOOL; }
-      const hx = x - head[0], hz = z - head[2];
-      e = deer ? ell(hx, y, hz, 0.055, 0.03, 0.032) : ell(hx, y, hz, 0.055, 0.032, 0.036); if (e < d) { d = e; m = deer ? M.FUR : M.FURDARK; }
-      e = ell(hx - 0.045, y, hz - 0.012, 0.03, 0.02, 0.02); if (e < d) { d = e; m = deer ? M.FURDARK : M.FURDARK; }
-      e = Math.min(ell(hx + 0.01, y - 0.035, hz + (deer ? 0.04 : 0.0), 0.012, 0.025, 0.012), ell(hx + 0.01, y + 0.035, hz + (deer ? 0.04 : 0.0), 0.012, 0.025, 0.012)); if (e < d) { d = e; m = deer ? M.FUR : M.FURDARK; }
-      if (deer) {
-        for (const sy of [-1, 1]) {
-          const a = [head[0] - 0.01, sy * 0.02, head[2] + 0.03], b = [head[0] - 0.04, sy * 0.07, head[2] + 0.15], c = [head[0] - 0.08, sy * 0.06, head[2] + 0.22];
-          e = Math.min(cap(x, y, z, a[0], a[1], a[2], b[0], b[1], b[2], 0.008), cap(x, y, z, b[0], b[1], b[2], c[0], c[1], c[2], 0.007), cap(x, y, z, b[0], b[1], b[2], b[0] + 0.05, b[1] + sy * 0.02, b[2] + 0.06, 0.006));
-          if (e < d) { d = e; m = M.WOOD; }
-        }
-        e = ell(x + bx + 0.01, y, z - bz - 0.04, 0.025, 0.02, 0.035); if (e < d) { d = e; m = M.WOOL; }
-      }
+    const neck = [hunch + 0.05, 0, 0.62 + bob], head = [hunch + 0.1, 0, 0.66 + bob];
+    const arms = [0.12, -0.12].map((ay, k) => {
+      const sh = [hunch * 0.7, ay, 0.56 + bob];
+      let hand = [hunch + 0.06 + (k ? sw : -sw) * 0.08, ay * 1.25, 0.2 + bob];
+      if (att !== null) { const th = (att < 0.4 ? 30 + 90 * (att / 0.4) : 120 - 170 * ((att - 0.4) / 0.6)) * deg; hand = [sh[0] + 0.32 * Math.cos(th) * (k ? 0.92 : 1), ay * 0.9, sh[2] + 0.32 * Math.sin(th)]; }
+      return { sh, el: [(sh[0] + hand[0]) / 2 - 0.03, ay * 1.2, (sh[2] + hand[2]) / 2 - 0.02], hand };
+    });
+    return model([-0.35, -0.35, 0, 0.5, 0.35, 0.9], (x, y, z, mo) => {
+      let d = 1e9, m = M.HOLLOW, e;
       for (const L of legs) {
-        e = cap(x, y, z, L.top[0], L.top[1], L.top[2], L.knee[0], L.knee[1], L.knee[2], deer ? 0.024 : 0.022, 0.016); if (e < d) { d = e; m = deer ? M.FUR : M.FURDARK; }
-        e = cap(x, y, z, L.knee[0], L.knee[1], L.knee[2], L.hoof[0], L.hoof[1], L.hoof[2], 0.014, 0.011); if (e < d) { d = e; m = M.FURDARK; }
+        e = cap(x, y, z, L.hip[0], L.hip[1], L.hip[2], L.knee[0], L.knee[1], L.knee[2], 0.03, 0.022); if (e < d) d = e;
+        e = cap(x, y, z, L.knee[0], L.knee[1], L.knee[2], L.foot[0], L.foot[1], L.foot[2], 0.022, 0.016); if (e < d) d = e;
+      }
+      e = cap(x, y, z, 0, 0, 0.32 + bob, hunch, 0, 0.58 + bob, 0.07, 0.085); if (e < d) d = e;     // spine/torso
+      e = ell(x - hunch * 0.6, y, z - 0.47 - bob, 0.07, 0.11, 0.08); d = smin(d, e, 0.04);          // ribcage
+      e = cap(x, y, z, hunch * 0.8, 0, 0.58 + bob, neck[0], 0, neck[2], 0.03); if (e < d) d = e;
+      e = ell(x - head[0], y, z - head[2], 0.06, 0.045, 0.055); if (e < d) d = e;
+      e = ell(x - head[0] - 0.045, y, z - head[2] + 0.025, 0.035, 0.03, 0.025); d = smin(d, e, 0.02);   // jaw
+      for (const A of arms) {
+        e = cap(x, y, z, A.sh[0], A.sh[1], A.sh[2], A.el[0], A.el[1], A.el[2], 0.024, 0.018); if (e < d) { d = e; m = M.HOLLOW; }
+        e = cap(x, y, z, A.el[0], A.el[1], A.el[2], A.hand[0], A.hand[1], A.hand[2], 0.018, 0.013); if (e < d) { d = e; m = M.HOLLOW; }
+        for (let c = -1; c <= 1; c++) { e = cap(x, y, z, A.hand[0], A.hand[1], A.hand[2], A.hand[0] + 0.05, A.hand[1] + c * 0.012, A.hand[2] - 0.06, 0.006, 0.002); if (e < d) { d = e; m = M.DARK; } }
+      }
+      for (const ey of [-0.022, 0.022]) { e = sph(x - head[0] - 0.05, y - ey, z - head[2] - 0.01, 0.013); if (e < d) { d = e; m = M.SPIRIT; } }
+      mo.m = m; return d;
+    });
+  }
+
+  const QUAD = {
+    deer: { bz: 0.34, ax: 0.19, ay: 0.075, az: 0.085, legX: 0.12, legR: 0.024, neck: [0.25, 0, 0.53], head: [0.29, 0, 0.55], hr: [0.055, 0.03, 0.032], body: 'FUR', graze: true, antlers: true, tail: 'short' },
+    sheep: { bz: 0.24, ax: 0.15, ay: 0.1, az: 0.1, legX: 0.09, legR: 0.022, neck: [0.22, 0, 0.32], head: [0.25, 0, 0.32], hr: [0.055, 0.032, 0.036], body: 'WOOL', graze: true, headM: 'FURDARK' },
+    wolf: { bz: 0.29, ax: 0.2, ay: 0.065, az: 0.075, legX: 0.13, legR: 0.022, neck: [0.24, 0, 0.38], head: [0.27, 0, 0.4], hr: [0.06, 0.042, 0.042], body: 'WOLF', snout: [0.075, 0.024, 0.022], ears: true, tail: 'bushy' },
+    boar: { bz: 0.21, ax: 0.2, ay: 0.1, az: 0.11, legX: 0.11, legR: 0.026, neck: [0.18, 0, 0.23], head: [0.25, 0, 0.19], hr: [0.08, 0.06, 0.065], body: 'BOAR', snout: [0.08, 0.035, 0.035], tusks: true, ears: true, tail: 'short' },
+  };
+  function quadruped(phase, kind, o = {}) {
+    const K = QUAD[kind], walk = phase !== null && phase !== undefined, ph = walk ? phase : 0, att = o.attack == null ? null : o.attack;
+    const graze = !walk && att === null && K.graze, lunge = att === null ? 0 : Math.sin(Math.PI * att);
+    const bz = K.bz, bx = K.ax, bodyM = M[K.body], headM = K.headM ? M[K.headM] : bodyM;
+    const ox = lunge * 0.06;
+    const legs = [[K.legX, 0.045, 0], [K.legX, -0.045, Math.PI], [-K.legX, 0.045, Math.PI], [-K.legX, -0.045, 0]].map(([lx, ly, off], n) => {
+      const s = walk ? Math.sin(ph + off) * 0.07 : 0, lift = walk ? Math.max(0, Math.cos(ph + off)) * 0.035 : (n < 2 ? lunge * 0.05 : 0);
+      return { top: [lx + (n < 2 ? ox : ox * 0.5), ly, bz - 0.03], knee: [lx + s * 0.5 + (n < 2 ? ox : 0), ly, bz * 0.5 + lift], hoof: [lx + s + (n < 2 ? ox * 1.2 : 0), ly, 0.012 + lift] };
+    });
+    let neckTop = K.neck.slice(), head = K.head.slice();
+    if (graze) { neckTop = [K.neck[0] + 0.05, 0, 0.14]; head = [K.head[0] + 0.05, 0, 0.09]; }
+    if (lunge) { neckTop[0] += ox + 0.04 * lunge; head[0] += ox + 0.07 * lunge; head[2] -= 0.04 * lunge; neckTop[2] -= 0.02 * lunge; }
+    return model([-0.36, -0.34, 0, 0.5, 0.34, kind === 'deer' ? 0.8 : 0.55], (x, y, z, mo) => {
+      let d, m = bodyM, e;
+      const xb = x - ox;
+      d = ell(xb, y, z - bz, bx, K.ay, K.az);
+      if (kind === 'deer') d = smin(d, ell(xb - 0.11, y, z - bz - 0.01, 0.09, 0.07, 0.09), 0.05);
+      if (kind === 'boar') d = smin(d, ell(xb - 0.09, y, z - bz - 0.03, 0.11, 0.09, 0.1), 0.06);
+      if (kind === 'wolf') d = smin(d, ell(xb - 0.1, y, z - bz - 0.005, 0.09, 0.07, 0.085), 0.05);
+      if ((kind === 'sheep' || kind === 'boar') && d < 0.05) d += (noise3(x * 30, y * 30, z * 30, 3) - 0.5) * (kind === 'sheep' ? 0.03 : 0.012);
+      e = cap(x, y, z, bx * 0.75 + ox, 0, bz + 0.02, neckTop[0], 0, neckTop[2], 0.04, 0.032); if (e < d) { d = e; m = bodyM; }
+      const hx = x - head[0], hz = z - head[2];
+      e = ell(hx, y, hz, K.hr[0], K.hr[1], K.hr[2]); if (e < d) { d = e; m = headM; }
+      if (K.snout) { e = ell(hx - K.hr[0] * 0.9, y, hz - 0.012, K.snout[0], K.snout[1], K.snout[2]); d = smin(d, e, 0.02); if (e < 0.003) m = kind === 'boar' ? M.FURDARK : headM; }
+      else { e = ell(hx - 0.045, y, hz - 0.012, 0.03, 0.02, 0.02); if (e < d) { d = e; m = M.FURDARK; } }
+      if (K.ears) for (const sy of [-1, 1]) { e = cap(x, y, z, head[0] - 0.02, sy * 0.03, head[2] + 0.03, head[0] - 0.03, sy * 0.04, head[2] + 0.075, 0.016, 0.003); if (e < d) { d = e; m = headM; } }
+      else { e = Math.min(ell(hx + 0.01, y - 0.035, hz + (kind === 'deer' ? 0.04 : 0), 0.012, 0.025, 0.012), ell(hx + 0.01, y + 0.035, hz + (kind === 'deer' ? 0.04 : 0), 0.012, 0.025, 0.012)); if (e < d) { d = e; m = headM; } }
+      if (K.tusks) for (const sy of [-1, 1]) { e = cap(x, y, z, head[0] + 0.1, sy * 0.03, head[2] - 0.03, head[0] + 0.12, sy * 0.045, head[2] + 0.02, 0.008, 0.002); if (e < d) { d = e; m = M.WOOL; } }
+      if (K.antlers) for (const sy of [-1, 1]) {
+        const a = [head[0] - 0.01, sy * 0.02, head[2] + 0.03], b = [head[0] - 0.04, sy * 0.07, head[2] + 0.15], c = [head[0] - 0.08, sy * 0.06, head[2] + 0.22];
+        e = Math.min(cap(x, y, z, a[0], a[1], a[2], b[0], b[1], b[2], 0.008), cap(x, y, z, b[0], b[1], b[2], c[0], c[1], c[2], 0.007), cap(x, y, z, b[0], b[1], b[2], b[0] + 0.05, b[1] + sy * 0.02, b[2] + 0.06, 0.006));
+        if (e < d) { d = e; m = M.WOOD; }
+      }
+      if (K.tail === 'short') { e = ell(xb + bx + 0.01, y, z - bz - 0.04, 0.025, 0.02, 0.035); if (e < d) { d = e; m = kind === 'deer' ? M.WOOL : bodyM; } }
+      if (K.tail === 'bushy') { e = cap(x, y, z, -bx + ox, 0, bz + 0.03, -bx - 0.13 + ox, 0, bz - 0.09 + lunge * 0.05, 0.035, 0.022); if (e < d) { d = e; m = bodyM; } }
+      for (const L of legs) {
+        e = cap(x, y, z, L.top[0], L.top[1], L.top[2], L.knee[0], L.knee[1], L.knee[2], K.legR, K.legR * 0.68); if (e < d) { d = e; m = kind === 'sheep' ? M.FURDARK : bodyM; }
+        e = cap(x, y, z, L.knee[0], L.knee[1], L.knee[2], L.hoof[0], L.hoof[1], L.hoof[2], K.legR * 0.6, K.legR * 0.48); if (e < d) { d = e; m = kind === 'wolf' ? bodyM : M.FURDARK; }
       }
       mo.m = m; return d;
     });
   }
 
+  // ---------------------------------------------------------------- wrappers
+  function scaled(mo, s) {
+    const w = { bounds: mo.bounds.map(v => v * s), m: 0 };
+    w.sdf = (x, y, z) => { const d = mo.sdf(x / s, y / s, z / s) * s; w.m = mo.m; return d; };
+    w.mat = (m, x, y, z, nx, ny, nz) => mo.mat(m, x / s, y / s, z / s, nx, ny, nz);
+    return w;
+  }
+  // lying on its side: model z axis -> world +y, model y axis -> world -z (lift = half body width)
+  function fallen(mo, lift, len) {
+    const b = mo.bounds, w = { bounds: [b[0], -0.12, 0, b[3], len, lift * 2 + 0.12], m: 0 };
+    w.sdf = (x, y, z) => { const d = mo.sdf(x, lift - z, y); w.m = mo.m; return d; };
+    w.mat = (m, x, y, z, nx, ny, nz) => mo.mat(m, x, lift - z, y, nx, -nz, ny);
+    return w;
+  }
+
+  // ================================================================ SURVIVAL STRUCTURES
+  function stump(seed) {
+    return model([-0.25, -0.25, 0, 0.25, 0.25, 0.25], (x, y, z, mo) => {
+      let d = rcone(x, y, z, 0.1, 0.085, 0.13); d = smin(d, ell(x, y, z - 0.01, 0.15, 0.15, 0.04), 0.04);
+      if (d < 0.02) d += (noise3(x * 30, y * 30, z * 10, seed) - 0.5) * 0.01;
+      mo.m = z > 0.125 ? M.WOOD : M.BARK; return d;
+    }, { woodColor: hexf('#c9a46a') }, (m, x, y, z, nx, ny, nz, ctx) => {
+      if (m === M.WOOD && nz > 0.6) { const r = Math.hypot(x, y); return set(hexf('#c9a46a'), frac(r * 45) < 0.25 ? 0.78 : 1); }
+      return shade(m, x, y, z, nx, ny, nz, ctx);
+    });
+  }
+  function leanTo() {
+    const rl = Math.hypot(0.9, 0.74), u = [0, 0.9 / rl, -0.74 / rl], n = [0, 0.74 / rl, 0.9 / rl];
+    return model([-0.85, -0.85, 0, 0.85, 0.85, 1.0], (x, y, z, mo) => {
+      let d = 1e9, m = M.BARK, e;
+      for (const px of [-0.62, 0.62]) { e = cap(x, y, z, px, -0.36, 0, px, -0.36, 0.84, 0.035); if (e < d) d = e; e = cap(x, y, z, px, -0.36, 0.72, px + 0.05, -0.36, 0.9, 0.02); if (e < d) d = e; }
+      e = cap(x, y, z, -0.76, -0.36, 0.78, 0.76, -0.36, 0.78, 0.035); if (e < d) d = e;
+      for (let k = 0; k < 8; k++) { const px = -0.56 + k * 0.16; e = cap(x, y, z, px, -0.36, 0.78, px, 0.54, 0.04, 0.042); if (e < d) d = e; }
+      const rx = x, ry = y + 0.36, rz = z - 0.78, al = ry * u[1] + rz * u[2], hn = ry * n[1] + rz * n[2];
+      let leaf = box(rx, al - rl / 2, hn - 0.05, 0.66, rl / 2 - 0.02, 0.025);
+      if (leaf < 0.06) leaf += noise3(x * 6, y * 6, z * 6, 4) > 0.62 ? 0.06 : (noise3(x * 20, y * 20, z * 20, 2) - 0.5) * 0.03;
+      if (leaf < d) { d = leaf; m = M.LEAF; }
+      e = ell(x, y + 0.1, z - 0.04, 0.36, 0.13, 0.04); if (e < d) { d = e; m = M.CLOTH; }
+      mo.m = m; return d;
+    }, { leafColor: mixc(C.leaf, C.dryGrass, 0.35), clothColor: hexf('#7a5a48') });
+  }
+  function palisade(seed) {
+    const R = rng(seed), st = [];
+    for (const a of [-0.32, 0, 0.32]) for (const b of [-0.32, 0, 0.32]) st.push([a + (R() - 0.5) * 0.05, b + (R() - 0.5) * 0.05, 0.78 + R() * 0.16, 0.1 + R() * 0.015]);
+    return model([-0.5, -0.5, 0, 0.5, 0.5, 1.15], (x, y, z, mo) => {
+      let d = 1e9, m = M.BARK;
+      for (const s of st) { const lx = x - s[0], ly = y - s[1]; let e = Math.min(cylZ(lx, ly, z, s[3], s[2]), cone(lx, ly, z - s[2], s[3], 0.2)); if (e < d) { d = e; m = z > s[2] ? M.WOOD : M.BARK; } }
+      if (d < 0.001 && Math.abs(z - 0.55) < 0.02) m = M.THATCH;
+      mo.m = m; return d;
+    }, { woodColor: hexf('#c9a46a') });
+  }
+  function spikeTrap() {
+    const sp = []; for (let k = 0; k < 10; k++) { const a = k / 10 * Math.PI * 2; sp.push([Math.cos(a) * 0.12, Math.sin(a) * 0.12, Math.cos(a) * 0.36, Math.sin(a) * 0.36]); }
+    return model([-0.45, -0.45, 0, 0.45, 0.45, 0.4], (x, y, z, mo) => {
+      let d = 1e9, m = M.BARK, e;
+      for (const s of [[-0.3, -0.3, 0.3, -0.3], [0.3, -0.3, 0.3, 0.3], [0.3, 0.3, -0.3, 0.3], [-0.3, 0.3, -0.3, -0.3]]) { e = cap(x, y, z, s[0], s[1], 0.04, s[2], s[3], 0.04, 0.04); if (e < d) d = e; }
+      for (const s of sp) { e = cap(x, y, z, s[0], s[1], 0.04, s[2], s[3], 0.3, 0.022, 0.002); if (e < d) { d = e; m = z > 0.22 ? M.WOOD : M.BARK; } }
+      mo.m = m; return d;
+    }, { woodColor: hexf('#c9a46a') });
+  }
+  function crate() {
+    return model([-0.4, -0.4, 0, 0.4, 0.4, 0.55], (x, y, z, mo) => {
+      const d = box(x, y, z - 0.22, 0.3, 0.24, 0.22, 0.012); mo.m = M.WOOD; return d;
+    }, {}, (m, x, y, z, nx, ny, nz, ctx) => {
+      if (Math.abs(x) > 0.265 || Math.abs(y) > 0.205 || z > 0.4 || z < 0.04) return shade(M.TIMBER, x, y, z, nx, ny, nz, ctx);
+      return shade(M.WOOD, x, y, z, nx, ny, nz, ctx);
+    });
+  }
+  function rainCollector() {
+    return model([-0.42, -0.42, 0, 0.42, 0.42, 0.75], (x, y, z, mo) => {
+      let d = 1e9, m = M.WOOD, e;
+      for (let k = 0; k < 3; k++) { const a = k * 2.094 + 0.5; e = cap(x, y, z, Math.cos(a) * 0.2, Math.sin(a) * 0.2, 0.12, Math.cos(a) * 0.26, Math.sin(a) * 0.26, 0, 0.022); if (e < d) { d = e; m = M.TIMBER; } }
+      e = cylZ(x, y, z - 0.1, 0.19, 0.38); if (e < d) { d = e; m = Math.abs(z - 0.18) < 0.02 || Math.abs(z - 0.4) < 0.02 ? M.METAL : M.WOOD; }
+      e = Math.abs(rcone(x, y, z - 0.47, 0.05, 0.33, 0.18)) - 0.008; if (e < d) { d = e; m = M.LEATHER; }
+      mo.m = m; return d;
+    });
+  }
+  function standingTorch(frame) {
+    const ph = frame / 4 * Math.PI * 2;
+    return model([-0.2, -0.2, 0, 0.2, 0.2, 1.25], (x, y, z, mo) => {
+      let d = cap(x, y, z, 0, 0, 0, 0, 0, 0.86, 0.025), m = M.WOOD, e;
+      e = Math.max(ell(x, y, z - 0.9, 0.07, 0.07, 0.06), -(z - 0.92)); if (e < d) { d = e; m = M.DARK; }
+      e = rcone(x - 0.01 * Math.sin(ph), y, z - 0.9, 0.06, 0.004, 0.22 + 0.04 * Math.sin(ph * 2)); if (e < 0.04) e += (noise3(x * 18, y * 18, z * 10 - ph, 2) - 0.5) * 0.04;
+      if (e < d) { d = e; m = M.FIRE2; }
+      mo.m = m; return d;
+    }, { fireZ: 0.9, fireH: 0.26 });
+  }
+  function campfireOut() {
+    const st = []; for (let k = 0; k < 9; k++) { const a = k / 9 * Math.PI * 2; st.push([Math.cos(a) * 0.2, Math.sin(a) * 0.2]); }
+    return model([-0.3, -0.3, 0, 0.3, 0.3, 0.25], (x, y, z, mo) => {
+      let d = 1e9, m = M.ROCK, e;
+      for (const s of st) { e = sph(x - s[0], y - s[1], z - 0.025, 0.055); if (e < d) { d = e; m = M.ROCK; } }
+      for (let k = 0; k < 3; k++) { const a = k * 2.1 + 0.4; e = cap(x, y, z, Math.cos(a) * 0.15, Math.sin(a) * 0.15, 0.03, -Math.cos(a) * 0.04, -Math.sin(a) * 0.04, 0.08, 0.028); if (e < d) { d = e; m = M.DARK; } }
+      mo.m = m; return d;
+    });
+  }
+  function beacon(lit, frame = 0) {
+    const ph = frame / 6 * Math.PI * 2;
+    return model([-1.0, -1.0, 0, 1.0, 1.0, lit ? 2.3 : 1.3], (x, y, z, mo) => {
+      let d = box(x, y, z - 0.1, 0.8, 0.8, 0.1, 0.02), m = M.STONE, e;
+      for (let k = 0; k < 5; k++) {
+        const zz = 0.27 + k * 0.13, s = 0.62 - k * 0.06;
+        for (const o of [-s * 0.7, s * 0.7]) { e = k % 2 ? cap(x, y, z, o, -s, zz, o, s, zz, 0.07) : cap(x, y, z, -s, o, zz, s, o, zz, 0.07); if (e < d) { d = e; m = M.BARK; } }
+      }
+      e = ell(x, y, z - 0.92, 0.36, 0.36, 0.2); if (e < 0.05) e += (noise3(x * 14, y * 14, z * 14, 3) - 0.5) * 0.06; if (e < d) { d = e; m = lit ? M.DARK : M.THATCH; }
+      if (lit) for (let k = 0; k < 4; k++) {
+        const a = k * 1.57 + ph * 0.3, ox = k ? Math.cos(a) * 0.16 : 0, oy = k ? Math.sin(a) * 0.16 : 0, h = (k ? 0.6 : 1.1) + 0.12 * Math.sin(ph + k * 1.7);
+        e = rcone(x - ox, y - oy, z - 0.95, k ? 0.16 : 0.24, 0.01, h); if (e < 0.1) e += (noise3(x * 8, y * 8, z * 6 - ph, k) - 0.5) * 0.1;
+        if (e < d) { d = e; m = M.FIRE2; }
+      }
+      mo.m = m; return d;
+    }, { fireZ: 0.95, fireH: 1.1 });
+  }
+
+  // ================================================================ ITEM ICONS (rendered at 3x scale, body only)
+  function icon(kind) {
+    const S0 = (b, f, ctx, mf) => model(b, f, ctx, mf);
+    switch (kind) {
+      case 'log': return S0([-0.25, -0.12, 0, 0.25, 0.12, 0.18], (x, y, z, mo) => { const d = Math.max(Math.hypot(y, z - 0.08) - 0.075, Math.abs(x) - 0.2); mo.m = Math.abs(x) > 0.195 ? M.WOOD : M.BARK; return d; }, { woodColor: hexf('#c9a46a') });
+      case 'stick': return S0([-0.25, -0.12, 0, 0.25, 0.12, 0.12], (x, y, z, mo) => { mo.m = M.BARK; return Math.min(cap(x, y, z, -0.2, -0.05, 0.03, 0.2, 0.05, 0.03, 0.018), cap(x, y, z, 0.02, 0.005, 0.03, 0.1, -0.07, 0.04, 0.01)); });
+      case 'stone': return S0([-0.2, -0.2, 0, 0.2, 0.2, 0.2], (x, y, z, mo) => { mo.m = M.ROCK; let d = ell(x, y, z - 0.07, 0.13, 0.1, 0.08); if (d < 0.05) d += (noise3(x * 9, y * 9, z * 9, 2) - 0.5) * 0.04; return d; });
+      case 'fiber': return S0([-0.2, -0.2, 0, 0.2, 0.2, 0.15], (x, y, z, mo) => { let d = 1e9; for (let k = -3; k <= 3; k++) d = Math.min(d, cap(x, y, z, -0.17, k * 0.012, 0.03 + Math.abs(k) * 0.004, 0.17, k * 0.025, 0.03, 0.008)); const t = Math.max(Math.abs(x) - 0.02, Math.hypot(y, z - 0.03) - 0.04); mo.m = t < d ? M.LEATHER : M.LEAF; return Math.min(d, t); }, { leafColor: C.dryGrass });
+      case 'rope': return S0([-0.2, -0.2, 0, 0.2, 0.2, 0.12], (x, y, z, mo) => { mo.m = M.THATCH; let best = 1e9; for (let k = 0; k < 3; k++) best = Math.min(best, Math.hypot(Math.hypot(x, y) - 0.1, z - 0.03 - k * 0.025) - 0.022); return best; });
+      case 'berries': return S0([-0.2, -0.2, 0, 0.2, 0.2, 0.15], (x, y, z, mo) => { let d = 1e9, m = M.BERRY; const P = [[0, 0], [0.05, 0.03], [-0.04, 0.04], [0.02, -0.05], [-0.05, -0.02], [0.06, -0.03]]; P.forEach((p, k) => { const e = sph(x - p[0], y - p[1], z - 0.035 - (k ? 0 : 0.03), 0.033); if (e < d) d = e; }); const l = ell(x + 0.02, y - 0.07, z - 0.02, 0.05, 0.025, 0.006); if (l < d) { d = l; m = M.LEAF; } mo.m = m; return d; });
+      case 'meat_raw': case 'meat_cooked': return S0([-0.2, -0.2, 0, 0.2, 0.2, 0.15], (x, y, z, mo) => { let d = ell(x + 0.02, y, z - 0.05, 0.12, 0.09, 0.05), m = kind === 'meat_raw' ? M.MEAT : M.MEATCOOKED; const b = cap(x, y, z, 0.08, 0, 0.05, 0.17, 0, 0.06, 0.018); if (b < d) { d = b; m = M.WOOL; } mo.m = m; return d; });
+      case 'hide': return S0([-0.24, -0.24, 0, 0.24, 0.24, 0.08], (x, y, z, mo) => { mo.m = M.FUR; const a = Math.atan2(y, x), r = 0.17 + 0.03 * Math.sin(a * 5); return Math.max(Math.hypot(x, y * 1.3) - r, Math.abs(z - 0.015) - 0.012); });
+      case 'cloth': return S0([-0.2, -0.2, 0, 0.2, 0.2, 0.15], (x, y, z, mo) => { mo.m = M.CLOTH; return Math.min(box(x, y, z - 0.02, 0.14, 0.11, 0.02, 0.01), box(x + 0.01, y - 0.01, z - 0.06, 0.13, 0.1, 0.018, 0.01)); }, { clothColor: hexf('#c8b89a') });
+      case 'herb': return S0([-0.2, -0.2, 0, 0.2, 0.2, 0.2], (x, y, z, mo) => { let d = cap(x, y, z, -0.1, 0, 0.02, 0.1, 0, 0.04, 0.008); for (let k = 0; k < 5; k++) { const px = -0.06 + k * 0.04, s = k % 2 ? 1 : -1; d = Math.min(d, ell(x - px, y - s * 0.045, z - 0.04, 0.03, 0.045, 0.008)); } mo.m = M.LEAF; return d; }, { leafColor: hexf('#5fae4a') });
+      case 'relic': return S0([-0.2, -0.2, 0, 0.2, 0.2, 0.3], (x, y, z, mo) => { let d = 1e9, m = M.GOLD, e; for (const sx of [-0.05, 0.05]) for (const sy of [-0.05, 0.05]) { e = box(x - sx, y - sy, z - 0.1, 0.008, 0.008, 0.08); if (e < d) d = e; } e = box(x, y, z - 0.02, 0.07, 0.07, 0.015, 0.004); if (e < d) d = e; e = rcone(x, y, z - 0.18, 0.075, 0.005, 0.1); if (e < d) d = e; e = sph(x, y, z - 0.1, 0.045); if (e < d) { d = e; m = M.GLOW; } mo.m = m; return d; });
+      case 'arrow': return S0([-0.25, -0.12, 0, 0.25, 0.12, 0.1], (x, y, z, mo) => { let d = cap(x, y, z, -0.2, -0.04, 0.03, 0.17, 0.035, 0.03, 0.007), m = M.WOOD; const t = cap(x, y, z, 0.16, 0.032, 0.03, 0.22, 0.044, 0.03, 0.016, 0.002); if (t < d) { d = t; m = M.ROCK; } const f = ell(x + 0.17, y + 0.035, z - 0.03, 0.04, 0.012, 0.025); if (f < d) { d = f; m = M.WOOL; } mo.m = m; return d; });
+      case 'axe': return S0([-0.25, -0.15, 0, 0.25, 0.15, 0.12], (x, y, z, mo) => { let d = cap(x, y, z, -0.2, 0, 0.03, 0.15, 0, 0.03, 0.016), m = M.WOOD; const h = box(x - 0.14, y - 0.05, z - 0.03, 0.035, 0.06, 0.014, 0.006); if (h < d) { d = h; m = M.ROCK; } mo.m = m; return d; });
+      case 'spear': return S0([-0.3, -0.12, 0, 0.3, 0.12, 0.1], (x, y, z, mo) => { let d = cap(x, y, z, -0.26, -0.05, 0.03, 0.18, 0.035, 0.03, 0.011), m = M.WOOD; const t = cap(x, y, z, 0.17, 0.033, 0.03, 0.27, 0.053, 0.03, 0.026, 0.002); if (t < d) { d = t; m = M.ROCK; } mo.m = m; return d; });
+      case 'bow': return S0([-0.25, -0.25, 0, 0.25, 0.25, 0.08], (x, y, z, mo) => { let d = 1e9, m = M.WOOD; const P = []; for (let k = 0; k <= 6; k++) { const t = -1 + k / 3; P.push([0.08 * (1 - t * t) - 0.04, 0.22 * t]); } for (let k = 0; k < 6; k++) d = Math.min(d, cap(x, y, z, P[k][0], P[k][1], 0.02, P[k + 1][0], P[k + 1][1], 0.02, 0.013)); const s = cap(x, y, z, -0.04, -0.22, 0.02, -0.04, 0.22, 0.02, 0.004); if (s < d) { d = s; m = M.WOOL; } mo.m = m; return d; });
+      case 'torch': return S0([-0.25, -0.15, 0, 0.25, 0.15, 0.2], (x, y, z, mo) => { let d = cap(x, y, z, -0.2, 0, 0.03, 0.1, 0, 0.05, 0.018), m = M.WOOD; const h = ell(x - 0.14, y, z - 0.07, 0.06, 0.045, 0.045); if (h < d) { d = h; m = M.FIRE2; } mo.m = m; return d; }, { fireZ: 0.0, fireH: 0.14 });
+      case 'salve': return S0([-0.2, -0.2, 0, 0.2, 0.2, 0.15], (x, y, z, mo) => { let d = Math.max(Math.abs(Math.hypot(x, y) - 0.1) - 0.015, z - 0.08, -z), m = M.WOOD; d = Math.min(d, cylZ(x, y, z, 0.1, 0.02)); const p = cylZ(x, y, z - 0.02, 0.09, 0.05); if (p < d) { d = p; m = M.LEAF; } mo.m = m; return d; }, { leafColor: hexf('#6fb85a') });
+      case 'bandage': return S0([-0.2, -0.2, 0, 0.2, 0.2, 0.2], (x, y, z, mo) => { mo.m = M.CLOTH; return Math.max(Math.hypot(y, z - 0.08) - 0.07, Math.abs(x) - 0.09); }, { clothColor: hexf('#e6dccb') });
+      case 'waterskin': return S0([-0.2, -0.2, 0, 0.2, 0.2, 0.25], (x, y, z, mo) => { let d = ell(x, y, z - 0.08, 0.1, 0.08, 0.08), m = M.LEATHER; d = smin(d, cap(x, y, z, 0.05, 0, 0.12, 0.1, 0, 0.19, 0.022), 0.02); const c = cylZ(x - 0.1, y, z - 0.18, 0.025, 0.03); if (c < d) { d = c; m = M.WOOD; } mo.m = m; return d; });
+      case 'armor': return S0([-0.22, -0.22, 0, 0.22, 0.22, 0.12], (x, y, z, mo) => { let d = box(x, y, z - 0.03, 0.12, 0.15, 0.025, 0.02), m = M.LEATHER; d = Math.max(d, -box(x - 0.13, y, z, 0.05, 0.06, 0.1)); const st = box(x + 0.02, y, z - 0.06, 0.012, 0.15, 0.006); if (st < d) { d = st; m = M.METAL; } mo.m = m; return d; });
+      default: return S0([-0.1, -0.1, 0, 0.1, 0.1, 0.1], (x, y, z, mo) => { mo.m = M.DARK; return sph(x, y, z - 0.05, 0.05); });
+    }
+  }
+
   root.MODELS = {
-    M, shade,
+    M, shade, scaled, fallen, icon,
     oak, pine, palm, deadTree, bush, boulder, rockCluster, standingStone, flowers, grassTuft, reeds,
     cottage, watchtower, well, stall, windmill, campfire, signpost, chest, shrine,
     brokenColumn, fallenColumn, ruinWall, ruinArch,
-    explorer: (ph) => human(ph, { team: 'blue', lantern: true }),
-    villager: (ph, i = 0) => human(ph, [
+    stump, leanTo, palisade, spikeTrap, crate, rainCollector, standingTorch, campfireOut, beacon,
+    human, hollow, quadruped,
+    explorer: (ph, o = {}) => human(ph, Object.assign({ team: 'blue' }, o)),
+    villager: (ph, i = 0, o = {}) => human(ph, Object.assign({}, [
       { hat: false, pack: false, cloth: '#7a6a3e', trousers: '#5b4a34', hair: '#6b4a2a' },
       { hat: false, pack: false, cloth: '#8a4a38', trousers: '#4a4436', hair: '#2e2018' },
       { hat: false, pack: false, cloth: '#4e6a7a', trousers: '#5a4a38', hair: '#c79a5a' },
-    ][i % 3]),
-    deer: (ph) => quadruped(ph, 'deer'),
-    sheep: (ph) => quadruped(ph, 'sheep'),
+    ][i % 3], o)),
+    deer: (ph, o) => quadruped(ph, 'deer', o), sheep: (ph, o) => quadruped(ph, 'sheep', o),
+    wolf: (ph, o) => quadruped(ph, 'wolf', o), boar: (ph, o) => quadruped(ph, 'boar', o),
   };
 })(typeof window !== 'undefined' ? window : globalThis);

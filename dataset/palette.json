@@ -2103,73 +2103,73 @@
   },
   {
    "index": 210,
-   "name": "canvasRed.0",
+   "name": "spirit.0",
    "rgb": [
-    52,
-    26,
-    31
+    45,
+    71,
+    85
    ],
-   "hex": "#341a1f"
+   "hex": "#2d4755"
   },
   {
    "index": 211,
-   "name": "canvasRed.1",
+   "name": "spirit.1",
    "rgb": [
-    77,
-    32,
-    32
+    67,
+    106,
+    122
    ],
-   "hex": "#4d2020"
+   "hex": "#436a7a"
   },
   {
    "index": 212,
-   "name": "canvasRed.2",
+   "name": "spirit.2",
    "rgb": [
-    107,
-    40,
-    34
+    91,
+    147,
+    164
    ],
-   "hex": "#6b2822"
+   "hex": "#5b93a4"
   },
   {
    "index": 213,
-   "name": "canvasRed.3",
+   "name": "spirit.3",
    "rgb": [
-    141,
-    49,
-    37
+    120,
+    195,
+    214
    ],
-   "hex": "#8d3125"
+   "hex": "#78c3d6"
   },
   {
    "index": 214,
-   "name": "canvasRed.4",
+   "name": "spirit.4",
    "rgb": [
-    168,
-    58,
-    44
+    143,
+    232,
+    255
    ],
-   "hex": "#a83a2c"
+   "hex": "#8fe8ff"
   },
   {
    "index": 215,
-   "name": "canvasRed.5",
+   "name": "spirit.5",
    "rgb": [
-    202,
-    88,
-    71
+    177,
+    255,
+    255
    ],
-   "hex": "#ca5847"
+   "hex": "#b1ffff"
   },
   {
    "index": 216,
-   "name": "canvasRed.6",
+   "name": "spirit.6",
    "rgb": [
-    232,
-    118,
-    98
+    207,
+    255,
+    255
    ],
-   "hex": "#e87662"
+   "hex": "#cfffff"
   },
   {
    "index": 217,
