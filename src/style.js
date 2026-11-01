@@ -111,13 +111,13 @@
     // ------------------------------------------------------------------ sprites
     sprites: {
       directions: ['S', 'SW', 'W', 'NW', 'N', 'NE', 'E', 'SE'],
-      rendered: ['S', 'SW', 'W', 'NW', 'N'],
-      mirrored: { SE: 'SW', E: 'W', NE: 'NW' },
+      rendered: ['S', 'SW', 'W', 'NW', 'N', 'NE', 'E', 'SE'],
+      mirrored: {}, // all 8 directions are rendered so lighting and shadows stay correct (no mirroring)
       // world facing angle (radians, atan2(j,i)) for each rendered screen direction
-      facing: { S: Math.PI / 4, SW: Math.PI / 2, W: 3 * Math.PI / 4, NW: Math.PI, N: 5 * Math.PI / 4 },
+      facing: { S: Math.PI / 4, SW: Math.PI / 2, W: 3 * Math.PI / 4, NW: Math.PI, N: 5 * Math.PI / 4, NE: 3 * Math.PI / 2, E: 7 * Math.PI / 4, SE: 0 },
       animation: {
         walk: { frames: 8, fps: 12 }, idle: { frames: 1 }, attack: { frames: 4, seconds: 0.5 }, dead: { frames: 1 }, fire: { frames: 6, fps: 10 },
-        unitLayout: 'rows = 5 rendered directions; columns: 0 idle, 1-8 walk, 9-12 attack, 13 dead',
+        unitLayout: 'rows = 8 directions; columns: 0 idle, 1-8 walk, 9-12 attack, 13 dead',
         note: 'AoE2 originals use 10 keyframes x 5 directions per animation at 10-20 fps',
       },
       scale: { // heights in world units (tiles)

@@ -232,19 +232,21 @@
       "SW",
       "W",
       "NW",
-      "N"
+      "N",
+      "NE",
+      "E",
+      "SE"
     ],
-    "mirrored": {
-      "SE": "SW",
-      "E": "W",
-      "NE": "NW"
-    },
+    "mirrored": {},
     "facing": {
       "S": 0.7853981633974483,
       "SW": 1.5707963267948966,
       "W": 2.356194490192345,
       "NW": 3.141592653589793,
-      "N": 3.9269908169872414
+      "N": 3.9269908169872414,
+      "NE": 4.71238898038469,
+      "E": 5.497787143782138,
+      "SE": 0
     },
     "animation": {
       "walk": {
@@ -265,7 +267,7 @@
         "frames": 6,
         "fps": 10
       },
-      "unitLayout": "rows = 5 rendered directions; columns: 0 idle, 1-8 walk, 9-12 attack, 13 dead",
+      "unitLayout": "rows = 8 directions; columns: 0 idle, 1-8 walk, 9-12 attack, 13 dead",
       "note": "AoE2 originals use 10 keyframes x 5 directions per animation at 10-20 fps"
     },
     "scale": {

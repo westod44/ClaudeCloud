@@ -20,7 +20,7 @@ The machine-readable version of this guide is [`dataset/style.json`](../dataset/
 | Original terrain tiles are 97×49 px rhombi (odd size, so each has a centre pixel). There are 27 terrain SLPs, each with a **priority** used for blending. | openage, `doc/media/terrain.md` | A 2:1 diamond tile (128×64 at 1x) and a per-terrain blend priority table. |
 | Neighbouring terrains are blended with **alpha masks**. The higher-priority terrain "floods" into the lower one. There are several mask shapes: rough, smooth, short, spray, sharp. | openage, `doc/media/blendomatic.md` | Domain-warped terrain borders (rough), a soft half-mix seam, and a continuous depth field for water and shore (smooth). |
 | Slopes are made by texture-mapping flat tiles and **lighting them**. AoE2 has 7 elevation levels. | openage `terrain.md`; gamedev.net elevation thread | 7 levels × 24 px. Slope lighting uses the same sun as the sprites. |
-| Moving units have **5 rendered directions**. The other 3 are made by mirroring. Classic animations have 10 keyframes. | openage, `doc/media/slp-files.md` | 5 rendered directions mirrored to 8, with idle + 8 walk frames. |
+| Moving units have **5 rendered directions**. The other 3 are made by mirroring. Classic animations have 10 keyframes. | openage, `doc/media/slp-files.md` | We tried this first, then render **all 8 directions** instead. Mirroring flips the baked shadow to the wrong side, so the shadow jumped when a unit turned. Idle + 8 walk frames. |
 | Each sprite carries a **separate shadow layer** (alpha mask) and **player-colour** pixels. DE adds damage and player-colour mask layers (SLD format). | openage `slp-files.md`, `smx-files.md`, `sld-files.md` | Every asset is baked as `body` and `shadow` PNGs. One material (`TEAM`) takes the player colour. |
 | Old releases use a single **256-colour palette** (`50500`), plus an inverse colour map (32×32×32 lookup) for snapping RGB values to it. | openage `slp-files.md`, `terrain.md` | `src/palette.js` builds a 256-colour palette from material ramps and snaps sprites and terrain to it through a 32³ lookup table. It is exported as JASC-PAL, the same text format. |
 | The DE UHD pack is **double resolution** sprites. Sprites are shown at native size at only one zoom level and are mip-mapped otherwise. | AoE forums (player reports; not official) | A resolution tier switch in the standard (`projection.resolutionTiers`): re-bake at 2x from the same models. |
@@ -35,7 +35,7 @@ The machine-readable version of this guide is [`dataset/style.json`](../dataset/
 3. **One consistent sun.** All shadows fall the same way, and all lit faces face the same way.
 4. **Earthy, slightly desaturated palette.** Saturated colour is saved for player colours, flags, fruit and water highlights.
 5. **Busy, natural terrain.** Mottled grass, dirt patches and irregular borders, with no visible tile grid.
-6. **Dense forests made of single trees**, each casting its own shadow.
+6. **Dense forests made of single trees**, each casting its own shadow. The trees are painted, not modelled. They read as masses of small leaf clusters with a lit top-left, a dark core and individual leaves breaking the silhouette, never as smooth shapes.
 7. **Black unexplored areas and darkened explored ones** (fog of war).
 
 ---
@@ -53,19 +53,23 @@ The machine-readable version of this guide is [`dataset/style.json`](../dataset/
 | Sprites | 2×2 supersampled. **Binary alpha** (coverage ≥ 50%). **No outlines.** Snapped to the palette. |
 | Palette | 31 material ramps × 7 steps (including `spirit`, the Hollows' pale glow) (shadows shift cool, highlights shift warm) + 8 greys + 8 player colours × 3 = 249 used of 256. |
 | Player colours | blue, red, green, yellow, teal, purple, grey, orange. |
-| Units | 5 rendered directions (S, SW, W, NW, N), mirrored to SE, E, NE. Columns: 0 idle, 1–8 walk (12 fps), 9–12 attack, 13 death pose (the same model laid on its side). |
+| Units | All 8 directions rendered (no mirroring, so shadows always fall the correct way). Columns: 0 idle, 1–8 walk (12 fps), 9–12 attack, 13 death pose (the same model laid on its side). The survivor is baked once per weapon (unarmed, axe, spear, bow, club, knife, great axe, sling). |
+| Foliage | `src/foliage.js`, not the SDF ray-marcher. A branch skeleton is grown per species (oak, beech, maple, aspen, birch, pine, snowy pine, palm, dead, bushes, ferns), then covered in thousands of leaf particles. Each particle is lit by the canopy normal, a sun-space shadow map and inner occlusion, then the particles are drawn back-to-front at 3× and snapped to the palette. Trees cast dappled ground shadows. |
+| Wind | Trees: 3 leaf-flutter frames, plus a runtime bend of horizontal strips that grows with height, driven by the weather's wind field and gusts. Grass, flowers and reeds: 6 breeze + 6 gale sway frames, chosen by the local wind strength. |
+| Portrait | The survivor's head and shoulders rendered by the same ray-marcher through a close-up camera (`opts.cam`), with 13 expressions. State overlays (blood, bruise, dirt, sweat, rain, frost, pallor, sickness) are painted at runtime onto skin and hat regions found in the sprite. |
 | Item icons | The same models and lights rendered at 3× scale, body layer only, cropped. |
+| Walls | Wall and gate pieces are baked as a post plus half-segments in both diagonal directions, so the game joins neighbouring wall tiles automatically. |
 | Terrain | 11 tileable top-down textures, 384² px = 4×4 tiles (96 texels per tile), sampled in world space so there are no seams. |
 | Fog | Unexplored areas are black. Explored areas out of sight are dimmed to 48%. Vision radius 7 tiles (+2 on high ground). |
 
 ### Scale reference (world units, 1 = one tile)
-human 0.62 · Hollow 0.72 (brute ×1.4) · wolf 0.5 · boar 0.42 · deer 0.62 · sheep 0.38 · oak 1.55 · pine 1.75 · palm 1.6 · cottage 1.35 (2×2 footprint) · watchtower 2.5–3.0 · windmill 2.3 (2×2).
+human 0.62 · Hollow 0.72 (brute ×1.4) · wolf 0.5 · boar 0.42 · bear 0.75 · spider 0.3 · deer 0.62 · sheep 0.38 · oak 1.4–1.7 · pine 1.6–2.0 · palm 1.6 · cottage 1.35 (2×2 footprint) · watchtower 2.5–3.0 · windmill 2.3 (2×2).
 
 ---
 
 ## 3. Making a new asset
 
-1. Add a factory to `src/models.js` that returns `{bounds, sdf, mat}`. Build the shape from the SDF kit (`box`, `cap`, `cone`, `prismX`, `ell`, `smin`, …) in world units, with +x as the facing direction for units.
+1. Add a factory to `src/models.js` that returns `{bounds, sdf, mat}` (for trees and plants, add or tune a species in `src/foliage.js` instead). Build the shape from the SDF kit (`box`, `cap`, `cone`, `prismX`, `ell`, `smin`, …) in world units, with +x as the facing direction for units.
 2. Use only materials from `M`. Each one maps to a palette ramp. If you need a new colour, add it to `STYLE.materials` first so it enters the palette.
 3. Register the asset in the `LIST` in `tools/bake.html` with a category, footprint and blocking flag.
 4. Run `node tools/bake.js`, then check it in `gallery.html`.
@@ -82,11 +86,11 @@ human 0.62 · Hollow 0.72 (brute ×1.4) · wolf 0.5 · boar 0.42 · deer 0.62 ·
 | `dataset/style.json` | The full standard (camera, lighting, materials, terrain table, sprite rules, fog, UI). |
 | `dataset/palette.json`, `dataset/palette.pal` | The 256 colours with ramp names. JASC-PAL format. |
 | `assets/manifest.json` | Every asset: category, description, footprint, blocking flag, canvas size, anchor, frames, directions, fps, file paths, bake time. |
-| `assets/sprites/*.png` | Sprite sheets. Body and `_shadow` layers. Units are laid out with rows = directions and columns = idle + walk frames. |
+| `assets/sprites/*.png` | Sprite sheets. Body and `_shadow` layers. Units are laid out with rows = 8 directions and columns = idle, walk, attack and death frames. |
 | `assets/terrain/*.png` | The 11 tileable terrain textures. |
-| `assets/atlas.js` | Everything above inlined, for the browser. |
+| `assets/atlas.js`, `assets/atlas-N.js` | Everything above inlined for the browser: the manifest, plus the images split into ~5 MB chunks that load in sequence. |
 
-**Asset count:** 94 sprite assets: 13 units × 70 frames (5 directions × idle, 8 walk, 4 attack, 1 death), 9 survival structures, 7 buildings, 11 ruins, 5 props, 4 resources, 18 nature, 6 decor and 21 item icons. Plus 11 terrain textures.
+**Asset count:** 162 sprite assets: 19 units × 112 frames (8 directions × idle, 8 walk, 4 attack, 1 death), 27 survival structures, 14 wall and gate pieces, 13 portrait expressions, 7 buildings, 11 ruins, 5 props, 4 resources, 23 nature, 9 decor and 30 item icons. Plus 11 terrain textures.
 
 ---
 

@@ -19,6 +19,8 @@
   const HV = (() => { const h = [L[0] - V[0], L[1] - V[1], L[2] - V[2]], l = Math.hypot(...h); return h.map(v => v / l); })();
   const SH = S.lighting.shadow;
 
+  const CAM_DEF = { R, D, V, PX, L, ground: true };
+  const norm3l = v => { const l = Math.hypot(v[0], v[1], v[2]) || 1; return [v[0] / l, v[1] / l, v[2] / l]; };
   function project(x, y, z) { return [(x - y) * S2 * PX, ((x + y) * SN30 * S2 - z * C30) * PX]; }
 
   function rayBox(ox, oy, oz, dx, dy, dz, b) {
@@ -47,6 +49,14 @@
     const x = Math.floor(mnx) - 2, y = Math.floor(mny) - 2;
     return { x, y, w: Math.ceil(mxx) + 2 - x, h: Math.ceil(mxy) + 2 - y };
   }
+  function camBox(wb, C) {
+    let mnx = 1e9, mny = 1e9, mxx = -1e9, mxy = -1e9;
+    for (const x of [wb[0], wb[3]]) for (const y of [wb[1], wb[4]]) for (const z of [wb[2], wb[5]]) {
+      const px = (x * C.R[0] + y * C.R[1] + z * C.R[2]) * C.PX, py = (x * C.D[0] + y * C.D[1] + z * C.D[2]) * C.PX;
+      mnx = Math.min(mnx, px); mxx = Math.max(mxx, px); mny = Math.min(mny, py); mxy = Math.max(mxy, py);
+    }
+    const x = Math.floor(mnx), y = Math.floor(mny); return { x, y, w: Math.ceil(mxx) - x, h: Math.ceil(mxy) - y };
+  }
   function unionBox(a, b) { if (!a) return b; const x = Math.min(a.x, b.x), y = Math.min(a.y, b.y); return { x, y, w: Math.max(a.x + a.w, b.x + b.w) - x, h: Math.max(a.y + a.h, b.y + b.h) - y }; }
 
   /**
@@ -54,10 +64,13 @@
    * angle: facing (radians) — model local +x is turned to this world direction.
    */
   function render(model, opts = {}) {
+    // optional custom camera (used for the character portrait); defaults to the standard iso camera
+    const C = opts.cam || CAM_DEF;
+    const R = C.R, D = C.D, V = C.V, PX = C.PX, L = C.L;
     const ang = opts.angle || 0, ca = Math.cos(ang), sa = Math.sin(ang);
     const ss = opts.ss || S.render.supersample;
     const wb = worldBounds(model.bounds, ang);
-    const box = opts.box || screenBox(wb);
+    const box = opts.box || (opts.cam ? camBox(wb, C) : screenBox(wb));
     const W = box.w * ss, H = box.h * ss;
     // local transform (rotate world point by -ang)
     const sdf = ang ? (x, y, z) => model.sdf(x * ca + y * sa, -x * sa + y * ca, z) : (x, y, z) => model.sdf(x, y, z);
@@ -87,10 +100,11 @@
         for (let i = 0; i < maxSteps; i++) {
           x = ox + V[0] * t; y = oy + V[1] * t; z = oz + V[2] * t;
           const d = sdf(x, y, z);
-          if (d < 0.0012) { found = z > -0.01; break; }
+          if (d < 0.0012) { found = !C.ground || z > -0.01; break; }
           t += d * 0.8; if (t > rb[1]) break;
         }
       }
+      if (!found && !C.ground) continue;
       if (!found) { // ground plane z = 0 catches the shadow
         const tg = oz / SN30; const gx = ox + V[0] * tg, gy = oy + V[1] * tg;
         shd[k] = 1 - softShadow(gx, gy, 0.0005);
@@ -110,12 +124,12 @@
         const vis = ndl > 0 ? softShadow(x + nx * 0.004, y + ny * 0.004, z + nz * 0.004) : 0;
         let occ = 0; for (let j = 1; j <= 4; j++) { const hk = 0.025 * j; occ += (hk - sdf(x + nx * hk, y + ny * hk, z + nz * hk)) / j; }
         const ao = Math.max(0.35, Math.min(1, 1 - occ * S.lighting.ambientOcclusion * 5));
-        const sky = 0.5 + 0.5 * nz, bo = 0.5 - 0.5 * nz;
+        const sky = 0.5 + 0.5 * (C.ground ? nz : -(nx * D[0] + ny * D[1] + nz * D[2])), bo = 1 - sky;
         const lit = ndl * vis;
         r = mt[0] * (SUN[0] * lit + (SKY[0] * sky + BOUNCE[0] * bo) * ao);
         g = mt[1] * (SUN[1] * lit + (SKY[1] * sky + BOUNCE[1] * bo) * ao);
         b = mt[2] * (SUN[2] * lit + (SKY[2] * sky + BOUNCE[2] * bo) * ao);
-        if (mt[4]) { const sp = Math.pow(Math.max(0, nx * HV[0] + ny * HV[1] + nz * HV[2]), 36) * mt[4] * vis; r += sp; g += sp; b += sp * 0.9; }
+        if (mt[4]) { const hv = C === CAM_DEF ? HV : norm3l([L[0] - V[0], L[1] - V[1], L[2] - V[2]]); const sp = Math.pow(Math.max(0, nx * hv[0] + ny * hv[1] + nz * hv[2]), 36) * mt[4] * vis; r += sp; g += sp; b += sp * 0.9; }
       }
       col[k * 3] = r; col[k * 3 + 1] = g; col[k * 3 + 2] = b; hit[k] = 1;
     }
@@ -139,6 +153,6 @@
     return { w, h, ax: -box.x, ay: -box.y, body, shadow };
   }
 
-  const API = { render, project, screenBox, worldBounds, unionBox, R, D, V, L, PX };
+  const API = { render, project, screenBox, camBox, worldBounds, unionBox, R, D, V, L, PX };
   root.R3 = API;
 })(typeof window !== 'undefined' ? window : globalThis);

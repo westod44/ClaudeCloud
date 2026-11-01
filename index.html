@@ -7,65 +7,84 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya+Sans:wght@400;700&display=swap" rel="stylesheet">
 <style>
-  :root{--gold:#b08a3e;--golddk:#5b4524;--dark:#17120d;--text:#f1e3c0;--accent:#ffd36a;--red:#c8433a}
+  :root{--gold:#b08a3e;--golddk:#5b4524;--dark:#17120d;--text:#f1e3c0;--accent:#ffd36a}
   *{box-sizing:border-box}
   html,body{margin:0;height:100%;background:#000;overflow:hidden;color:var(--text);font-family:'Alegreya Sans',Georgia,serif;touch-action:none;user-select:none;-webkit-user-select:none}
   canvas#game{display:block;width:100vw;height:100vh;image-rendering:pixelated}
   button{font-family:inherit;color:var(--text);cursor:pointer}
   .frame{background:linear-gradient(180deg,#3a2d20,#21180f);border:2px solid var(--gold);box-shadow:0 0 0 2px var(--dark),inset 0 0 0 1px var(--golddk),0 4px 14px rgba(0,0,0,.6);border-radius:3px}
   .hidden{display:none!important}
-  /* top-left: day & relics */
-  #tl{position:fixed;left:10px;top:10px;padding:6px 12px;font-size:15px;display:flex;gap:14px;align-items:center}
+  #tl{position:fixed;left:10px;top:10px;padding:5px 12px;font-size:15px;display:flex;gap:12px;align-items:center}
   #tl b{color:var(--accent);font-family:Cinzel,serif}
-  #clock{width:26px;height:26px}
-  #msgs{position:fixed;left:12px;top:56px;font-size:16px;color:#fff3c9;text-shadow:0 1px 0 #000,0 0 6px #000;pointer-events:none;max-width:70vw}
+  #clock{width:28px;height:28px}
+  #msgs{position:fixed;left:12px;top:58px;font-size:16px;color:#fff3c9;text-shadow:0 1px 0 #000,0 0 6px #000;pointer-events:none;max-width:60vw}
   #msgs div{transition:opacity .6s;margin-bottom:3px}
-  /* stats */
-  #stats{position:fixed;left:10px;bottom:10px;padding:8px 10px;width:220px}
-  .stat{display:flex;align-items:center;gap:6px;margin:3px 0;font-size:12px}
-  .stat span{width:54px;opacity:.9}
-  .bar{flex:1;height:10px;background:#120d09;border:1px solid #000;position:relative;overflow:hidden}
-  .bar i{position:absolute;left:0;top:0;bottom:0;transition:width .25s}
-  .stat.low span{color:#ff8a7a;animation:blink 1s infinite}
-  @keyframes blink{50%{opacity:.4}}
-  /* actions */
-  #actions{position:fixed;left:50%;bottom:10px;transform:translateX(-50%);display:flex;gap:6px;align-items:flex-end}
-  .act{width:62px;height:62px;padding:2px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;line-height:1.05;position:relative}
-  .act img{width:34px;height:30px;object-fit:contain;image-rendering:pixelated}
-  .act .k{position:absolute;right:3px;top:1px;font-size:10px;opacity:.6}
-  .act .n{position:absolute;right:3px;bottom:16px;font-size:11px;color:var(--accent)}
-  .act.on{box-shadow:0 0 0 2px #ffb347,0 0 14px #ff9a30}
-  .act:disabled{opacity:.45}
-  #use{width:120px}
-  #prompt{position:fixed;left:50%;bottom:82px;transform:translateX(-50%);font-size:15px;color:#fff3c9;text-shadow:0 1px 0 #000,0 0 5px #000;pointer-events:none;white-space:nowrap}
-  /* minimap */
-  #minibox{position:fixed;right:10px;bottom:10px;padding:6px}
-  #mini{display:block;width:260px;height:130px;image-rendering:pixelated;cursor:pointer}
   #tr{position:fixed;right:10px;top:10px;display:flex;gap:6px}
   #tr button{width:40px;height:40px;font:700 17px Cinzel,serif;color:var(--accent)}
-  /* panels */
+  /* status panel: portrait + bars + badges */
+  #status{position:fixed;left:10px;bottom:10px;padding:8px;display:flex;gap:10px;align-items:stretch}
+  #facebox{width:144px;height:162px;background:radial-gradient(ellipse at 50% 40%,#3a3024,#120d09);border:2px solid var(--golddk);display:flex;align-items:flex-end;justify-content:center;overflow:hidden}
+  #face{width:144px;height:162px;image-rendering:pixelated;object-fit:contain}
+  #bars{display:flex;flex-direction:column;justify-content:center;gap:5px;width:220px}
+  .stat{display:flex;align-items:center;gap:7px;font-size:14px}
+  .stat .si{width:22px;height:20px;display:flex;align-items:center;justify-content:center}
+  .stat .si img{width:22px;height:20px;object-fit:contain;image-rendering:pixelated}
+  .heart{width:14px;height:13px;background:#d8463a;clip-path:path('M7 13 L1 6 C-1 3 2 0 4.5 1 C6 1.6 7 3 7 3 C7 3 8 1.6 9.5 1 C12 0 15 3 13 6 Z');display:block}
+  .bolt{font-style:normal;color:#f0d24a;font-size:15px;text-shadow:0 1px 0 #000}
+  .bar{flex:1;height:13px;background:#120d09;border:1px solid #000;position:relative;overflow:hidden;box-shadow:inset 0 1px 2px #000}
+  .bar i{position:absolute;left:0;top:0;bottom:0;transition:width .25s;box-shadow:inset 0 -3px 0 rgba(0,0,0,.25),inset 0 2px 0 rgba(255,255,255,.18)}
+  .stat b{width:30px;text-align:right;font-weight:700;color:#efe2c0}
+  .stat.low b{color:#ff8a7a;animation:blink 1s infinite}
+  @keyframes blink{50%{opacity:.4}}
+  #badges{display:flex;flex-wrap:wrap;gap:4px;margin-top:3px;min-height:4px}
+  #badges span{font-size:11px;padding:1px 6px;border-radius:2px;background:#2a1f15;border:1px solid #5b4524}
+  #badges .bad{color:#ffb0a0;border-color:#8a2a20}#badges .warn{color:#ffe0a0;border-color:#8a6a20}#badges .good{color:#c0f0a0;border-color:#3a6a20}
+  /* hotbar + actions */
+  #hotbar{position:fixed;left:50%;bottom:10px;transform:translateX(-50%);display:flex;gap:5px}
+  .hs{width:62px;height:62px;padding:0;position:relative;display:flex;align-items:center;justify-content:center}
+  .hs img{width:44px;height:40px;object-fit:contain;image-rendering:pixelated}
+  .hs .hn{position:absolute;left:4px;top:1px;font-size:11px;opacity:.75}
+  .hs .hc{position:absolute;right:4px;bottom:2px;font-size:13px;font-weight:700;color:var(--accent);text-shadow:0 1px 0 #000}
+  .hs.eq{box-shadow:0 0 0 2px #ffb347,0 0 12px #ff9a30;border-color:#ffd36a}
+  #acts{position:fixed;left:50%;bottom:82px;transform:translateX(-50%);display:flex;gap:5px}
+  .act{width:54px;height:50px;padding:2px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;line-height:1.05;position:relative}
+  .act img{width:28px;height:24px;object-fit:contain;image-rendering:pixelated}
+  .act .n{position:absolute;right:3px;top:1px;font-size:11px;color:var(--accent)}
+  .act.on{box-shadow:0 0 0 2px #ffb347,0 0 14px #ff9a30}
+  #b-use{width:110px}
+  .touchonly{display:none!important}
+  #prompt{position:fixed;left:50%;bottom:140px;transform:translateX(-50%);font-size:15px;color:#fff3c9;text-shadow:0 1px 0 #000,0 0 5px #000;pointer-events:none;white-space:nowrap}
+  #minibox{position:fixed;right:10px;bottom:10px;padding:6px;border-radius:50%}
+  #mini{display:block;width:200px;height:200px;border-radius:50%;image-rendering:pixelated;cursor:pointer}
+  #compass{position:absolute;left:50%;top:-2px;transform:translateX(-50%);font:700 13px Cinzel,serif;color:var(--accent);text-shadow:0 1px 0 #000;pointer-events:none}
+  #joy{position:fixed;left:18px;bottom:200px;width:130px;height:130px;border-radius:50%;background:rgba(20,14,8,.45);border:2px solid rgba(176,138,62,.6)}
+  #joyk{position:absolute;left:50%;top:50%;width:54px;height:54px;margin:-27px 0 0 -27px;border-radius:50%;background:rgba(255,211,106,.35);border:2px solid rgba(255,211,106,.8)}
+  #tooltip{position:fixed;z-index:35;pointer-events:none;padding:5px 9px;font-size:13px;background:rgba(20,14,8,.92);border:1px solid var(--gold)}
+  #ctxmenu{position:fixed;z-index:36;padding:6px;display:flex;flex-direction:column;gap:4px;min-width:170px}
+  #ctxmenu .ct{font:700 13px Cinzel,serif;color:var(--accent);padding:2px 4px}
+  #ctxmenu button{padding:7px 10px;text-align:left;font-size:14px}
+  #ctxmenu button:disabled{opacity:.45}
   .modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:30}
-  .panel{width:min(860px,96vw);max-height:90vh;overflow:auto;padding:14px 16px}
+  .panel{width:min(900px,96vw);max-height:90vh;overflow:auto;padding:14px 16px}
   .panel h2{font-family:Cinzel,serif;color:var(--accent);margin:0 0 10px;font-size:20px;letter-spacing:2px;display:flex;justify-content:space-between;align-items:center}
-  .panel h3{font-family:Cinzel,serif;color:var(--accent);font-size:14px;margin:12px 0 6px;letter-spacing:1px}
   .x{width:34px;height:34px;font-size:18px}
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:6px}
-  .slot{height:84px;background:#1b140e;border:1px solid var(--golddk);display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;font-size:11px;padding:2px;text-align:center}
+  .slot{height:84px;background:#1b140e;border:1px solid var(--golddk);display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;font-size:11px;padding:2px;text-align:center;cursor:pointer}
   .slot img{width:46px;height:40px;object-fit:contain;image-rendering:pixelated}
   .slot .c{position:absolute;right:4px;top:2px;color:var(--accent);font-weight:700;font-size:13px}
   .slot.eq{border-color:#ffb347;box-shadow:inset 0 0 0 1px #ffb347}
-  .slot:hover{border-color:var(--gold)}
-  .recipes{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:6px}
+  .recipes{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:6px}
   .rec{display:flex;gap:8px;align-items:center;background:#1b140e;border:1px solid var(--golddk);padding:6px}
+  .rec.locked{opacity:.6}
+  .rec em{font-style:normal;font-size:11px;color:#c0a060;border:1px solid #5b4524;padding:0 4px;border-radius:2px}
   .rec img.o{width:44px;height:38px;object-fit:contain;image-rendering:pixelated}
   .rec .t{flex:1;font-size:13px}.rec .t b{color:var(--accent)}
   .cost{display:flex;gap:6px;flex-wrap:wrap;margin-top:2px;font-size:12px}
   .cost span{display:flex;align-items:center;gap:2px}.cost img{width:18px;height:16px;object-fit:contain}
   .cost .no{color:#ff8a7a}
-  .rec button{padding:6px 10px;font-weight:700}
-  .rec button:disabled{opacity:.4}
-  .bthumb{width:72px;height:56px;image-rendering:pixelated}
-  .tabs{display:flex;gap:6px;margin-bottom:8px}.tabs button{padding:6px 14px;font:700 14px Cinzel,serif}.tabs button.on{color:var(--accent);border-color:#ffd36a}
+  .rec button{padding:6px 10px;font-weight:700}.rec button:disabled{opacity:.4}
+  .bthumb{width:76px;height:58px;image-rendering:pixelated;object-fit:contain}
+  .tabs,#btabs{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}.tabs button,#btabs button{padding:6px 12px;font:700 13px Cinzel,serif}.tabs button.on,#btabs button.on{color:var(--accent);border-color:#ffd36a}
   .big{padding:10px 26px;font:700 18px Cinzel,serif;color:var(--accent);margin:6px;min-width:220px}
   #title,#dead,#win,#loading{z-index:40}
   .screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,rgba(30,22,14,.88),rgba(5,3,2,.97));text-align:center;padding:20px}
@@ -75,54 +94,65 @@
   #help ul{text-align:left;font-size:15px;line-height:1.5}
   #placebar{position:fixed;left:50%;top:60px;transform:translateX(-50%);padding:6px 10px;display:flex;gap:10px;align-items:center;z-index:20}
   #placebar button{padding:6px 12px}
-  #hurt{position:fixed;inset:0;pointer-events:none;box-shadow:inset 0 0 120px 40px rgba(180,0,0,.0);transition:box-shadow .15s}
+  #hurt{position:fixed;inset:0;pointer-events:none}
   #sleepfade{position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity 1s;z-index:25;display:flex;align-items:center;justify-content:center;font:700 26px Cinzel,serif;color:var(--accent)}
-  @media (max-width:760px){
-    #stats{width:150px;padding:5px 7px}.stat span{width:40px;font-size:10px}.stat{margin:1px 0}.bar{height:8px}
-    #mini{width:140px;height:70px}#minibox{bottom:auto;top:48px;right:6px;padding:4px}
-    .act{width:52px;height:56px;font-size:10px}#use{width:96px}.act .k{display:none}
-    #actions{bottom:118px;left:auto;right:6px;transform:none;flex-wrap:wrap;justify-content:flex-end;width:178px}
-    #prompt{display:none}
-    #tl{font-size:12px;gap:7px;padding:3px 7px;left:6px;top:6px;max-width:calc(100vw - 160px);flex-wrap:wrap}
-    #clock{width:20px;height:20px}
-    #tr{top:6px;right:6px;gap:4px}#tr button{width:34px;height:34px;font-size:15px}
-    #msgs{top:auto;bottom:250px;left:8px;font-size:14px;max-width:calc(100vw - 200px)}
-  }
+  /* touch layout */
+  body.touch .touchonly{display:flex!important}
+  body.touch #status{left:6px;top:6px;bottom:auto;padding:5px;gap:6px}
+  body.touch #facebox{width:64px;height:72px}body.touch #face{width:64px;height:72px}
+  body.touch #bars{width:116px;gap:2px}body.touch .stat{font-size:10px;gap:3px}body.touch .stat .si{width:14px;height:13px}body.touch .stat .si img{width:14px;height:13px}body.touch .bar{height:7px}body.touch .stat b{width:22px}
+  body.touch #badges span{font-size:9px;padding:0 3px}
+  body.touch #tl{left:auto;right:6px;top:52px;font-size:12px;gap:6px;padding:3px 7px}body.touch #clock{width:20px;height:20px}
+  body.touch #tr{top:6px;right:6px;gap:4px}body.touch #tr button{width:34px;height:34px;font-size:15px}
+  body.touch #minibox{bottom:auto;top:90px;right:6px;padding:3px}body.touch #mini{width:96px;height:96px}
+  body.touch #msgs{top:auto;bottom:300px;font-size:14px;max-width:60vw}
+  body.touch #hotbar{bottom:6px;gap:3px}body.touch .hs{width:46px;height:46px}body.touch .hs img{width:32px;height:28px}
+  body.touch #acts{left:auto;right:8px;bottom:62px;transform:none;flex-wrap:wrap;justify-content:flex-end;width:178px;gap:4px}
+  body.touch .act{width:56px;height:52px}body.touch #b-attack{width:84px;height:84px}body.touch #b-attack img{width:44px;height:38px}body.touch #b-use{width:84px}
+  body.touch #prompt{display:none}
+  body.touch #joy{bottom:66px}
+  @media (max-width:820px){ body:not(.touch) #status{transform:scale(.8);transform-origin:left bottom} }
 </style>
 </head>
 <body>
 <canvas id="game"></canvas>
 <div id="hurt"></div>
-<div id="tl" class="frame"><canvas id="clock" width="52" height="52"></canvas><span>Day <b id="day">1</b></span><span id="tod">Morning</span><span>Relics <b id="relics">0/8</b></span></div>
+<div id="tl" class="frame"><canvas id="clock" width="52" height="52"></canvas><span>Day <b id="day">1</b></span><b id="time">06:00</b><span id="wx">Fair</span><span>Relics <b id="relics">0/8</b></span></div>
 <div id="msgs"></div>
 <div id="tr"><button id="btn-menu" class="frame" title="Menu (Esc)">☰</button><button id="zin" class="frame">+</button><button id="zout" class="frame">−</button><button id="center" class="frame" title="Centre (C)">◎</button></div>
-<div id="stats" class="frame"></div>
+<div id="status" class="frame"><div id="facebox"><canvas id="face" width="96" height="108"></canvas></div><div><div id="bars"></div><div id="badges"></div></div></div>
 <div id="prompt"></div>
-<div id="actions">
-  <button id="b-weapon" class="act frame" title="Switch weapon (Q)"><img alt=""><span class="lbl">Fists</span><span class="k">Q</span><span class="n"></span></button>
-  <button id="b-attack" class="act frame" title="Attack (F / Space)"><img alt=""><span>Attack</span><span class="k">F</span></button>
-  <button id="use" class="act frame" title="Use / interact (E)"><img alt=""><span class="lbl">Use</span><span class="k">E</span></button>
-  <button id="b-torch" class="act frame" title="Torch (T)"><img alt=""><span>Torch</span><span class="k">T</span><span class="n"></span></button>
-  <button id="b-pack" class="act frame" title="Pack & crafting (I / Tab)"><img alt=""><span>Pack</span><span class="k">I</span></button>
-  <button id="b-build" class="act frame" title="Build (B)"><img alt=""><span>Build</span><span class="k">B</span></button>
+<div id="acts">
+  <button id="b-attack" class="act frame touchonly" title="Attack: drag to aim"><img alt=""><span>Attack</span></button>
+  <button id="b-use" class="act frame" title="Use / interact (E)"><img alt=""><span class="lbl">Use</span></button>
+  <button id="b-dodge" class="act frame touchonly" title="Dodge (Space)"><img alt=""><span>Dodge</span></button>
+  <button id="b-sprint" class="act frame touchonly" title="Sprint (Shift)"><img alt=""><span>Sprint</span></button>
+  <button id="b-torch" class="act frame" title="Torch (T)"><img alt=""><span>Torch</span><span class="n"></span></button>
+  <button id="b-pack" class="act frame" title="Pack & crafting (I / Tab)"><img alt=""><span>Pack</span></button>
+  <button id="b-build" class="act frame" title="Build (B)"><img alt=""><span>Build</span></button>
 </div>
-<div id="minibox" class="frame"><canvas id="mini" width="384" height="192"></canvas></div>
+<div id="hotbar"></div>
+<div id="minibox" class="frame"><canvas id="mini" width="200" height="200"></canvas><div id="compass">N</div></div>
+<div id="joy" class="touchonly"><div id="joyk"></div></div>
+<div id="tooltip" class="hidden"></div>
+<div id="ctxmenu" class="frame hidden"></div>
 <div id="placebar" class="frame hidden"><span id="placetxt">Place</span><button id="place-cancel" class="frame">Done</button></div>
 
 <div id="pack" class="modal hidden"><div class="panel frame">
   <h2><span>Pack</span><button class="x frame" data-close>✕</button></h2>
   <div class="tabs"><button class="frame on" data-tab="inv">Inventory</button><button class="frame" data-tab="craft">Crafting</button></div>
-  <div id="tab-inv"><div class="grid" id="invgrid"></div><p id="invhint" style="font-size:13px;opacity:.8">Tap an item to eat, drink, equip or use it.</p></div>
+  <div id="tab-inv"><div class="grid" id="invgrid"></div><p style="font-size:13px;opacity:.8">Tap an item to eat, drink, equip or use it. Items marked <em style="font-style:normal;color:#c0a060">workbench</em> need you to stand at a workbench.</p></div>
   <div id="tab-craft" class="hidden"><div class="recipes" id="recipes"></div></div>
 </div></div>
 <div id="build" class="modal hidden"><div class="panel frame">
   <h2><span>Build</span><button class="x frame" data-close>✕</button></h2>
+  <div id="btabs"></div>
   <div class="recipes" id="blist"></div>
 </div></div>
 <div id="storage" class="modal hidden"><div class="panel frame">
-  <h2><span>Storage crate</span><button class="x frame" data-close>✕</button></h2>
+  <h2><span>Storage</span><button class="x frame" data-close>✕</button></h2>
   <div style="display:flex;gap:8px;margin-bottom:8px"><button id="st-put" class="frame big" style="min-width:0;font-size:14px">Store all materials</button><button id="st-take" class="frame big" style="min-width:0;font-size:14px">Take everything</button></div>
-  <h3>In the crate</h3><div class="grid" id="stgrid"></div>
+  <div class="grid" id="stgrid"></div>
 </div></div>
 <div id="menu" class="modal hidden"><div class="panel frame" style="width:min(420px,94vw);text-align:center">
   <h2><span>Paused</span><button class="x frame" data-close>✕</button></h2>
@@ -130,28 +160,29 @@
   <button class="frame big" id="m-save">Save game</button><br>
   <button class="frame big" id="m-help">How to survive</button><br>
   <button class="frame big" id="m-sound">Sound: on</button><br>
+  <button class="frame big" id="m-detail">Detail: high</button><br>
   <button class="frame big" id="m-quit">Quit to title</button>
 </div></div>
-<div id="help" class="modal hidden"><div class="panel frame" style="width:min(640px,94vw)">
+<div id="help" class="modal hidden"><div class="panel frame" style="width:min(680px,94vw)">
   <h2><span>How to survive</span><button class="x frame" data-close>✕</button></h2>
   <ul>
-    <li><b>Move:</b> tap or click the ground, or use WASD. Tap a tree, rock, bush, animal or building to walk over and use it.</li>
-    <li><b>Stay alive:</b> watch your health, food, water, stamina and energy. Drink at water or wells, eat berries and <i>cooked</i> meat.</li>
-    <li><b>Start:</b> gather sticks and fiber from bushes and stones from rocks with your bare hands. Then craft <b>Rope</b> and a <b>Stone axe</b> (Pack → Crafting).</li>
-    <li><b>Build:</b> chop trees for logs. Build a campfire, then a lean-to for sleeping and saving. Palisade walls and spike traps protect your base.</li>
-    <li><b>Night:</b> the <b>Hollows</b> come out of the dark. They fear fire, so stay near your fires or carry a torch. Brutes appear from day 4.</li>
-    <li><b>Goal:</b> find the <b>8 relics</b> in the island's shrines, build the <b>Signal Beacon</b>, light it, and survive until dawn to be rescued.</li>
-    <li><b>Keys:</b> E use · F/Space attack · Q switch weapon · T torch · I pack · B build · C centre · Esc menu · +/− zoom.</li>
+    <li><b>Interact:</b> click or tap anything: trees, rocks, bushes, animals, buildings, your own structures. You walk there and do it. If there are several options (a fire: cook, add a log, add a stick…) a menu appears.</li>
+    <li><b>Move:</b> click the ground, or WASD / arrows. <b>Shift</b> sprints (uses stamina). <b>Space</b> dodges.</li>
+    <li><b>Fight:</b> aim with the mouse and <b>right-click</b> (or F) to swing toward the cursor. Bows and slings fire where you aim. On touch screens, drag from the Attack button to aim and release to strike.</li>
+    <li><b>Stay alive:</b> health, food, water, stamina and warmth. Cold and rain chill you, so stay near fires and shelters. Bandages stop bleeding, herbs and salves cure sickness.</li>
+    <li><b>Build:</b> logs and stones build a base: walls that join up, gates, floors, a bed, a table, a drying rack, a cooking pot, a garden, storage, and a workbench for advanced gear.</li>
+    <li><b>Night:</b> Hollows come out of the dark and fear fire. The outer reaches of the island are the most dangerous, and new creatures appear as the days pass.</li>
+    <li><b>Goal:</b> find the <b>8 relics</b>, build the <b>Signal Beacon</b>, light it at dusk and survive until dawn.</li>
+    <li><b>Keys:</b> E use · F/right-click attack · Space dodge · Shift sprint · Q switch weapon · 1–6 hotbar · T torch · I pack · B build · C centre · Esc menu.</li>
   </ul>
 </div></div>
-
 <div id="title" class="screen hidden">
   <h1>LANTERN ISLES</h1>
   <p>Washed ashore on an island whose lanterns went dark long ago. By day, gather, hunt and build. By night, keep your fire burning. <b>The Hollows</b> walk where the light does not reach.</p>
   <button class="frame big" id="t-new">New game</button>
   <button class="frame big hidden" id="t-cont">Continue</button>
   <button class="frame big" id="t-help">How to survive</button>
-  <p style="font-size:13px;opacity:.6">Your progress saves when you sleep, at each dawn, and from the menu.</p>
+  <p style="font-size:13px;opacity:.6">Progress saves when you sleep, at each dawn, and from the menu.</p>
 </div>
 <div id="dead" class="screen hidden"><h1 style="color:#e0675a">YOU DIED</h1><p id="deadtxt"></p><button class="frame big" id="d-load">Load last save</button><button class="frame big" id="d-new">New game</button></div>
 <div id="win" class="screen hidden"><h1>RESCUED</h1><p id="wintxt"></p><button class="frame big" id="w-cont">Keep exploring</button><button class="frame big" id="w-new">New game</button></div>
@@ -161,6 +192,10 @@
 <script src="src/style.js"></script>
 <script src="src/palette.js"></script>
 <script src="src/noise.js"></script>
+<script src="src/data.js"></script>
+<script src="src/audio.js"></script>
+<script src="src/weather.js"></script>
+<script src="src/portrait.js"></script>
 <script src="assets/atlas.js"></script>
 <script src="src/game.js"></script>
 </body>

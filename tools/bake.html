@@ -12,58 +12,54 @@
 <script src="../src/noise.js"></script>
 <script src="../src/render3d.js"></script>
 <script src="../src/models.js"></script>
+<script src="../src/foliage.js"></script>
 <script src="../src/terrainTex.js"></script>
 <script>
 'use strict';
 const M = MODELS;
 // ------------------------------------------------------------------ the asset list (dataset index)
-// cat: nature | resource | building | prop | ruin | unit | decor
+// cat: nature | resource | building | structure | prop | ruin | unit | decor | icon | portrait
 // fp: footprint in tiles [w,h]; block: blocks movement
+const T = (name, species, seed, cat = 'nature', desc = '', fp = [1, 1], block = true) => ({ name, cat, desc: desc || species, foliage: species, seed, fp, block });
+const B = (name, kind, seed, desc, cat = 'decor') => ({ name, cat, desc, blades: kind, seed, fp: [1, 1], block: false });
+const U = (name, desc, make, dead, speed, extra = {}) => Object.assign({ name, cat: 'unit', desc, unit: true, make, dead, speed }, extra);
 const LIST = [
-  // trees
-  { name: 'oak_1', cat: 'nature', desc: 'Broadleaf oak', make: () => M.oak(11), fp: [1, 1], block: true },
-  { name: 'oak_2', cat: 'nature', desc: 'Broadleaf oak', make: () => M.oak(23), fp: [1, 1], block: true },
-  { name: 'oak_3', cat: 'nature', desc: 'Broadleaf oak (dark)', make: () => M.oak(37, { dark: true }), fp: [1, 1], block: true },
-  { name: 'oak_4', cat: 'nature', desc: 'Broadleaf oak (dark)', make: () => M.oak(51, { dark: true }), fp: [1, 1], block: true },
-  { name: 'birch_1', cat: 'nature', desc: 'Birch', make: () => M.oak(61, { birch: true }), fp: [1, 1], block: true },
-  { name: 'birch_2', cat: 'nature', desc: 'Birch', make: () => M.oak(67, { birch: true }), fp: [1, 1], block: true },
-  { name: 'pine_1', cat: 'nature', desc: 'Pine', make: () => M.pine(41), fp: [1, 1], block: true },
-  { name: 'pine_2', cat: 'nature', desc: 'Pine', make: () => M.pine(46), fp: [1, 1], block: true },
-  { name: 'pine_3', cat: 'nature', desc: 'Pine', make: () => M.pine(53), fp: [1, 1], block: true },
-  { name: 'palm_1', cat: 'nature', desc: 'Palm', make: () => M.palm(5), fp: [1, 1], block: true },
-  { name: 'palm_2', cat: 'nature', desc: 'Palm', make: () => M.palm(9), fp: [1, 1], block: true },
-  { name: 'dead_tree', cat: 'nature', desc: 'Dead tree', make: () => M.deadTree(3), fp: [1, 1], block: true },
-  { name: 'bush_1', cat: 'nature', desc: 'Shrub', make: () => M.bush(2), fp: [1, 1], block: false },
-  { name: 'bush_2', cat: 'nature', desc: 'Shrub', make: () => M.bush(8), fp: [1, 1], block: false },
-  { name: 'berry_bush', cat: 'resource', desc: 'Berry bush (forage)', make: () => M.bush(14, true), fp: [1, 1], block: true },
-  // rocks & resources
+  // ---- trees & plants (foliage renderer: 3 flutter frames; runtime bends them in the wind)
+  T('oak_1', 'oak', 3, 'nature', 'Oak'), T('oak_2', 'oak', 31, 'nature', 'Oak'), T('oak_3', 'beech', 5, 'nature', 'Beech'), T('oak_4', 'beech', 41, 'nature', 'Beech'),
+  T('maple_1', 'maple', 7, 'nature', 'Maple (autumn)'), T('maple_2', 'maple', 57, 'nature', 'Maple (autumn)'), T('aspen_1', 'aspen', 9, 'nature', 'Aspen (golden)'),
+  T('birch_1', 'birch', 11, 'nature', 'Birch'), T('birch_2', 'birch', 27, 'nature', 'Birch'),
+  T('pine_1', 'pine', 13, 'nature', 'Pine'), T('pine_2', 'pine', 23, 'nature', 'Pine'), T('pine_3', 'pine', 33, 'nature', 'Pine'),
+  T('pine_snow_1', 'pineSnow', 15, 'nature', 'Snowy pine'), T('pine_snow_2', 'pineSnow', 25, 'nature', 'Snowy pine'),
+  T('palm_1', 'palm', 17, 'nature', 'Palm'), T('palm_2', 'palm', 37, 'nature', 'Palm'), T('dead_tree', 'dead', 19, 'nature', 'Dead tree'),
+  T('bush_1', 'bush', 21, 'nature', 'Shrub', [1, 1], false), T('bush_2', 'bush', 43, 'nature', 'Shrub', [1, 1], false),
+  T('berry_bush', 'berry', 23, 'resource', 'Berry bush (forage)'), T('fern_1', 'fern', 25, 'decor', 'Fern', [1, 1], false), T('fern_2', 'fern', 45, 'decor', 'Fern', [1, 1], false),
+  // ---- ground cover with baked wind sway (frames 0-5 breeze, 6-11 gale)
+  B('grass_tuft', 'grass', 1, 'Grass tuft'), B('grass_tuft_2', 'grass', 7, 'Grass tuft'), B('grass_tuft_dry', 'dry', 2, 'Dry grass tuft'),
+  B('flowers_yellow', 'flowers', 3, 'Wildflowers'), B('flowers_white', 'flowers', 4, 'Wildflowers'), B('flowers_purple', 'flowers', 5, 'Wildflowers'), B('reeds', 'reeds', 4, 'Reeds / cattails'),
+  // ---- rocks & resources
   { name: 'boulder_1', cat: 'nature', desc: 'Boulder', make: () => M.boulder(4), fp: [1, 1], block: true },
   { name: 'boulder_2', cat: 'nature', desc: 'Boulder', make: () => M.boulder(12), fp: [1, 1], block: true },
   { name: 'boulder_3', cat: 'nature', desc: 'Boulder', make: () => M.boulder(19), fp: [1, 1], block: true },
   { name: 'stone_pile', cat: 'resource', desc: 'Quarry stone', make: () => M.rockCluster(6), fp: [1, 1], block: true },
   { name: 'gold_vein', cat: 'resource', desc: 'Gold ore', make: () => M.rockCluster(15, { gold: true, n: 7 }), fp: [1, 1], block: true },
   { name: 'gold_boulder', cat: 'resource', desc: 'Gold-veined boulder', make: () => M.boulder(27, { gold: true }), fp: [1, 1], block: true },
-  // decor
-  { name: 'flowers_yellow', cat: 'decor', desc: 'Wildflowers', make: () => M.flowers(3, '#e8c84a'), fp: [1, 1], block: false },
-  { name: 'flowers_white', cat: 'decor', desc: 'Wildflowers', make: () => M.flowers(5, '#f2efe4'), fp: [1, 1], block: false },
-  { name: 'flowers_purple', cat: 'decor', desc: 'Wildflowers', make: () => M.flowers(7, '#a07ad0'), fp: [1, 1], block: false },
-  { name: 'grass_tuft', cat: 'decor', desc: 'Grass tuft', make: () => M.grassTuft(4), fp: [1, 1], block: false },
-  { name: 'grass_tuft_dry', cat: 'decor', desc: 'Dry grass tuft', make: () => M.grassTuft(9, true), fp: [1, 1], block: false },
-  { name: 'reeds', cat: 'decor', desc: 'Reeds / cattails', make: () => M.reeds(3), fp: [1, 1], block: false },
-  // buildings
+  { name: 'stump', cat: 'nature', desc: 'Tree stump (felled tree)', make: () => M.stump(3), fp: [1, 1], block: false },
+  // ---- world buildings
   { name: 'cottage_thatch', cat: 'building', desc: 'Timber-framed cottage, thatch roof', make: () => M.cottage(0), fp: [2, 2], block: true },
   { name: 'cottage_timber', cat: 'building', desc: 'Plank longhouse, shingle roof', make: () => M.cottage(1), fp: [2, 2], block: true },
+  { name: 'cabin', cat: 'building', desc: 'Log cabin (player-built)', make: () => M.cottage(2), fp: [2, 2], block: true },
   { name: 'watchtower', cat: 'building', desc: 'Stone watchtower with player banner', make: () => M.watchtower('blue'), fp: [1, 1], block: true },
-  { name: 'well', cat: 'building', desc: 'Village well', make: () => M.well(), fp: [1, 1], block: true },
+  { name: 'well', cat: 'building', desc: 'Well', make: () => M.well(), fp: [1, 1], block: true },
   { name: 'market_stall', cat: 'building', desc: 'Market stall', make: () => M.stall(), fp: [1, 1], block: true },
   { name: 'windmill', cat: 'building', desc: 'Windmill', make: () => M.windmill(0), fp: [2, 2], block: true },
-  // props
+  // ---- props
   { name: 'campfire', cat: 'prop', desc: 'Campfire (animated)', frames: 6, fps: 10, make: f => M.campfire(f), fp: [1, 1], block: true },
+  { name: 'campfire_out', cat: 'structure', desc: 'Campfire (burnt out)', make: () => M.campfireOut(), fp: [1, 1], block: true },
   { name: 'signpost', cat: 'prop', desc: 'Signpost', make: () => M.signpost(), fp: [1, 1], block: false },
   { name: 'chest', cat: 'prop', desc: 'Treasure chest (collectible)', make: () => M.chest(), fp: [1, 1], block: false },
   { name: 'shrine_lit', cat: 'prop', desc: 'Relic shrine — relic present', make: () => M.shrine(true), fp: [1, 1], block: true },
   { name: 'shrine_empty', cat: 'prop', desc: 'Relic shrine — relic taken', make: () => M.shrine(false), fp: [1, 1], block: true },
-  // ruins
+  // ---- ruins
   { name: 'column_1', cat: 'ruin', desc: 'Broken column', make: () => M.brokenColumn(3), fp: [1, 1], block: true },
   { name: 'column_2', cat: 'ruin', desc: 'Broken column', make: () => M.brokenColumn(8), fp: [1, 1], block: true },
   { name: 'column_3', cat: 'ruin', desc: 'Broken column', make: () => M.brokenColumn(14), fp: [1, 1], block: true },
@@ -75,60 +71,91 @@ const LIST = [
   { name: 'standing_stone_1', cat: 'ruin', desc: 'Standing stone', make: () => M.standingStone(2), fp: [1, 1], block: true },
   { name: 'standing_stone_2', cat: 'ruin', desc: 'Standing stone', make: () => M.standingStone(7), fp: [1, 1], block: true },
   { name: 'standing_stone_3', cat: 'ruin', desc: 'Standing stone', make: () => M.standingStone(13), fp: [1, 1], block: true },
-  // survival structures
-  { name: 'stump', cat: 'nature', desc: 'Tree stump (felled tree)', make: () => M.stump(3), fp: [1, 1], block: false },
-  { name: 'cabin', cat: 'building', desc: 'Log cabin (player-built)', make: () => M.cottage(2), fp: [2, 2], block: true },
-  { name: 'lean_to', cat: 'structure', desc: 'Lean-to shelter — sleep & save', make: () => M.leanTo(), fp: [2, 2], block: true },
-  { name: 'palisade', cat: 'structure', desc: 'Palisade wall block', make: () => M.palisade(5), fp: [1, 1], block: true },
-  { name: 'spike_trap', cat: 'structure', desc: 'Spike trap', make: () => M.spikeTrap(), fp: [1, 1], block: false },
+  // ---- base building
+  { name: 'lean_to', cat: 'structure', desc: 'Lean-to shelter', make: () => M.leanTo(), fp: [2, 2], block: true },
+  { name: 'bed', cat: 'structure', desc: 'Bed', make: () => M.bed(), fp: [1, 1], block: true },
+  { name: 'floor', cat: 'structure', desc: 'Wooden floor', make: () => M.floorTile(), fp: [1, 1], block: false },
+  { name: 'rug', cat: 'structure', desc: 'Woven rug', make: () => M.rug(), fp: [1, 1], block: false },
+  { name: 'table', cat: 'structure', desc: 'Table', make: () => M.table(), fp: [1, 1], block: true },
+  { name: 'bench', cat: 'structure', desc: 'Bench', make: () => M.bench(), fp: [1, 1], block: true },
+  { name: 'shelf', cat: 'structure', desc: 'Storage shelf', make: () => M.shelf(), fp: [1, 1], block: true },
   { name: 'crate', cat: 'structure', desc: 'Storage crate', make: () => M.crate(), fp: [1, 1], block: true },
-  { name: 'rain_collector', cat: 'structure', desc: 'Rain collector (water)', make: () => M.rainCollector(), fp: [1, 1], block: true },
-  { name: 'standing_torch', cat: 'structure', desc: 'Standing torch (animated)', frames: 4, fps: 8, make: f => M.standingTorch(f), fp: [1, 1], block: false },
-  { name: 'campfire_out', cat: 'structure', desc: 'Campfire (burnt out)', make: () => M.campfireOut(), fp: [1, 1], block: true },
+  { name: 'drying_rack', cat: 'structure', desc: 'Drying rack', make: () => M.dryingRack(false), fp: [1, 1], block: true },
+  { name: 'drying_rack_full', cat: 'structure', desc: 'Drying rack with meat', make: () => M.dryingRack(true), fp: [1, 1], block: true },
+  { name: 'stew_pot', cat: 'structure', desc: 'Cooking pot over fire', frames: 4, fps: 8, make: f => M.stewPot(f), fp: [1, 1], block: true },
+  { name: 'garden', cat: 'structure', desc: 'Garden plot (empty)', make: () => M.gardenPlot(0), fp: [1, 1], block: false },
+  { name: 'garden_growing', cat: 'structure', desc: 'Garden plot (growing)', make: () => M.gardenPlot(1), fp: [1, 1], block: false },
+  { name: 'garden_ripe', cat: 'structure', desc: 'Garden plot (ripe)', make: () => M.gardenPlot(2), fp: [1, 1], block: false },
+  { name: 'workbench', cat: 'structure', desc: 'Workbench (advanced crafting)', make: () => M.workbench(), fp: [1, 1], block: true },
+  { name: 'weapon_rack', cat: 'structure', desc: 'Weapon rack', make: () => M.weaponRack(), fp: [1, 1], block: true },
+  { name: 'rain_collector', cat: 'structure', desc: 'Rain collector', make: () => M.rainCollector(), fp: [1, 1], block: true },
+  { name: 'standing_torch', cat: 'structure', desc: 'Standing torch', frames: 4, fps: 8, make: f => M.standingTorch(f), fp: [1, 1], block: false },
+  { name: 'brazier', cat: 'structure', desc: 'Brazier', frames: 4, fps: 8, make: f => M.brazier(f), fp: [1, 1], block: true },
+  { name: 'spirit_lantern', cat: 'structure', desc: 'Spirit lantern (wards off Hollows)', make: () => M.spiritLantern(), fp: [1, 1], block: true },
+  { name: 'spike_trap', cat: 'structure', desc: 'Spike trap', make: () => M.spikeTrap(), fp: [1, 1], block: false },
+  { name: 'spike_wall', cat: 'structure', desc: 'Spiked barricade', make: () => M.spikeWall(), fp: [1, 1], block: true },
+  { name: 'lookout', cat: 'structure', desc: 'Lookout tower', make: () => M.lookout(), fp: [1, 1], block: true },
+  { name: 'palisade', cat: 'structure', desc: 'Palisade block', make: () => M.palisade(5), fp: [1, 1], block: true },
+  { name: 'wall_log_post', cat: 'wall', desc: 'Log wall — post', make: () => M.logWallPart('post'), fp: [1, 1], block: true },
+  { name: 'wall_log_ip', cat: 'wall', desc: 'Log wall — half toward +i', make: () => M.logWallPart('half'), fp: [1, 1], block: true },
+  { name: 'wall_log_in', cat: 'wall', desc: 'Log wall — half toward -i', make: () => M.rotZ(M.logWallPart('half'), Math.PI), fp: [1, 1], block: true },
+  { name: 'wall_log_jp', cat: 'wall', desc: 'Log wall — half toward +j', make: () => M.rotZ(M.logWallPart('half'), Math.PI / 2), fp: [1, 1], block: true },
+  { name: 'wall_log_jn', cat: 'wall', desc: 'Log wall — half toward -j', make: () => M.rotZ(M.logWallPart('half'), -Math.PI / 2), fp: [1, 1], block: true },
+  { name: 'wall_stone_post', cat: 'wall', desc: 'Stone wall — post', make: () => M.stoneWallPart('post'), fp: [1, 1], block: true },
+  { name: 'wall_stone_ip', cat: 'wall', desc: 'Stone wall — half toward +i', make: () => M.stoneWallPart('half'), fp: [1, 1], block: true },
+  { name: 'wall_stone_in', cat: 'wall', desc: 'Stone wall — half toward -i', make: () => M.rotZ(M.stoneWallPart('half'), Math.PI), fp: [1, 1], block: true },
+  { name: 'wall_stone_jp', cat: 'wall', desc: 'Stone wall — half toward +j', make: () => M.rotZ(M.stoneWallPart('half'), Math.PI / 2), fp: [1, 1], block: true },
+  { name: 'wall_stone_jn', cat: 'wall', desc: 'Stone wall — half toward -j', make: () => M.rotZ(M.stoneWallPart('half'), -Math.PI / 2), fp: [1, 1], block: true },
+  { name: 'gate_i', cat: 'wall', desc: 'Gate (runs along i)', make: () => M.gate(false), fp: [1, 1], block: true },
+  { name: 'gate_i_open', cat: 'wall', desc: 'Gate open (along i)', make: () => M.gate(true), fp: [1, 1], block: true },
+  { name: 'gate_j', cat: 'wall', desc: 'Gate (runs along j)', make: () => M.rotZ(M.gate(false), Math.PI / 2), fp: [1, 1], block: true },
+  { name: 'gate_j_open', cat: 'wall', desc: 'Gate open (along j)', make: () => M.rotZ(M.gate(true), Math.PI / 2), fp: [1, 1], block: true },
   { name: 'beacon', cat: 'structure', desc: 'Signal beacon (unlit)', make: () => M.beacon(false), fp: [2, 2], block: true },
   { name: 'beacon_lit', cat: 'structure', desc: 'Signal beacon (burning)', frames: 6, fps: 10, make: f => M.beacon(true, f), fp: [2, 2], block: true },
-  // units: 5 rendered directions x (idle, 8 walk, 4 attack, 1 dead)
-  { name: 'explorer', cat: 'unit', desc: 'Survivor, unarmed (player colour tunic)', unit: true, make: (ph, o) => M.explorer(ph, o), dead: [0.1, 0.7], speed: 2.6 },
-  { name: 'explorer_axe', cat: 'unit', desc: 'Survivor with stone axe', unit: true, make: (ph, o) => M.explorer(ph, Object.assign({ weapon: 'axe' }, o)), dead: [0.1, 0.7], speed: 2.6 },
-  { name: 'explorer_spear', cat: 'unit', desc: 'Survivor with spear', unit: true, make: (ph, o) => M.explorer(ph, Object.assign({ weapon: 'spear' }, o)), dead: [0.1, 0.7], speed: 2.6 },
-  { name: 'explorer_bow', cat: 'unit', desc: 'Survivor with bow', unit: true, make: (ph, o) => M.explorer(ph, Object.assign({ weapon: 'bow' }, o)), dead: [0.1, 0.7], speed: 2.6 },
-  { name: 'villager_1', cat: 'unit', desc: 'Villager', unit: true, make: (ph, o) => M.villager(ph, 0, o), dead: [0.1, 0.7], speed: 1.2 },
-  { name: 'villager_2', cat: 'unit', desc: 'Villager', unit: true, make: (ph, o) => M.villager(ph, 1, o), dead: [0.1, 0.7], speed: 1.2 },
-  { name: 'villager_3', cat: 'unit', desc: 'Villager', unit: true, make: (ph, o) => M.villager(ph, 2, o), dead: [0.1, 0.7], speed: 1.2 },
-  { name: 'deer', cat: 'unit', desc: 'Deer (idle = grazing)', unit: true, make: (ph, o) => M.deer(ph, o), dead: [0.085, 0.8], speed: 3.2 },
-  { name: 'sheep', cat: 'unit', desc: 'Sheep (idle = grazing)', unit: true, make: (ph, o) => M.sheep(ph, o), dead: [0.1, 0.45], speed: 1.0 },
-  { name: 'wolf', cat: 'unit', desc: 'Grey wolf (pack hunter)', unit: true, make: (ph, o) => M.wolf(ph, o), dead: [0.075, 0.55], speed: 3.0 },
-  { name: 'boar', cat: 'unit', desc: 'Wild boar (charges when provoked)', unit: true, make: (ph, o) => M.boar(ph, o), dead: [0.11, 0.45], speed: 2.4 },
-  { name: 'hollow', cat: 'unit', desc: 'Hollow — night creature, fears fire', unit: true, make: (ph, o) => M.hollow(ph, o), dead: [0.11, 0.8], speed: 2.3 },
-  { name: 'hollow_brute', cat: 'unit', desc: 'Hollow brute (1.4x), appears from day 4', unit: true, make: (ph, o) => M.scaled(M.hollow(ph, o), 1.4), dead: [0.15, 1.1], deadScale: 1.4, speed: 1.8 },
-  // item icons (3x scale, body only)
-  { name: 'icon_log', cat: 'icon', desc: 'log', icon: 'log' },
-  { name: 'icon_stick', cat: 'icon', desc: 'stick', icon: 'stick' },
-  { name: 'icon_stone', cat: 'icon', desc: 'stone', icon: 'stone' },
-  { name: 'icon_fiber', cat: 'icon', desc: 'fiber', icon: 'fiber' },
-  { name: 'icon_rope', cat: 'icon', desc: 'rope', icon: 'rope' },
-  { name: 'icon_berries', cat: 'icon', desc: 'berries', icon: 'berries' },
-  { name: 'icon_meat_raw', cat: 'icon', desc: 'meat_raw', icon: 'meat_raw' },
-  { name: 'icon_meat_cooked', cat: 'icon', desc: 'meat_cooked', icon: 'meat_cooked' },
-  { name: 'icon_hide', cat: 'icon', desc: 'hide', icon: 'hide' },
-  { name: 'icon_cloth', cat: 'icon', desc: 'cloth', icon: 'cloth' },
-  { name: 'icon_herb', cat: 'icon', desc: 'herb', icon: 'herb' },
-  { name: 'icon_relic', cat: 'icon', desc: 'relic', icon: 'relic' },
-  { name: 'icon_arrow', cat: 'icon', desc: 'arrow', icon: 'arrow' },
-  { name: 'icon_axe', cat: 'icon', desc: 'axe', icon: 'axe' },
-  { name: 'icon_spear', cat: 'icon', desc: 'spear', icon: 'spear' },
-  { name: 'icon_bow', cat: 'icon', desc: 'bow', icon: 'bow' },
-  { name: 'icon_torch', cat: 'icon', desc: 'torch', icon: 'torch' },
-  { name: 'icon_salve', cat: 'icon', desc: 'salve', icon: 'salve' },
-  { name: 'icon_bandage', cat: 'icon', desc: 'bandage', icon: 'bandage' },
-  { name: 'icon_waterskin', cat: 'icon', desc: 'waterskin', icon: 'waterskin' },
-  { name: 'icon_armor', cat: 'icon', desc: 'armor', icon: 'armor' },
+  // ---- units: 8 directions x (idle, 8 walk, 4 attack, 1 dead)
+  ...['fists', 'axe', 'spear', 'bow', 'club', 'knife', 'greataxe', 'sling'].map(w => U(w === 'fists' ? 'explorer' : 'explorer_' + w, `Survivor${w === 'fists' ? ', unarmed' : ' with ' + w}`, (ph, o) => M.explorer(ph, Object.assign(w === 'fists' ? {} : { weapon: w }, o)), [0.1, 0.7], 2.6)),
+  U('deer', 'Deer (idle = grazing)', (ph, o) => M.deer(ph, o), [0.085, 0.8], 3.2),
+  U('sheep', 'Sheep (idle = grazing)', (ph, o) => M.sheep(ph, o), [0.1, 0.45], 1.0),
+  U('wolf', 'Grey wolf', (ph, o) => M.wolf(ph, o), [0.075, 0.55], 3.0),
+  U('boar', 'Wild boar', (ph, o) => M.boar(ph, o), [0.11, 0.45], 2.4),
+  U('bear', 'Brown bear (outer forests)', (ph, o) => M.bear(ph, o), [0.15, 0.7], 2.6),
+  U('spider', 'Duskweaver spider (venomous)', (ph, o) => M.spider(ph, o), [0.12, 0.5], 3.2),
+  U('hollow', 'Hollow — fears fire', (ph, o) => M.hollow(ph, o), [0.11, 0.8], 2.3),
+  U('hollow_stalker', 'Hollow stalker (fast)', (ph, o) => M.hollow(ph, Object.assign({ stalker: true }, o)), [0.1, 0.8], 3.3),
+  U('crawler', 'Hollow crawler', (ph, o) => M.crawler(ph, o), [0.1, 0.6], 2.8),
+  U('wisp', 'Wisp (ranged spirit)', (ph, o) => M.wisp(ph, o), null, 2.0, { deadMake: () => M.wisp(null, { dead: true }) }),
+  U('hollow_brute', 'Hollow brute (1.4x)', (ph, o) => M.scaled(M.hollow(ph, o), 1.4), [0.15, 1.1], 1.8, { deadScale: 1.4 }),
+  // ---- item icons (3x scale, body only)
+  ...['log', 'stick', 'stone', 'fiber', 'rope', 'berries', 'meat_raw', 'meat_cooked', 'hide', 'cloth', 'herb', 'relic', 'arrow', 'axe', 'spear', 'bow', 'torch', 'salve', 'bandage', 'waterskin', 'armor', 'club', 'knife', 'greataxe', 'sling', 'fire_arrow', 'jerky', 'stew', 'seeds', 'bone']
+    .map(k => ({ name: 'icon_' + k, cat: 'icon', desc: k, icon: k })),
+  // ---- portrait expressions (own camera)
+  ...Object.entries({
+    neutral: { lid: 0.12 }, content: { smile: 0.55, lid: 0.22 }, hungry: { smile: -0.35, lid: 0.3, browIn: 0.35, look: [0, -0.25] }, thirsty: { open: 0.25, lid: 0.32, browIn: 0.3 },
+    hurt: { lid: 0.42, browIn: 0.7, smile: -0.5, teeth: 1, open: 0.15 }, scared: { lid: -0.08, browUp: 0.9, open: 0.5 }, tired: { lid: 0.62, smile: -0.2, browUp: -0.1, tilt: 0.06 },
+    cold: { lid: 0.38, teeth: 1, open: 0.12, browIn: 0.5, smile: -0.1 }, weak: { lid: 0.58, open: 0.22, browIn: 0.6, browUp: 0.3, tilt: 0.12 }, sick: { lid: 0.48, smile: -0.6, browIn: 0.5, look: [0.2, -0.2] },
+    angry: { lid: 0.25, browIn: 1.0, smile: -0.3, teeth: 1, open: 0.08 }, dead: { lid: 1.05, open: 0.18, tilt: 0.2 }, blink: { lid: 1.05 },
+  }).map(([k, e]) => ({ name: 'portrait_' + k, cat: 'portrait', desc: 'Portrait — ' + k, portrait: e })),
 ];
 
 const log = document.getElementById('log');
 const say = s => { log.textContent += '\n' + s; };
 function toCanvas(w, h) { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
 function putLayer(ctx, data, w, h, x, y) { ctx.putImageData(new ImageData(data, w, h), x, y); }
+function cropTo(res) { // crop an icon/portrait body to its opaque pixels
+  let x0 = res.w, y0 = res.h, x1 = 0, y1 = 0;
+  for (let y = 0; y < res.h; y++) for (let x = 0; x < res.w; x++) if (res.body[(y * res.w + x) * 4 + 3]) { x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y); }
+  x0 = Math.max(0, x0 - 2); y0 = Math.max(0, y0 - 2); x1 = Math.min(res.w - 1, x1 + 2); y1 = Math.min(res.h - 1, y1 + 2);
+  const full = toCanvas(res.w, res.h); putLayer(full.getContext('2d'), res.body, res.w, res.h, 0, 0);
+  const c = toCanvas(x1 - x0 + 1, y1 - y0 + 1); c.getContext('2d').drawImage(full, -x0, -y0); return { c, x0, y0 };
+}
+// portrait camera: looking at the face from slightly to its left and above
+const PCAM = (() => {
+  const yaw = 0.32, el = 0.06, V = [-Math.cos(el) * Math.cos(yaw), -Math.cos(el) * Math.sin(yaw), -Math.sin(el)];
+  const cr = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]], n = v => { const l = Math.hypot(...v); return v.map(q => q / l); };
+  const R = n(cr(V, [0, 0, 1])), U = cr(R, V), D = U.map(v => -v);
+  const L = n([-V[0] * 0.75 - R[0] * 0.55 + U[0] * 0.55, -V[1] * 0.75 - R[1] * 0.55 + U[1] * 0.55, -V[2] * 0.75 - R[2] * 0.55 + U[2] * 0.55]);
+  return { R, D, V, L, PX: 30, ground: false };
+})();
 
 async function bake() {
   const out = { assets: [], terrain: {}, timing: {} };
@@ -139,7 +166,7 @@ async function bake() {
     if (it.unit) {
       const dirs = STYLE.sprites.rendered, nWalk = STYLE.sprites.animation.walk.frames, nAtt = STYLE.sprites.animation.attack.frames;
       const frames = 1 + nWalk + nAtt + 1;
-      const deadModel = () => { const base = it.make(null); return it.deadScale ? M.scaled(M.fallen(M.hollow(null), it.dead[0] / it.deadScale, it.dead[1] / it.deadScale), it.deadScale) : M.fallen(base, it.dead[0], it.dead[1]); };
+      const deadModel = () => it.deadMake ? it.deadMake() : it.deadScale ? M.scaled(M.fallen(M.hollow(null), it.dead[0] / it.deadScale, it.dead[1] / it.deadScale), it.deadScale) : M.fallen(it.make(null), it.dead[0], it.dead[1]);
       let box = null; const probe = it.make(null), dprobe = deadModel();
       for (const d of dirs) { box = R3.unionBox(box, R3.screenBox(R3.worldBounds(probe.bounds, STYLE.sprites.facing[d]))); box = R3.unionBox(box, R3.screenBox(R3.worldBounds(dprobe.bounds, STYLE.sprites.facing[d]))); }
       const bodyC = toCanvas(box.w * frames, box.h * dirs.length), shC = toCanvas(box.w * frames, box.h * dirs.length);
@@ -153,21 +180,25 @@ async function bake() {
         const res = R3.render(mdl, { angle: STYLE.sprites.facing[d], box });
         putLayer(bx, res.body, res.w, res.h, f * box.w, r * box.h); putLayer(sx, res.shadow, res.w, res.h, f * box.w, r * box.h);
       } });
-      Object.assign(rec, { w: box.w, h: box.h, ax: -box.x, ay: -box.y, dirs, mirrored: STYLE.sprites.mirrored, frames, layout: STYLE.sprites.animation.unitLayout,
+      Object.assign(rec, { w: box.w, h: box.h, ax: -box.x, ay: -box.y, dirs, mirrored: {}, frames, layout: STYLE.sprites.animation.unitLayout,
         anim: { idle: [0, 1], walk: [1, nWalk], attack: [1 + nWalk, nAtt], dead: [1 + nWalk + nAtt, 1] }, fps: STYLE.sprites.animation.walk.fps, speed: it.speed, body: bodyC.toDataURL(), shadow: shC.toDataURL() });
     } else if (it.icon) {
-      const mdl = M.scaled(M.icon(it.icon), 3), box = R3.screenBox(mdl.bounds);
-      const res = R3.render(mdl, { box });
-      let x0 = res.w, y0 = res.h, x1 = 0, y1 = 0; // crop to the opaque body
-      for (let y = 0; y < res.h; y++) for (let x = 0; x < res.w; x++) if (res.body[(y * res.w + x) * 4 + 3]) { x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y); }
-      x0 = Math.max(0, x0 - 2); y0 = Math.max(0, y0 - 2); x1 = Math.min(res.w - 1, x1 + 2); y1 = Math.min(res.h - 1, y1 + 2);
-      const full = toCanvas(res.w, res.h); putLayer(full.getContext('2d'), res.body, res.w, res.h, 0, 0);
-      const c = toCanvas(x1 - x0 + 1, y1 - y0 + 1); c.getContext('2d').drawImage(full, -x0, -y0);
+      const mdl = M.scaled(M.icon(it.icon), 3), res = R3.render(mdl, { box: R3.screenBox(mdl.bounds) }), { c, x0, y0 } = cropTo(res);
       Object.assign(rec, { w: c.width, h: c.height, ax: res.ax - x0, ay: res.ay - y0, frames: 1, body: c.toDataURL(), shadow: null });
+    } else if (it.portrait) {
+      const res = R3.render(M.portraitBust(it.portrait), { cam: PCAM, ss: 3 }), { c } = cropTo(res);
+      Object.assign(rec, { w: c.width, h: c.height, ax: 0, ay: 0, frames: 1, body: c.toDataURL(), shadow: null });
+    } else if (it.foliage || it.blades) {
+      const frames = it.foliage ? 3 : 12; let box = null, bodyC, shC;
+      for (let f = 0; f < frames; f++) {
+        const res = it.foliage ? FOLIAGE.render(FOLIAGE.makeTree(it.foliage, it.seed, f, frames), { box }) : FOLIAGE.renderBlades(it.blades, it.seed, f % 6, 6, f >= 6);
+        if (!box) { box = res.box; if (it.foliage) { box = { x: box.x - 3, y: box.y - 3, w: box.w + 6, h: box.h + 6 }; } bodyC = toCanvas(box.w * frames, box.h); shC = toCanvas(box.w * frames, box.h); if (it.foliage && f === 0) { const r2 = FOLIAGE.render(FOLIAGE.makeTree(it.foliage, it.seed, 0, frames), { box }); putLayer(bodyC.getContext('2d'), r2.body, r2.w, r2.h, 0, 0); putLayer(shC.getContext('2d'), r2.shadow, r2.w, r2.h, 0, 0); continue; } }
+        putLayer(bodyC.getContext('2d'), res.body, res.w, res.h, f * box.w, 0); putLayer(shC.getContext('2d'), res.shadow, res.w, res.h, f * box.w, 0);
+      }
+      Object.assign(rec, { w: box.w, h: box.h, ax: -box.x, ay: -box.y, frames, fps: 6, wind: it.foliage ? { flutter: [0, 3], bend: true } : { breeze: [0, 6], gale: [6, 6] }, body: bodyC.toDataURL(), shadow: shC.toDataURL() });
     } else {
       const frames = it.frames || 1;
-      let box = null; const probe = it.make(0);
-      box = R3.screenBox(probe.bounds);
+      const probe = it.make(0), box = R3.screenBox(probe.bounds);
       const bodyC = toCanvas(box.w * frames, box.h), shC = toCanvas(box.w * frames, box.h);
       for (let f = 0; f < frames; f++) {
         const res = R3.render(it.make(f), { box });
