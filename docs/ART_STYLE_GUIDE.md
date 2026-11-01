@@ -59,7 +59,8 @@ The machine-readable version of this guide is [`dataset/style.json`](../dataset/
 | Portrait | Drawn live, not baked (`src/portrait.js`): a 96×108 pixel-art bust, shown at 2× (desktop) or 1× (touch). The same hat, hair, stubble, blue shirt and pack strap as the in-game survivor. Skin is lit by a small relief map (nose, brow ridge, cheekbones, chin) from the game's front-left sun, with a shadow under the hat brim. Every material uses a 5–8 step ramp with 4×4 ordered dithering and a dark silhouette outline. A rig (brows, lids, pupils, mouth shapes, teeth, tongue, wrinkles, head motion) is animated per mood at about 20 fps, and moods ease into one another. |
 | Item icons | The same models and lights rendered at 3× scale, body layer only, cropped. |
 | Walls | Wall and gate pieces are baked as a post plus half-segments in both diagonal directions, so the game joins neighbouring wall tiles automatically. |
-| Terrain | 11 tileable top-down textures, 384² px = 4×4 tiles (96 texels per tile), sampled in world space so there are no seams. |
+| Terrain | 11 tileable top-down textures, 384² px = 4×4 tiles (96 texels per tile), sampled in world space so there are no seams. They are hand-made (`assets/custom/source/terrain/`), lit by the slope and shown in their own colours (`?snap=1` snaps them to the palette). |
+| Hand-made art | Trees, bushes, ferns and terrain are hand-made replacements under the generated names. They keep the generated canvas size and anchor, use binary-alpha bodies, and have dark shadows in four alpha steps up to 0.5, falling back-right. `tools/import_custom.py` separates the shadow and adds the flutter frames. `tools/bake.js` applies `assets/custom/` on every bake. |
 | Fog | Unexplored areas are black. Explored areas out of sight are dimmed to 48%. Vision radius 7 tiles (+2 on high ground). |
 
 ### Scale reference (world units, 1 = one tile)

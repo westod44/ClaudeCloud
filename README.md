@@ -71,6 +71,28 @@ node tools/bake.js wolf,beacon_lit
 
 This previews a subset in `/tmp/bake-preview` without writing anything to the repo.
 
+### Hand-made art (replacing baked assets)
+All 22 trees, bushes and ferns and all 11 terrain textures now use hand-made images. They replace the generated ones under the same names. Your images are kept as supplied in `assets/custom/source/`, and the game-ready versions are generated from them.
+
+To change them, drop new images into `assets/custom/source/` and run both commands. Images go in `trees/<name>.png` plus `trees/<name>_with_shadow.png`, or `terrain/<id>.png`, at the same canvas size as the asset they replace.
+
+```bash
+python3 tools/import_custom.py
+```
+
+This step:
+- Splits the shadow out of each `_with_shadow` image.
+- Adds three leaf-flutter frames for wind. Frame 1 is your image unchanged, and the others shift leaf clusters by about a pixel.
+- Writes everything to `assets/custom/`. It needs Pillow and NumPy.
+
+```bash
+node tools/bake.js --relink
+```
+
+This rebuilds the atlas from the files on disk in a few seconds, without re-rendering anything. A full `node tools/bake.js` always applies `assets/custom/` on top of what it renders, so a re-bake never loses your art.
+
+Terrain keeps your textures' exact colours. Add `?snap=1` to the game URL to snap it to the 256-colour palette instead.
+
 ## Layout
 | Path | Purpose |
 |---|---|
@@ -86,6 +108,8 @@ This previews a subset in `/tmp/bake-preview` without writing anything to the re
 | `src/audio.js` | Synthesised sound effects and ambience (WebAudio) |
 | `src/portrait.js` | The live status portrait: a rigged, animated pixel-art face with mood animations and state overlays |
 | `src/game.js` | The game: world generation, terrain rendering, survival, combat, AI, building, saving, UI |
-| `tools/bake.html`, `tools/bake.js` | Asset bake pipeline and exporter |
+| `tools/bake.html`, `tools/bake.js` | Asset bake pipeline and exporter (`--relink` rebuilds the atlas only) |
+| `tools/import_custom.py` | Turns hand-made images in `assets/custom/source/` into game-ready sheets |
+| `assets/custom/` | Hand-made replacement art (sources, generated sheets, `custom.json`) |
 | `assets/` | Baked sprites, terrain, manifest and the chunked browser atlas |
 | `dataset/` | style.json, palette.json, palette.pal |

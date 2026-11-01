@@ -1,0 +1,149 @@
+{
+ "sprites": {
+  "aspen_1": {
+   "w": 151,
+   "h": 124,
+   "frames": 3,
+   "source": "assets/custom/source/trees/aspen_1.png"
+  },
+  "berry_bush": {
+   "w": 69,
+   "h": 48,
+   "frames": 3,
+   "source": "assets/custom/source/trees/berry_bush.png"
+  },
+  "birch_1": {
+   "w": 173,
+   "h": 132,
+   "frames": 3,
+   "source": "assets/custom/source/trees/birch_1.png"
+  },
+  "birch_2": {
+   "w": 161,
+   "h": 138,
+   "frames": 3,
+   "source": "assets/custom/source/trees/birch_2.png"
+  },
+  "bush_1": {
+   "w": 70,
+   "h": 45,
+   "frames": 3,
+   "source": "assets/custom/source/trees/bush_1.png"
+  },
+  "bush_2": {
+   "w": 68,
+   "h": 55,
+   "frames": 3,
+   "source": "assets/custom/source/trees/bush_2.png"
+  },
+  "dead_tree": {
+   "w": 201,
+   "h": 133,
+   "frames": 3,
+   "source": "assets/custom/source/trees/dead_tree.png"
+  },
+  "fern_1": {
+   "w": 75,
+   "h": 49,
+   "frames": 3,
+   "source": "assets/custom/source/trees/fern_1.png"
+  },
+  "fern_2": {
+   "w": 81,
+   "h": 49,
+   "frames": 3,
+   "source": "assets/custom/source/trees/fern_2.png"
+  },
+  "maple_1": {
+   "w": 180,
+   "h": 127,
+   "frames": 3,
+   "source": "assets/custom/source/trees/maple_1.png"
+  },
+  "maple_2": {
+   "w": 197,
+   "h": 129,
+   "frames": 3,
+   "source": "assets/custom/source/trees/maple_2.png"
+  },
+  "oak_1": {
+   "w": 200,
+   "h": 124,
+   "frames": 3,
+   "source": "assets/custom/source/trees/oak_1.png"
+  },
+  "oak_2": {
+   "w": 200,
+   "h": 121,
+   "frames": 3,
+   "source": "assets/custom/source/trees/oak_2.png"
+  },
+  "oak_3": {
+   "w": 206,
+   "h": 139,
+   "frames": 3,
+   "source": "assets/custom/source/trees/oak_3.png"
+  },
+  "oak_4": {
+   "w": 199,
+   "h": 138,
+   "frames": 3,
+   "source": "assets/custom/source/trees/oak_4.png"
+  },
+  "palm_1": {
+   "w": 228,
+   "h": 142,
+   "frames": 3,
+   "source": "assets/custom/source/trees/palm_1.png"
+  },
+  "palm_2": {
+   "w": 221,
+   "h": 139,
+   "frames": 3,
+   "source": "assets/custom/source/trees/palm_2.png"
+  },
+  "pine_1": {
+   "w": 192,
+   "h": 162,
+   "frames": 3,
+   "source": "assets/custom/source/trees/pine_1.png"
+  },
+  "pine_2": {
+   "w": 181,
+   "h": 151,
+   "frames": 3,
+   "source": "assets/custom/source/trees/pine_2.png"
+  },
+  "pine_3": {
+   "w": 195,
+   "h": 166,
+   "frames": 3,
+   "source": "assets/custom/source/trees/pine_3.png"
+  },
+  "pine_snow_1": {
+   "w": 173,
+   "h": 145,
+   "frames": 3,
+   "source": "assets/custom/source/trees/pine_snow_1.png"
+  },
+  "pine_snow_2": {
+   "w": 181,
+   "h": 155,
+   "frames": 3,
+   "source": "assets/custom/source/trees/pine_snow_2.png"
+  }
+ },
+ "terrain": [
+  "deep",
+  "dirt",
+  "dryGrass",
+  "forestFloor",
+  "grass",
+  "grassLush",
+  "road",
+  "rock",
+  "sand",
+  "shallow",
+  "snow"
+ ]
+}

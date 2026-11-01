@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-01T12:26:09.864Z",
+ "generated": "2026-11-01T12:59:21.148Z",
  "style": "dataset/style.json",
  "palette": "dataset/palette.json",
  "assets": [
@@ -26,6 +26,7 @@
     "bend": true
    },
    "bakeMs": 591,
+   "custom": "assets/custom/source/trees/oak_1.png",
    "files": {
     "body": "assets/sprites/oak_1.png",
     "shadow": "assets/sprites/oak_1_shadow.png"
@@ -54,6 +55,7 @@
     "bend": true
    },
    "bakeMs": 540,
+   "custom": "assets/custom/source/trees/oak_2.png",
    "files": {
     "body": "assets/sprites/oak_2.png",
     "shadow": "assets/sprites/oak_2_shadow.png"
@@ -82,6 +84,7 @@
     "bend": true
    },
    "bakeMs": 491,
+   "custom": "assets/custom/source/trees/oak_3.png",
    "files": {
     "body": "assets/sprites/oak_3.png",
     "shadow": "assets/sprites/oak_3_shadow.png"
@@ -110,6 +113,7 @@
     "bend": true
    },
    "bakeMs": 395,
+   "custom": "assets/custom/source/trees/oak_4.png",
    "files": {
     "body": "assets/sprites/oak_4.png",
     "shadow": "assets/sprites/oak_4_shadow.png"
@@ -138,6 +142,7 @@
     "bend": true
    },
    "bakeMs": 358,
+   "custom": "assets/custom/source/trees/maple_1.png",
    "files": {
     "body": "assets/sprites/maple_1.png",
     "shadow": "assets/sprites/maple_1_shadow.png"
@@ -166,6 +171,7 @@
     "bend": true
    },
    "bakeMs": 361,
+   "custom": "assets/custom/source/trees/maple_2.png",
    "files": {
     "body": "assets/sprites/maple_2.png",
     "shadow": "assets/sprites/maple_2_shadow.png"
@@ -194,6 +200,7 @@
     "bend": true
    },
    "bakeMs": 133,
+   "custom": "assets/custom/source/trees/aspen_1.png",
    "files": {
     "body": "assets/sprites/aspen_1.png",
     "shadow": "assets/sprites/aspen_1_shadow.png"
@@ -222,6 +229,7 @@
     "bend": true
    },
    "bakeMs": 227,
+   "custom": "assets/custom/source/trees/birch_1.png",
    "files": {
     "body": "assets/sprites/birch_1.png",
     "shadow": "assets/sprites/birch_1_shadow.png"
@@ -250,6 +258,7 @@
     "bend": true
    },
    "bakeMs": 144,
+   "custom": "assets/custom/source/trees/birch_2.png",
    "files": {
     "body": "assets/sprites/birch_2.png",
     "shadow": "assets/sprites/birch_2_shadow.png"
@@ -278,6 +287,7 @@
     "bend": true
    },
    "bakeMs": 403,
+   "custom": "assets/custom/source/trees/pine_1.png",
    "files": {
     "body": "assets/sprites/pine_1.png",
     "shadow": "assets/sprites/pine_1_shadow.png"
@@ -306,6 +316,7 @@
     "bend": true
    },
    "bakeMs": 268,
+   "custom": "assets/custom/source/trees/pine_2.png",
    "files": {
     "body": "assets/sprites/pine_2.png",
     "shadow": "assets/sprites/pine_2_shadow.png"
@@ -334,6 +345,7 @@
     "bend": true
    },
    "bakeMs": 301,
+   "custom": "assets/custom/source/trees/pine_3.png",
    "files": {
     "body": "assets/sprites/pine_3.png",
     "shadow": "assets/sprites/pine_3_shadow.png"
@@ -362,6 +374,7 @@
     "bend": true
    },
    "bakeMs": 454,
+   "custom": "assets/custom/source/trees/pine_snow_1.png",
    "files": {
     "body": "assets/sprites/pine_snow_1.png",
     "shadow": "assets/sprites/pine_snow_1_shadow.png"
@@ -390,6 +403,7 @@
     "bend": true
    },
    "bakeMs": 334,
+   "custom": "assets/custom/source/trees/pine_snow_2.png",
    "files": {
     "body": "assets/sprites/pine_snow_2.png",
     "shadow": "assets/sprites/pine_snow_2_shadow.png"
@@ -418,6 +432,7 @@
     "bend": true
    },
    "bakeMs": 73,
+   "custom": "assets/custom/source/trees/palm_1.png",
    "files": {
     "body": "assets/sprites/palm_1.png",
     "shadow": "assets/sprites/palm_1_shadow.png"
@@ -446,6 +461,7 @@
     "bend": true
    },
    "bakeMs": 104,
+   "custom": "assets/custom/source/trees/palm_2.png",
    "files": {
     "body": "assets/sprites/palm_2.png",
     "shadow": "assets/sprites/palm_2_shadow.png"
@@ -474,6 +490,7 @@
     "bend": true
    },
    "bakeMs": 48,
+   "custom": "assets/custom/source/trees/dead_tree.png",
    "files": {
     "body": "assets/sprites/dead_tree.png",
     "shadow": "assets/sprites/dead_tree_shadow.png"
@@ -502,6 +519,7 @@
     "bend": true
    },
    "bakeMs": 32,
+   "custom": "assets/custom/source/trees/bush_1.png",
    "files": {
     "body": "assets/sprites/bush_1.png",
     "shadow": "assets/sprites/bush_1_shadow.png"
@@ -530,6 +548,7 @@
     "bend": true
    },
    "bakeMs": 47,
+   "custom": "assets/custom/source/trees/bush_2.png",
    "files": {
     "body": "assets/sprites/bush_2.png",
     "shadow": "assets/sprites/bush_2_shadow.png"
@@ -558,6 +577,7 @@
     "bend": true
    },
    "bakeMs": 40,
+   "custom": "assets/custom/source/trees/berry_bush.png",
    "files": {
     "body": "assets/sprites/berry_bush.png",
     "shadow": "assets/sprites/berry_bush_shadow.png"
@@ -586,6 +606,7 @@
     "bend": true
    },
    "bakeMs": 26,
+   "custom": "assets/custom/source/trees/fern_1.png",
    "files": {
     "body": "assets/sprites/fern_1.png",
     "shadow": "assets/sprites/fern_1_shadow.png"
@@ -614,6 +635,7 @@
     "bend": true
    },
    "bakeMs": 19,
+   "custom": "assets/custom/source/trees/fern_2.png",
    "files": {
     "body": "assets/sprites/fern_2.png",
     "shadow": "assets/sprites/fern_2_shadow.png"

@@ -979,6 +979,7 @@
   const L = S.lighting.sunDir, TSL = S.lighting.terrainSlope;
   const FLAT = TSL.ambient + TSL.litSlopeGain * L[2];
   const FOAM = PAL.hex('#e3efe9');
+  const SNAP = /[?&]snap=1/.test(location.search); // terrain keeps the texture artists' exact colours unless ?snap=1
   function renderChunk(cx, cy) {
     const X0 = cx * CH, Y0 = cy * CH, sBuf = new Float32Array(CH * CH).fill(NaN);
     const ds = 1 / 64, sLo = Y0 / HHp - 0.25, sHi = (Y0 + CH + MAXLV * ZPX) / HHp + 0.25;
@@ -1016,12 +1017,12 @@
         const nl = Math.hypot(hx, hy, 1), ndl = (-hx * L[0] - hy * L[1] + L[2]) / nl; shade = (TSL.ambient + TSL.litSlopeGain * Math.max(0, ndl)) / FLAT;
         [r, gg, b] = [col[0] * shade, col[1] * shade, col[2] * shade];
         // snow layer for this pixel (shown when it snows)
-        const sn = 0.85 + (noise2(x * 9, y * 9, 1e5, 61) - 0.5) * 0.25, sq = PAL.quantize(236 * sn * shade, 242 * sn * shade, 250 * sn * Math.min(1.05, shade + 0.05)), so = (py * CH + px) * 4;
+        const snc = sample(TYPES.snow), sh2 = Math.min(1.08, shade + 0.04), sq = SNAP ? PAL.quantize(snc[0] * shade, snc[1] * shade, snc[2] * sh2) : [snc[0] * shade, snc[1] * shade, snc[2] * sh2], so = (py * CH + px) * 4; // snow cover uses the snow texture
         // mostly continuous cover with small bare patches, thinner on steep slopes, dithered pixel-art edges
         const cov = 0.62 * noise2(x * 2.2, y * 2.2, 1e5, 62) + 0.38 * noise2(x * 9, y * 9, 1e5, 63) - Math.min(0.3, Math.hypot(hx, hy) * 0.12);
         sd[so] = sq[0]; sd[so + 1] = sq[1]; sd[so + 2] = sq[2]; sd[so + 3] = cov > 0.34 ? 255 : cov > 0.3 && ((px + py) & 1) ? 255 : 0;
       }
-      const q = PAL.quantize(r, gg, b), o = (py * CH + px) * 4; d[o] = q[0]; d[o + 1] = q[1]; d[o + 2] = q[2]; d[o + 3] = 255;
+      const q = SNAP ? PAL.quantize(r, gg, b) : [r, gg, b], o = (py * CH + px) * 4; d[o] = q[0]; d[o + 1] = q[1]; d[o + 2] = q[2]; d[o + 3] = 255;
     }
     g.putImageData(img, 0, 0); sg.putImageData(simg, 0, 0);
     return { c: cvs, snow };
