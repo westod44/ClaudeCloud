@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lantern Isles — Art Dataset</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya+Sans:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  body{margin:0;background:#17120d;color:#f1e3c0;font-family:'Alegreya Sans',Georgia,serif}
+  header{padding:22px 28px;background:linear-gradient(180deg,#3a2d20,#21180f);border-bottom:2px solid #b08a3e}
+  h1{font-family:Cinzel,serif;color:#ffd36a;letter-spacing:4px;margin:0 0 6px;font-size:26px}
+  h2{font-family:Cinzel,serif;color:#ffd36a;letter-spacing:2px;font-size:18px;margin:28px 28px 10px}
+  header p{margin:0;opacity:.85;max-width:900px}
+  a{color:#ffd36a}
+  .spec{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;margin:0 28px}
+  .spec div{background:#241c14;border:1px solid #5b4524;padding:8px 10px;font-size:14px}.spec b{display:block;color:#ffd36a;font-size:12px;letter-spacing:1px;text-transform:uppercase}
+  .grid{display:flex;flex-wrap:wrap;gap:12px;margin:0 28px}
+  .card{background:#241c14;border:1px solid #5b4524;padding:6px;display:flex;flex-direction:column;align-items:center}
+  .card canvas{image-rendering:pixelated;display:block}
+  .card .n{font-size:13px;margin-top:4px;color:#ffd36a}.card .d{font-size:12px;opacity:.75;text-align:center;max-width:260px}
+  #pal{display:flex;flex-wrap:wrap;margin:0 28px;max-width:960px}#pal span{width:15px;height:15px;display:block}
+  footer{padding:30px 28px;opacity:.6;font-size:13px}
+</style>
+</head>
+<body>
+<header>
+  <h1>LANTERN ISLES · ART DATASET</h1>
+  <p>Every asset below was rendered by one pipeline: a fixed 2:1 dimetric camera, one sun, a shared 256-colour palette, and separate shadow layers. That is the pre-rendered method of late-90s isometric strategy games. All models are original. <a href="index.html">Play the game →</a></p>
+</header>
+<h2>Standard</h2><div class="spec" id="spec"></div>
+<h2>Palette (256)</h2><div id="pal"></div>
+<h2>Terrain textures</h2><div class="grid" id="terrain"></div>
+<div id="cats"></div>
+<footer>Generated from <code>src/style.js</code> and <code>src/models.js</code> by <code>tools/bake.js</code>. Units: 5 rendered directions, mirrored to 8, idle + 8 walk frames.</footer>
+<script src="src/style.js"></script>
+<script src="src/palette.js"></script>
+<script src="assets/atlas.js"></script>
+<script>
+const S = STYLE, M = ATLAS.manifest;
+const spec = [
+  ['Projection', `${S.projection.type}<br>camera ${S.projection.cameraElevationDeg}° elevation, ${S.projection.cameraAzimuthDeg}° azimuth`],
+  ['Tile', `${S.projection.tile.w}×${S.projection.tile.h} px · 1 unit = 1 tile<br>${S.projection.pxPerUnit.toFixed(2)} px/unit, ${S.projection.pxPerUnitZ.toFixed(2)} px per unit of height`],
+  ['Elevation', `${S.projection.elevation.levels} levels × ${S.projection.elevation.pxPerLevel} px, lit slopes`],
+  ['Sun', `from front-left, ${S.lighting.sunElevationDeg}° high<br>shadows fall back-right, max alpha ${S.lighting.shadow.maxAlpha}`],
+  ['Lighting', `sun ${S.lighting.sunColor} · sky fill ${S.lighting.skyColor} · earth bounce ${S.lighting.bounceColor} · AO`],
+  ['Sprites', `${S.render.supersample}×${S.render.supersample} supersampled, binary alpha, no outlines<br>body + shadow layers, palette-snapped`],
+  ['Animation', `${S.sprites.rendered.length} directions rendered, ${S.sprites.directions.length} shown (mirroring)<br>walk ${S.sprites.animation.walk.frames} frames @ ${S.sprites.animation.walk.fps} fps`],
+  ['Terrain', `${S.terrain.types.length} tileable textures, ${S.terrain.textureSize}px = 4×4 tiles<br>${S.terrain.blend}`],
+];
+document.getElementById('spec').innerHTML = spec.map(([k, v]) => `<div><b>${k}</b>${v}</div>`).join('');
+document.getElementById('pal').innerHTML = PAL.colors.slice(0, PAL.used).map(c => `<span title="rgb(${c})" style="background:rgb(${c})"></span>`).join('');
+const load = src => new Promise(r => { const i = new Image(); i.onload = () => r(i); i.src = src; });
+(async () => {
+  const grass = await load(ATLAS.images.terrain_grass);
+  for (const t of M.terrain) {
+    const img = await load(ATLAS.images['terrain_' + t.id]); const c = document.createElement('canvas'); c.width = c.height = 192; const x = c.getContext('2d'); x.imageSmoothingEnabled = false; x.drawImage(img, 0, 0, 192, 192);
+    const name = S.terrain.types.find(q => q.id === t.id); document.getElementById('terrain').insertAdjacentHTML('beforeend', `<div class="card" id="t-${t.id}"></div>`);
+    const card = document.getElementById('t-' + t.id); card.appendChild(c); card.insertAdjacentHTML('beforeend', `<div class="n">${name.name}</div><div class="d">priority ${name.priority} · ${name.blend}${name.walkable ? '' : ' · impassable'}</div>`);
+  }
+  const cats = [['unit', 'Units (animated, all 8 directions)'], ['building', 'Buildings'], ['ruin', 'Ruins'], ['prop', 'Props & collectibles'], ['resource', 'Resources'], ['nature', 'Nature'], ['decor', 'Ground decor']];
+  const anim = [];
+  for (const [cat, title] of cats) {
+    const list = M.assets.filter(a => a.category === cat); if (!list.length) continue;
+    document.getElementById('cats').insertAdjacentHTML('beforeend', `<h2>${title} <span style="opacity:.6;font-size:14px">(${list.length})</span></h2><div class="grid" id="c-${cat}"></div>`);
+    for (const a of list) {
+      const body = await load(ATLAS.images[a.name]), sh = await load(ATLAS.images[a.name + '_shadow']);
+      const sc = a.w > 300 ? 1 : 2, c = document.createElement('canvas'); c.width = a.w * sc; c.height = a.h * sc; const x = c.getContext('2d'); x.imageSmoothingEnabled = false;
+      const card = document.createElement('div'); card.className = 'card'; card.appendChild(c);
+      card.insertAdjacentHTML('beforeend', `<div class="n">${a.name}</div><div class="d">${a.description}<br>${a.w}×${a.h}px · footprint ${a.footprint.join('×')}${a.frames > 1 ? ' · ' + a.frames + ' frames' : ''}${a.dirs ? ' · ' + a.dirs.length + ' dirs' : ''}</div>`);
+      document.getElementById('c-' + cat).appendChild(card);
+      anim.push({ a, body, sh, x, sc });
+    }
+  }
+  const dirs = S.sprites.directions; let t = 0;
+  (function tick() {
+    t++;
+    for (const { a, body, sh, x, sc } of anim) {
+      x.fillStyle = x.createPattern(grass, 'repeat'); x.setTransform(sc, 0, 0, sc, 0, 0); x.fillRect(0, 0, a.w, a.h);
+      let row = 0, col = 0, flip = false;
+      if (a.dirs) { const d = dirs[Math.floor(t / 48) % 8], src = a.mirrored[d] || d; flip = !!a.mirrored[d]; row = a.dirs.indexOf(src); col = 1 + Math.floor(t / 5) % (a.frames - 1); }
+      else if (a.frames > 1) col = Math.floor(t / 6) % a.frames;
+      if (flip) { x.translate(a.w, 0); x.scale(-1, 1); }
+      x.drawImage(sh, col * a.w, row * a.h, a.w, a.h, 0, 0, a.w, a.h); x.drawImage(body, col * a.w, row * a.h, a.w, a.h, 0, 0, a.w, a.h);
+    }
+    requestAnimationFrame(tick);
+  })();
+})();
+</script>
+</body>
+</html>

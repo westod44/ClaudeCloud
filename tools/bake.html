@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Asset bake</title>
+<style>body{background:#222;color:#ddd;font:13px monospace;margin:16px}#log{white-space:pre}</style>
+</head>
+<body>
+<div id="log">baking…</div>
+<script src="../src/style.js"></script>
+<script src="../src/palette.js"></script>
+<script src="../src/noise.js"></script>
+<script src="../src/render3d.js"></script>
+<script src="../src/models.js"></script>
+<script src="../src/terrainTex.js"></script>
+<script>
+'use strict';
+const M = MODELS;
+// ------------------------------------------------------------------ the asset list (dataset index)
+// cat: nature | resource | building | prop | ruin | unit | decor
+// fp: footprint in tiles [w,h]; block: blocks movement
+const LIST = [
+  // trees
+  { name: 'oak_1', cat: 'nature', desc: 'Broadleaf oak', make: () => M.oak(11), fp: [1, 1], block: true },
+  { name: 'oak_2', cat: 'nature', desc: 'Broadleaf oak', make: () => M.oak(23), fp: [1, 1], block: true },
+  { name: 'oak_3', cat: 'nature', desc: 'Broadleaf oak (dark)', make: () => M.oak(37, { dark: true }), fp: [1, 1], block: true },
+  { name: 'oak_4', cat: 'nature', desc: 'Broadleaf oak (dark)', make: () => M.oak(51, { dark: true }), fp: [1, 1], block: true },
+  { name: 'birch_1', cat: 'nature', desc: 'Birch', make: () => M.oak(61, { birch: true }), fp: [1, 1], block: true },
+  { name: 'birch_2', cat: 'nature', desc: 'Birch', make: () => M.oak(67, { birch: true }), fp: [1, 1], block: true },
+  { name: 'pine_1', cat: 'nature', desc: 'Pine', make: () => M.pine(41), fp: [1, 1], block: true },
+  { name: 'pine_2', cat: 'nature', desc: 'Pine', make: () => M.pine(46), fp: [1, 1], block: true },
+  { name: 'pine_3', cat: 'nature', desc: 'Pine', make: () => M.pine(53), fp: [1, 1], block: true },
+  { name: 'palm_1', cat: 'nature', desc: 'Palm', make: () => M.palm(5), fp: [1, 1], block: true },
+  { name: 'palm_2', cat: 'nature', desc: 'Palm', make: () => M.palm(9), fp: [1, 1], block: true },
+  { name: 'dead_tree', cat: 'nature', desc: 'Dead tree', make: () => M.deadTree(3), fp: [1, 1], block: true },
+  { name: 'bush_1', cat: 'nature', desc: 'Shrub', make: () => M.bush(2), fp: [1, 1], block: false },
+  { name: 'bush_2', cat: 'nature', desc: 'Shrub', make: () => M.bush(8), fp: [1, 1], block: false },
+  { name: 'berry_bush', cat: 'resource', desc: 'Berry bush (forage)', make: () => M.bush(14, true), fp: [1, 1], block: true },
+  // rocks & resources
+  { name: 'boulder_1', cat: 'nature', desc: 'Boulder', make: () => M.boulder(4), fp: [1, 1], block: true },
+  { name: 'boulder_2', cat: 'nature', desc: 'Boulder', make: () => M.boulder(12), fp: [1, 1], block: true },
+  { name: 'boulder_3', cat: 'nature', desc: 'Boulder', make: () => M.boulder(19), fp: [1, 1], block: true },
+  { name: 'stone_pile', cat: 'resource', desc: 'Quarry stone', make: () => M.rockCluster(6), fp: [1, 1], block: true },
+  { name: 'gold_vein', cat: 'resource', desc: 'Gold ore', make: () => M.rockCluster(15, { gold: true, n: 7 }), fp: [1, 1], block: true },
+  { name: 'gold_boulder', cat: 'resource', desc: 'Gold-veined boulder', make: () => M.boulder(27, { gold: true }), fp: [1, 1], block: true },
+  // decor
+  { name: 'flowers_yellow', cat: 'decor', desc: 'Wildflowers', make: () => M.flowers(3, '#e8c84a'), fp: [1, 1], block: false },
+  { name: 'flowers_white', cat: 'decor', desc: 'Wildflowers', make: () => M.flowers(5, '#f2efe4'), fp: [1, 1], block: false },
+  { name: 'flowers_purple', cat: 'decor', desc: 'Wildflowers', make: () => M.flowers(7, '#a07ad0'), fp: [1, 1], block: false },
+  { name: 'grass_tuft', cat: 'decor', desc: 'Grass tuft', make: () => M.grassTuft(4), fp: [1, 1], block: false },
+  { name: 'grass_tuft_dry', cat: 'decor', desc: 'Dry grass tuft', make: () => M.grassTuft(9, true), fp: [1, 1], block: false },
+  { name: 'reeds', cat: 'decor', desc: 'Reeds / cattails', make: () => M.reeds(3), fp: [1, 1], block: false },
+  // buildings
+  { name: 'cottage_thatch', cat: 'building', desc: 'Timber-framed cottage, thatch roof', make: () => M.cottage(0), fp: [2, 2], block: true },
+  { name: 'cottage_timber', cat: 'building', desc: 'Plank longhouse, shingle roof', make: () => M.cottage(1), fp: [2, 2], block: true },
+  { name: 'watchtower', cat: 'building', desc: 'Stone watchtower with player banner', make: () => M.watchtower('blue'), fp: [1, 1], block: true },
+  { name: 'well', cat: 'building', desc: 'Village well', make: () => M.well(), fp: [1, 1], block: true },
+  { name: 'market_stall', cat: 'building', desc: 'Market stall', make: () => M.stall(), fp: [1, 1], block: true },
+  { name: 'windmill', cat: 'building', desc: 'Windmill', make: () => M.windmill(0), fp: [2, 2], block: true },
+  // props
+  { name: 'campfire', cat: 'prop', desc: 'Campfire (animated)', frames: 6, fps: 10, make: f => M.campfire(f), fp: [1, 1], block: true },
+  { name: 'signpost', cat: 'prop', desc: 'Signpost', make: () => M.signpost(), fp: [1, 1], block: false },
+  { name: 'chest', cat: 'prop', desc: 'Treasure chest (collectible)', make: () => M.chest(), fp: [1, 1], block: false },
+  { name: 'shrine_lit', cat: 'prop', desc: 'Relic shrine — relic present', make: () => M.shrine(true), fp: [1, 1], block: true },
+  { name: 'shrine_empty', cat: 'prop', desc: 'Relic shrine — relic taken', make: () => M.shrine(false), fp: [1, 1], block: true },
+  // ruins
+  { name: 'column_1', cat: 'ruin', desc: 'Broken column', make: () => M.brokenColumn(3), fp: [1, 1], block: true },
+  { name: 'column_2', cat: 'ruin', desc: 'Broken column', make: () => M.brokenColumn(8), fp: [1, 1], block: true },
+  { name: 'column_3', cat: 'ruin', desc: 'Broken column', make: () => M.brokenColumn(14), fp: [1, 1], block: true },
+  { name: 'column_fallen_1', cat: 'ruin', desc: 'Fallen column', make: () => M.fallenColumn(2), fp: [1, 1], block: false },
+  { name: 'column_fallen_2', cat: 'ruin', desc: 'Fallen column', make: () => M.fallenColumn(6), fp: [1, 1], block: false },
+  { name: 'ruin_wall_1', cat: 'ruin', desc: 'Ruined wall', make: () => M.ruinWall(3), fp: [2, 1], block: true },
+  { name: 'ruin_wall_2', cat: 'ruin', desc: 'Ruined wall', make: () => M.ruinWall(9), fp: [2, 1], block: true },
+  { name: 'ruin_arch', cat: 'ruin', desc: 'Ruined arch', make: () => M.ruinArch(), fp: [2, 1], block: true },
+  { name: 'standing_stone_1', cat: 'ruin', desc: 'Standing stone', make: () => M.standingStone(2), fp: [1, 1], block: true },
+  { name: 'standing_stone_2', cat: 'ruin', desc: 'Standing stone', make: () => M.standingStone(7), fp: [1, 1], block: true },
+  { name: 'standing_stone_3', cat: 'ruin', desc: 'Standing stone', make: () => M.standingStone(13), fp: [1, 1], block: true },
+  // units: 5 rendered directions x (idle + 8 walk frames)
+  { name: 'explorer', cat: 'unit', desc: 'Explorer (player colour tunic, lantern)', unit: true, make: ph => M.explorer(ph), speed: 2.6 },
+  { name: 'villager_1', cat: 'unit', desc: 'Villager', unit: true, make: ph => M.villager(ph, 0), speed: 1.2 },
+  { name: 'villager_2', cat: 'unit', desc: 'Villager', unit: true, make: ph => M.villager(ph, 1), speed: 1.2 },
+  { name: 'villager_3', cat: 'unit', desc: 'Villager', unit: true, make: ph => M.villager(ph, 2), speed: 1.2 },
+  { name: 'deer', cat: 'unit', desc: 'Deer (idle = grazing)', unit: true, make: ph => M.deer(ph), speed: 3.2 },
+  { name: 'sheep', cat: 'unit', desc: 'Sheep (idle = grazing)', unit: true, make: ph => M.sheep(ph), speed: 1.0 },
+];
+
+const log = document.getElementById('log');
+const say = s => { log.textContent += '\n' + s; };
+function toCanvas(w, h) { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
+function putLayer(ctx, data, w, h, x, y) { ctx.putImageData(new ImageData(data, w, h), x, y); }
+
+async function bake() {
+  const out = { assets: [], terrain: {}, timing: {} };
+  const t0 = performance.now();
+  for (const it of LIST) {
+    const t1 = performance.now();
+    const rec = { name: it.name, category: it.cat, description: it.desc, footprint: it.fp || [1, 1], blocks: !!it.block };
+    if (it.unit) {
+      const dirs = STYLE.sprites.rendered, frames = 1 + STYLE.sprites.animation.walk.frames;
+      let box = null; const probe = it.make(null);
+      for (const d of dirs) box = R3.unionBox(box, R3.screenBox(R3.worldBounds(probe.bounds, STYLE.sprites.facing[d])));
+      const bodyC = toCanvas(box.w * frames, box.h * dirs.length), shC = toCanvas(box.w * frames, box.h * dirs.length);
+      const bx = bodyC.getContext('2d'), sx = shC.getContext('2d');
+      dirs.forEach((d, r) => { for (let f = 0; f < frames; f++) {
+        const ph = f === 0 ? null : (f - 1) / (frames - 1) * Math.PI * 2;
+        const res = R3.render(it.make(ph), { angle: STYLE.sprites.facing[d], box });
+        putLayer(bx, res.body, res.w, res.h, f * box.w, r * box.h); putLayer(sx, res.shadow, res.w, res.h, f * box.w, r * box.h);
+      } });
+      Object.assign(rec, { w: box.w, h: box.h, ax: -box.x, ay: -box.y, dirs, mirrored: STYLE.sprites.mirrored, frames, layout: 'rows=directions, col0=idle, cols1..=walk', fps: STYLE.sprites.animation.walk.fps, speed: it.speed, body: bodyC.toDataURL(), shadow: shC.toDataURL() });
+    } else {
+      const frames = it.frames || 1;
+      let box = null; const probe = it.make(0);
+      box = R3.screenBox(probe.bounds);
+      const bodyC = toCanvas(box.w * frames, box.h), shC = toCanvas(box.w * frames, box.h);
+      for (let f = 0; f < frames; f++) {
+        const res = R3.render(it.make(f), { box });
+        putLayer(bodyC.getContext('2d'), res.body, res.w, res.h, f * box.w, 0); putLayer(shC.getContext('2d'), res.shadow, res.w, res.h, f * box.w, 0);
+      }
+      Object.assign(rec, { w: box.w, h: box.h, ax: -box.x, ay: -box.y, frames, fps: it.fps || 0, body: bodyC.toDataURL(), shadow: shC.toDataURL() });
+    }
+    rec.bakeMs = Math.round(performance.now() - t1);
+    out.assets.push(rec); say(`${it.name.padEnd(18)} ${rec.w}x${rec.h} x${rec.frames}${rec.dirs ? ' x' + rec.dirs.length + 'dirs' : ''}  ${rec.bakeMs}ms`);
+    await new Promise(r => setTimeout(r, 0));
+  }
+  for (const id of TERRAINTEX.types) {
+    const t1 = performance.now();
+    const c = toCanvas(TERRAINTEX.size, TERRAINTEX.size); putLayer(c.getContext('2d'), TERRAINTEX.make(id), TERRAINTEX.size, TERRAINTEX.size, 0, 0);
+    out.terrain[id] = c.toDataURL(); say(`terrain ${id.padEnd(12)} ${Math.round(performance.now() - t1)}ms`);
+    await new Promise(r => setTimeout(r, 0));
+  }
+  out.timing.totalMs = Math.round(performance.now() - t0);
+  out.palette = { colors: PAL.colors, names: PAL.PALETTE.entries.map(e => e.name), used: PAL.used, jasc: PAL.toJascPal() };
+  say('done in ' + out.timing.totalMs + 'ms');
+  window.BAKE_RESULT = out;
+}
+// allow baking a subset for previews: bake.html#oak_1,explorer
+if (location.hash.length > 1) { const keep = location.hash.slice(1).split(','); LIST.splice(0, LIST.length, ...LIST.filter(i => keep.includes(i.name))); }
+bake().catch(e => { say('ERROR ' + e.stack); window.BAKE_ERROR = String(e.stack); });
+</script>
+</body>
+</html>

@@ -1,0 +1,297 @@
+{
+  "meta": {
+    "name": "Lantern Isles — Pre-rendered Isometric Art Standard",
+    "version": "1.0.0",
+    "lineage": "Age of Empires II (1999) / HD (2013) / Definitive Edition (2019) visual conventions",
+    "principle": "Every pixel comes from one camera, one sun, one palette."
+  },
+  "projection": {
+    "type": "dimetric 2:1 (the usual \"isometric\" of PC strategy games)",
+    "cameraElevationDeg": 30,
+    "cameraAzimuthDeg": 45,
+    "orthographic": true,
+    "tile": {
+      "w": 128,
+      "h": 64
+    },
+    "worldUnit": "1 unit = 1 tile edge",
+    "pxPerUnit": 90.50966799187808,
+    "pxPerUnitZ": 78.38367176906169,
+    "elevation": {
+      "levels": 7,
+      "pxPerLevel": 24,
+      "slope": "terraced: flat plateaus joined by lit slopes"
+    },
+    "axes": {
+      "i": "screen down-right",
+      "j": "screen down-left",
+      "z": "up"
+    },
+    "resolutionTiers": {
+      "standard": "1x (this standard: tile 128x64)",
+      "uhd": "2x (re-bake with supersample 4 and scale 2 — same models, same lighting)",
+      "note": "AoE2 DE ships a separate double-resolution UHD pack; sprites are drawn at native size only at one zoom and mip-mapped otherwise."
+    }
+  },
+  "render": {
+    "supersample": 2,
+    "bodyAlpha": "binary (coverage >= 50%) — crisp sprite silhouettes, no outlines",
+    "outlines": false,
+    "shadowLayer": "separate translucent layer, drawn under all bodies",
+    "quantize": "all sprites and terrain snapped to the 256-colour palette, no dithering on sprites",
+    "maxSteps": 160
+  },
+  "lighting": {
+    "sunDir": [
+      -0.07528988683159626,
+      0.7497176054920924,
+      0.6574609835998548
+    ],
+    "sunElevationDeg": 41,
+    "sunColor": "#ffeccc",
+    "sunIntensity": 1,
+    "skyColor": "#a9bedf",
+    "skyIntensity": 0.64,
+    "bounceColor": "#7d6a48",
+    "bounceIntensity": 0.22,
+    "ambientOcclusion": 0.9,
+    "specular": {
+      "metal": 0.6,
+      "gold": 0.9,
+      "water": 0.5,
+      "default": 0
+    },
+    "shadow": {
+      "color": "#10141c",
+      "maxAlpha": 0.5,
+      "softness": 10,
+      "levels": 4
+    },
+    "terrainSlope": {
+      "flatBrightness": 1,
+      "litSlopeGain": 1.15,
+      "ambient": 0.42
+    }
+  },
+  "materials": {
+    "grass": "#6b8a3a",
+    "grassLush": "#4f7a2e",
+    "dryGrass": "#a39352",
+    "dirt": "#8a6a45",
+    "forestFloor": "#4b5a2a",
+    "sand": "#d2bb84",
+    "rock": "#8a857a",
+    "snow": "#e8eef2",
+    "shallow": "#3f8ea0",
+    "deep": "#1f4f78",
+    "leaf": "#557a2c",
+    "pine": "#2f5a35",
+    "bark": "#5a4330",
+    "plaster": "#d8cdb0",
+    "timber": "#4a3324",
+    "thatch": "#b8944f",
+    "shingle": "#6e4a38",
+    "stone": "#9a9384",
+    "wood": "#8a6440",
+    "cloth": "#8a7a60",
+    "skin": "#c99272",
+    "hair": "#3b2a1e",
+    "leather": "#6a4a2c",
+    "metal": "#8d939a",
+    "gold": "#d8ad3c",
+    "fur": "#8b5e36",
+    "wool": "#ddd6c4",
+    "fire": "#ffb040",
+    "berry": "#a8243a",
+    "flower": "#e0c040",
+    "canvasRed": "#a83a2c"
+  },
+  "rampSteps": [
+    0.35,
+    0.52,
+    0.68,
+    0.84,
+    1,
+    1.16,
+    1.34
+  ],
+  "rampCool": "#202a48",
+  "rampWarm": "#fff4dc",
+  "playerColors": {
+    "blue": "#2d62d6",
+    "red": "#d0302b",
+    "green": "#3e9a2c",
+    "yellow": "#e2c22c",
+    "teal": "#2fb3b3",
+    "purple": "#8a3fc4",
+    "grey": "#8c8c8c",
+    "orange": "#e07a26"
+  },
+  "playerShadeSteps": [
+    0.6,
+    1,
+    1.3
+  ],
+  "terrain": {
+    "texelsPerTile": 96,
+    "textureSize": 384,
+    "blend": "domain-warped borders (rough) with a soft half-mix seam; water uses a continuous depth field",
+    "types": [
+      {
+        "id": "deep",
+        "name": "Deep water",
+        "priority": 140,
+        "blend": "smooth",
+        "walkable": false
+      },
+      {
+        "id": "shallow",
+        "name": "Shallows",
+        "priority": 139,
+        "blend": "smooth",
+        "walkable": true
+      },
+      {
+        "id": "sand",
+        "name": "Beach",
+        "priority": 110,
+        "blend": "smooth",
+        "walkable": true
+      },
+      {
+        "id": "grass",
+        "name": "Grass",
+        "priority": 100,
+        "blend": "rough",
+        "walkable": true
+      },
+      {
+        "id": "grassLush",
+        "name": "Lush grass",
+        "priority": 90,
+        "blend": "rough",
+        "walkable": true
+      },
+      {
+        "id": "dryGrass",
+        "name": "Dry grass",
+        "priority": 106,
+        "blend": "rough",
+        "walkable": true
+      },
+      {
+        "id": "dirt",
+        "name": "Dirt",
+        "priority": 70,
+        "blend": "rough",
+        "walkable": true
+      },
+      {
+        "id": "road",
+        "name": "Road",
+        "priority": 125,
+        "blend": "spray",
+        "walkable": true
+      },
+      {
+        "id": "forestFloor",
+        "name": "Forest floor",
+        "priority": 95,
+        "blend": "rough",
+        "walkable": false
+      },
+      {
+        "id": "rock",
+        "name": "Rocky ground",
+        "priority": 120,
+        "blend": "rough",
+        "walkable": true
+      },
+      {
+        "id": "snow",
+        "name": "Snow",
+        "priority": 130,
+        "blend": "rough",
+        "walkable": true
+      }
+    ]
+  },
+  "sprites": {
+    "directions": [
+      "S",
+      "SW",
+      "W",
+      "NW",
+      "N",
+      "NE",
+      "E",
+      "SE"
+    ],
+    "rendered": [
+      "S",
+      "SW",
+      "W",
+      "NW",
+      "N"
+    ],
+    "mirrored": {
+      "SE": "SW",
+      "E": "W",
+      "NE": "NW"
+    },
+    "facing": {
+      "S": 0.7853981633974483,
+      "SW": 1.5707963267948966,
+      "W": 2.356194490192345,
+      "NW": 3.141592653589793,
+      "N": 3.9269908169872414
+    },
+    "animation": {
+      "walk": {
+        "frames": 8,
+        "fps": 12
+      },
+      "idle": {
+        "frames": 1
+      },
+      "fire": {
+        "frames": 6,
+        "fps": 10
+      },
+      "note": "AoE2 originals use 10 keyframes x 5 directions per animation at 10-20 fps"
+    },
+    "scale": {
+      "human": 0.62,
+      "deer": 0.62,
+      "sheep": 0.38,
+      "oak": 1.55,
+      "pine": 1.75,
+      "palm": 1.6,
+      "cottage": 1.35,
+      "tower": 2.5,
+      "windmill": 2.3,
+      "column": 0.6
+    },
+    "anchor": "world origin (ground contact / footprint centre) — stored per asset in pixels",
+    "layers": [
+      "body",
+      "shadow"
+    ]
+  },
+  "fog": {
+    "unexplored": "#000000",
+    "exploredColor": "#05070a",
+    "exploredAlpha": 0.48,
+    "visionRadiusTiles": 7
+  },
+  "ui": {
+    "font": "Cinzel",
+    "fontBody": "Alegreya Sans",
+    "panel": "#2b2219",
+    "panelDark": "#17120d",
+    "border": "#b08a3e",
+    "borderDark": "#5b4524",
+    "text": "#f1e3c0",
+    "accent": "#ffd36a"
+  }
+}

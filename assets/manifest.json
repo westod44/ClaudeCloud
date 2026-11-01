@@ -1,0 +1,1314 @@
+{
+ "generated": "2026-11-01T08:32:20.877Z",
+ "style": "dataset/style.json",
+ "palette": "dataset/palette.json",
+ "assets": [
+  {
+   "name": "oak_1",
+   "category": "nature",
+   "description": "Broadleaf oak",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": true,
+   "w": 279,
+   "h": 196,
+   "ax": 82,
+   "ay": 154,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 696,
+   "files": {
+    "body": "assets/sprites/oak_1.png",
+    "shadow": "assets/sprites/oak_1_shadow.png"
+   }
+  },
+  {
+   "name": "oak_2",
+   "category": "nature",
+   "description": "Broadleaf oak",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": true,
+   "w": 275,
+   "h": 192,
+   "ax": 82,
+   "ay": 150,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 528,
+   "files": {
+    "body": "assets/sprites/oak_2.png",
+    "shadow": "assets/sprites/oak_2_shadow.png"
+   }
+  },
+  {
+   "name": "oak_3",
+   "category": "nature",
+   "description": "Broadleaf oak (dark)",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": true,
+   "w": 279,
+   "h": 196,
+   "ax": 82,
+   "ay": 154,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 601,
+   "files": {
+    "body": "assets/sprites/oak_3.png",
+    "shadow": "assets/sprites/oak_3_shadow.png"
+   }
+  },
+  {
+   "name": "oak_4",
+   "category": "nature",
+   "description": "Broadleaf oak (dark)",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": true,
+   "w": 275,
+   "h": 193,
+   "ax": 82,
+   "ay": 151,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 586,
+   "files": {
+    "body": "assets/sprites/oak_4.png",
+    "shadow": "assets/sprites/oak_4_shadow.png"
+   }
+  },
+  {
+   "name": "birch_1",
+   "category": "nature",
+   "description": "Birch",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": true,
+   "w": 295,
+   "h": 212,
+   "ax": 82,
+   "ay": 170,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 425,
+   "files": {
+    "body": "assets/sprites/birch_1.png",
+    "shadow": "assets/sprites/birch_1_shadow.png"
+   }
+  },
+  {
+   "name": "birch_2",
+   "category": "nature",
+   "description": "Birch",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": true,
+   "w": 299,
+   "h": 216,
+   "ax": 82,
+   "ay": 174,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 424,
+   "files": {
+    "body": "assets/sprites/birch_2.png",
+    "shadow": "assets/sprites/birch_2_shadow.png"
+   }
+  },
+  {
+   "name": "pine_1",
+   "category": "nature",
+   "description": "Pine",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": true,
+   "w": 282,
+   "h": 215,
+   "ax": 66,
+   "ay": 181,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 396,
+   "files": {
+    "body": "assets/sprites/pine_1.png",
+    "shadow": "assets/sprites/pine_1_shadow.png"
+   }
+  },
+  {
+   "name": "pine_2",
+   "category": "nature",
+   "description": "Pine",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": true,
+   "w": 266,
+   "h": 199,
+   "ax": 66,
+   "ay": 165,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 373,
+   "files": {
+    "body": "assets/sprites/pine_2.png",
+    "shadow": "assets/sprites/pine_2_shadow.png"
+   }
+  },
+  {
+   "name": "pine_3",
+   "category": "nature",
+   "description": "Pine",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": true,
+   "w": 266,
+   "h": 199,
+   "ax": 66,
+   "ay": 165,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 346,
+   "files": {
+    "body": "assets/sprites/pine_3.png",
+    "shadow": "assets/sprites/pine_3_shadow.png"
+   }
+  },
+  {
+   "name": "palm_1",
+   "category": "nature",
+   "description": "Palm",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": true,
+   "w": 377,
+   "h": 252,
+   "ax": 124,
+   "ay": 189,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 611,
+   "files": {
+    "body": "assets/sprites/palm_1.png",
+    "shadow": "assets/sprites/palm_1_shadow.png"
+   }
+  },
+  {
+   "name": "palm_2",
+   "category": "nature",
+   "description": "Palm",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": true,
+   "w": 377,
+   "h": 252,
+   "ax": 124,
+   "ay": 189,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 544,
+   "files": {
+    "body": "assets/sprites/palm_2.png",
+    "shadow": "assets/sprites/palm_2_shadow.png"
+   }
+  },
+  {
+   "name": "dead_tree",
+   "category": "nature",
+   "description": "Dead tree",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": true,
+   "w": 246,
+   "h": 174,
+   "ax": 73,
+   "ay": 136,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 95,
+   "files": {
+    "body": "assets/sprites/dead_tree.png",
+    "shadow": "assets/sprites/dead_tree_shadow.png"
+   }
+  },
+  {
+   "name": "bush_1",
+   "category": "nature",
+   "description": "Shrub",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": false,
+   "w": 152,
+   "h": 98,
+   "ax": 56,
+   "ay": 69,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 66,
+   "files": {
+    "body": "assets/sprites/bush_1.png",
+    "shadow": "assets/sprites/bush_1_shadow.png"
+   }
+  },
+  {
+   "name": "bush_2",
+   "category": "nature",
+   "description": "Shrub",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": false,
+   "w": 152,
+   "h": 98,
+   "ax": 56,
+   "ay": 69,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 58,
+   "files": {
+    "body": "assets/sprites/bush_2.png",
+    "shadow": "assets/sprites/bush_2_shadow.png"
+   }
+  },
+  {
+   "name": "berry_bush",
+   "category": "resource",
+   "description": "Berry bush (forage)",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": true,
+   "w": 152,
+   "h": 98,
+   "ax": 56,
+   "ay": 69,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 83,
+   "files": {
+    "body": "assets/sprites/berry_bush.png",
+    "shadow": "assets/sprites/berry_bush_shadow.png"
+   }
+  },
+  {
+   "name": "boulder_1",
+   "category": "nature",
+   "description": "Boulder",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": true,
+   "w": 173,
+   "h": 108,
+   "ax": 66,
+   "ay": 74,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 90,
+   "files": {
+    "body": "assets/sprites/boulder_1.png",
+    "shadow": "assets/sprites/boulder_1_shadow.png"
+   }
+  },
+  {
+   "name": "boulder_2",
+   "category": "nature",
+   "description": "Boulder",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": true,
+   "w": 173,
+   "h": 108,
+   "ax": 66,
+   "ay": 74,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 79,
+   "files": {
+    "body": "assets/sprites/boulder_2.png",
+    "shadow": "assets/sprites/boulder_2_shadow.png"
+   }
+  },
+  {
+   "name": "boulder_3",
+   "category": "nature",
+   "description": "Boulder",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": true,
+   "w": 173,
+   "h": 108,
+   "ax": 66,
+   "ay": 74,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 116,
+   "files": {
+    "body": "assets/sprites/boulder_3.png",
+    "shadow": "assets/sprites/boulder_3_shadow.png"
+   }
+  },
+  {
+   "name": "stone_pile",
+   "category": "resource",
+   "description": "Quarry stone",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": true,
+   "w": 174,
+   "h": 103,
+   "ax": 73,
+   "ay": 65,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 104,
+   "files": {
+    "body": "assets/sprites/stone_pile.png",
+    "shadow": "assets/sprites/stone_pile_shadow.png"
+   }
+  },
+  {
+   "name": "gold_vein",
+   "category": "resource",
+   "description": "Gold ore",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": true,
+   "w": 174,
+   "h": 103,
+   "ax": 73,
+   "ay": 65,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 145,
+   "files": {
+    "body": "assets/sprites/gold_vein.png",
+    "shadow": "assets/sprites/gold_vein_shadow.png"
+   }
+  },
+  {
+   "name": "gold_boulder",
+   "category": "resource",
+   "description": "Gold-veined boulder",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": true,
+   "w": 173,
+   "h": 108,
+   "ax": 66,
+   "ay": 74,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 171,
+   "files": {
+    "body": "assets/sprites/gold_boulder.png",
+    "shadow": "assets/sprites/gold_boulder_shadow.png"
+   }
+  },
+  {
+   "name": "flowers_yellow",
+   "category": "decor",
+   "description": "Wildflowers",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": false,
+   "w": 103,
+   "h": 62,
+   "ax": 43,
+   "ay": 39,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 28,
+   "files": {
+    "body": "assets/sprites/flowers_yellow.png",
+    "shadow": "assets/sprites/flowers_yellow_shadow.png"
+   }
+  },
+  {
+   "name": "flowers_white",
+   "category": "decor",
+   "description": "Wildflowers",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": false,
+   "w": 103,
+   "h": 62,
+   "ax": 43,
+   "ay": 39,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 21,
+   "files": {
+    "body": "assets/sprites/flowers_white.png",
+    "shadow": "assets/sprites/flowers_white_shadow.png"
+   }
+  },
+  {
+   "name": "flowers_purple",
+   "category": "decor",
+   "description": "Wildflowers",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": false,
+   "w": 103,
+   "h": 62,
+   "ax": 43,
+   "ay": 39,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 20,
+   "files": {
+    "body": "assets/sprites/flowers_purple.png",
+    "shadow": "assets/sprites/flowers_purple_shadow.png"
+   }
+  },
+  {
+   "name": "grass_tuft",
+   "category": "decor",
+   "description": "Grass tuft",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": false,
+   "w": 86,
+   "h": 54,
+   "ax": 34,
+   "ay": 36,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 25,
+   "files": {
+    "body": "assets/sprites/grass_tuft.png",
+    "shadow": "assets/sprites/grass_tuft_shadow.png"
+   }
+  },
+  {
+   "name": "grass_tuft_dry",
+   "category": "decor",
+   "description": "Dry grass tuft",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": false,
+   "w": 86,
+   "h": 54,
+   "ax": 34,
+   "ay": 36,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 20,
+   "files": {
+    "body": "assets/sprites/grass_tuft_dry.png",
+    "shadow": "assets/sprites/grass_tuft_dry_shadow.png"
+   }
+  },
+  {
+   "name": "reeds",
+   "category": "decor",
+   "description": "Reeds / cattails",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": false,
+   "w": 126,
+   "h": 87,
+   "ax": 41,
+   "ay": 65,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 64,
+   "files": {
+    "body": "assets/sprites/reeds.png",
+    "shadow": "assets/sprites/reeds_shadow.png"
+   }
+  },
+  {
+   "name": "cottage_thatch",
+   "category": "building",
+   "description": "Timber-framed cottage, thatch roof",
+   "footprint": [
+    2,
+    2
+   ],
+   "blocks": true,
+   "w": 322,
+   "h": 214,
+   "ax": 108,
+   "ay": 159,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 584,
+   "files": {
+    "body": "assets/sprites/cottage_thatch.png",
+    "shadow": "assets/sprites/cottage_thatch_shadow.png"
+   }
+  },
+  {
+   "name": "cottage_timber",
+   "category": "building",
+   "description": "Plank longhouse, shingle roof",
+   "footprint": [
+    2,
+    2
+   ],
+   "blocks": true,
+   "w": 322,
+   "h": 214,
+   "ax": 108,
+   "ay": 159,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 468,
+   "files": {
+    "body": "assets/sprites/cottage_timber.png",
+    "shadow": "assets/sprites/cottage_timber_shadow.png"
+   }
+  },
+  {
+   "name": "watchtower",
+   "category": "building",
+   "description": "Stone watchtower with player banner",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": true,
+   "w": 413,
+   "h": 327,
+   "ax": 82,
+   "ay": 285,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 436,
+   "files": {
+    "body": "assets/sprites/watchtower.png",
+    "shadow": "assets/sprites/watchtower_shadow.png"
+   }
+  },
+  {
+   "name": "well",
+   "category": "building",
+   "description": "Village well",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": true,
+   "w": 204,
+   "h": 145,
+   "ax": 60,
+   "ay": 114,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 329,
+   "files": {
+    "body": "assets/sprites/well.png",
+    "shadow": "assets/sprites/well_shadow.png"
+   }
+  },
+  {
+   "name": "market_stall",
+   "category": "building",
+   "description": "Market stall",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": true,
+   "w": 232,
+   "h": 157,
+   "ax": 76,
+   "ay": 118,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 413,
+   "files": {
+    "body": "assets/sprites/market_stall.png",
+    "shadow": "assets/sprites/market_stall_shadow.png"
+   }
+  },
+  {
+   "name": "windmill",
+   "category": "building",
+   "description": "Windmill",
+   "footprint": [
+    2,
+    2
+   ],
+   "blocks": true,
+   "w": 501,
+   "h": 352,
+   "ax": 146,
+   "ay": 278,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 1099,
+   "files": {
+    "body": "assets/sprites/windmill.png",
+    "shadow": "assets/sprites/windmill_shadow.png"
+   }
+  },
+  {
+   "name": "campfire",
+   "category": "prop",
+   "description": "Campfire (animated)",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": true,
+   "w": 126,
+   "h": 87,
+   "ax": 41,
+   "ay": 65,
+   "frames": 6,
+   "fps": 10,
+   "bakeMs": 810,
+   "files": {
+    "body": "assets/sprites/campfire.png",
+    "shadow": "assets/sprites/campfire_shadow.png"
+   }
+  },
+  {
+   "name": "signpost",
+   "category": "prop",
+   "description": "Signpost",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": false,
+   "w": 167,
+   "h": 120,
+   "ax": 47,
+   "ay": 95,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 41,
+   "files": {
+    "body": "assets/sprites/signpost.png",
+    "shadow": "assets/sprites/signpost_shadow.png"
+   }
+  },
+  {
+   "name": "chest",
+   "category": "prop",
+   "description": "Treasure chest (collectible)",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": false,
+   "w": 88,
+   "h": 59,
+   "ax": 31,
+   "ay": 42,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 10,
+   "files": {
+    "body": "assets/sprites/chest.png",
+    "shadow": "assets/sprites/chest_shadow.png"
+   }
+  },
+  {
+   "name": "shrine_lit",
+   "category": "prop",
+   "description": "Relic shrine — relic present",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": true,
+   "w": 171,
+   "h": 124,
+   "ax": 49,
+   "ay": 98,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 143,
+   "files": {
+    "body": "assets/sprites/shrine_lit.png",
+    "shadow": "assets/sprites/shrine_lit_shadow.png"
+   }
+  },
+  {
+   "name": "shrine_empty",
+   "category": "prop",
+   "description": "Relic shrine — relic taken",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": true,
+   "w": 171,
+   "h": 124,
+   "ax": 49,
+   "ay": 98,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 136,
+   "files": {
+    "body": "assets/sprites/shrine_empty.png",
+    "shadow": "assets/sprites/shrine_empty_shadow.png"
+   }
+  },
+  {
+   "name": "column_1",
+   "category": "ruin",
+   "description": "Broken column",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": true,
+   "w": 192,
+   "h": 138,
+   "ax": 54,
+   "ay": 110,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 143,
+   "files": {
+    "body": "assets/sprites/column_1.png",
+    "shadow": "assets/sprites/column_1_shadow.png"
+   }
+  },
+  {
+   "name": "column_2",
+   "category": "ruin",
+   "description": "Broken column",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": true,
+   "w": 167,
+   "h": 114,
+   "ax": 54,
+   "ay": 86,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 119,
+   "files": {
+    "body": "assets/sprites/column_2.png",
+    "shadow": "assets/sprites/column_2_shadow.png"
+   }
+  },
+  {
+   "name": "column_3",
+   "category": "ruin",
+   "description": "Broken column",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": true,
+   "w": 180,
+   "h": 126,
+   "ax": 54,
+   "ay": 98,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 153,
+   "files": {
+    "body": "assets/sprites/column_3.png",
+    "shadow": "assets/sprites/column_3_shadow.png"
+   }
+  },
+  {
+   "name": "column_fallen_1",
+   "category": "ruin",
+   "description": "Fallen column",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": false,
+   "w": 221,
+   "h": 124,
+   "ax": 98,
+   "ay": 74,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 58,
+   "files": {
+    "body": "assets/sprites/column_fallen_1.png",
+    "shadow": "assets/sprites/column_fallen_1_shadow.png"
+   }
+  },
+  {
+   "name": "column_fallen_2",
+   "category": "ruin",
+   "description": "Fallen column",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": false,
+   "w": 221,
+   "h": 124,
+   "ax": 98,
+   "ay": 74,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 37,
+   "files": {
+    "body": "assets/sprites/column_fallen_2.png",
+    "shadow": "assets/sprites/column_fallen_2_shadow.png"
+   }
+  },
+  {
+   "name": "ruin_wall_1",
+   "category": "ruin",
+   "description": "Ruined wall",
+   "footprint": [
+    2,
+    1
+   ],
+   "blocks": true,
+   "w": 223,
+   "h": 145,
+   "ax": 79,
+   "ay": 104,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 181,
+   "files": {
+    "body": "assets/sprites/ruin_wall_1.png",
+    "shadow": "assets/sprites/ruin_wall_1_shadow.png"
+   }
+  },
+  {
+   "name": "ruin_wall_2",
+   "category": "ruin",
+   "description": "Ruined wall",
+   "footprint": [
+    2,
+    1
+   ],
+   "blocks": true,
+   "w": 223,
+   "h": 145,
+   "ax": 79,
+   "ay": 104,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 229,
+   "files": {
+    "body": "assets/sprites/ruin_wall_2.png",
+    "shadow": "assets/sprites/ruin_wall_2_shadow.png"
+   }
+  },
+  {
+   "name": "ruin_arch",
+   "category": "ruin",
+   "description": "Ruined arch",
+   "footprint": [
+    2,
+    1
+   ],
+   "blocks": true,
+   "w": 264,
+   "h": 194,
+   "ax": 70,
+   "ay": 158,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 518,
+   "files": {
+    "body": "assets/sprites/ruin_arch.png",
+    "shadow": "assets/sprites/ruin_arch_shadow.png"
+   }
+  },
+  {
+   "name": "standing_stone_1",
+   "category": "ruin",
+   "description": "Standing stone",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": true,
+   "w": 199,
+   "h": 145,
+   "ax": 54,
+   "ay": 117,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 152,
+   "files": {
+    "body": "assets/sprites/standing_stone_1.png",
+    "shadow": "assets/sprites/standing_stone_1_shadow.png"
+   }
+  },
+  {
+   "name": "standing_stone_2",
+   "category": "ruin",
+   "description": "Standing stone",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": true,
+   "w": 193,
+   "h": 139,
+   "ax": 54,
+   "ay": 111,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 120,
+   "files": {
+    "body": "assets/sprites/standing_stone_2.png",
+    "shadow": "assets/sprites/standing_stone_2_shadow.png"
+   }
+  },
+  {
+   "name": "standing_stone_3",
+   "category": "ruin",
+   "description": "Standing stone",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": true,
+   "w": 200,
+   "h": 146,
+   "ax": 54,
+   "ay": 118,
+   "frames": 1,
+   "fps": 0,
+   "bakeMs": 104,
+   "files": {
+    "body": "assets/sprites/standing_stone_3.png",
+    "shadow": "assets/sprites/standing_stone_3_shadow.png"
+   }
+  },
+  {
+   "name": "explorer",
+   "category": "unit",
+   "description": "Explorer (player colour tunic, lantern)",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": false,
+   "w": 139,
+   "h": 98,
+   "ax": 42,
+   "ay": 76,
+   "dirs": [
+    "S",
+    "SW",
+    "W",
+    "NW",
+    "N"
+   ],
+   "mirrored": {
+    "SE": "SW",
+    "E": "W",
+    "NE": "NW"
+   },
+   "frames": 9,
+   "layout": "rows=directions, col0=idle, cols1..=walk",
+   "fps": 12,
+   "speed": 2.6,
+   "bakeMs": 4187,
+   "files": {
+    "body": "assets/sprites/explorer.png",
+    "shadow": "assets/sprites/explorer_shadow.png"
+   }
+  },
+  {
+   "name": "villager_1",
+   "category": "unit",
+   "description": "Villager",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": false,
+   "w": 139,
+   "h": 98,
+   "ax": 42,
+   "ay": 76,
+   "dirs": [
+    "S",
+    "SW",
+    "W",
+    "NW",
+    "N"
+   ],
+   "mirrored": {
+    "SE": "SW",
+    "E": "W",
+    "NE": "NW"
+   },
+   "frames": 9,
+   "layout": "rows=directions, col0=idle, cols1..=walk",
+   "fps": 12,
+   "speed": 1.2,
+   "bakeMs": 2479,
+   "files": {
+    "body": "assets/sprites/villager_1.png",
+    "shadow": "assets/sprites/villager_1_shadow.png"
+   }
+  },
+  {
+   "name": "villager_2",
+   "category": "unit",
+   "description": "Villager",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": false,
+   "w": 139,
+   "h": 98,
+   "ax": 42,
+   "ay": 76,
+   "dirs": [
+    "S",
+    "SW",
+    "W",
+    "NW",
+    "N"
+   ],
+   "mirrored": {
+    "SE": "SW",
+    "E": "W",
+    "NE": "NW"
+   },
+   "frames": 9,
+   "layout": "rows=directions, col0=idle, cols1..=walk",
+   "fps": 12,
+   "speed": 1.2,
+   "bakeMs": 2177,
+   "files": {
+    "body": "assets/sprites/villager_2.png",
+    "shadow": "assets/sprites/villager_2_shadow.png"
+   }
+  },
+  {
+   "name": "villager_3",
+   "category": "unit",
+   "description": "Villager",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": false,
+   "w": 139,
+   "h": 98,
+   "ax": 42,
+   "ay": 76,
+   "dirs": [
+    "S",
+    "SW",
+    "W",
+    "NW",
+    "N"
+   ],
+   "mirrored": {
+    "SE": "SW",
+    "E": "W",
+    "NE": "NW"
+   },
+   "frames": 9,
+   "layout": "rows=directions, col0=idle, cols1..=walk",
+   "fps": 12,
+   "speed": 1.2,
+   "bakeMs": 2176,
+   "files": {
+    "body": "assets/sprites/villager_3.png",
+    "shadow": "assets/sprites/villager_3_shadow.png"
+   }
+  },
+  {
+   "name": "deer",
+   "category": "unit",
+   "description": "Deer (idle = grazing)",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": false,
+   "w": 191,
+   "h": 127,
+   "ax": 64,
+   "ay": 94,
+   "dirs": [
+    "S",
+    "SW",
+    "W",
+    "NW",
+    "N"
+   ],
+   "mirrored": {
+    "SE": "SW",
+    "E": "W",
+    "NE": "NW"
+   },
+   "frames": 9,
+   "layout": "rows=directions, col0=idle, cols1..=walk",
+   "fps": 12,
+   "speed": 3.2,
+   "bakeMs": 7159,
+   "files": {
+    "body": "assets/sprites/deer.png",
+    "shadow": "assets/sprites/deer_shadow.png"
+   }
+  },
+  {
+   "name": "sheep",
+   "category": "unit",
+   "description": "Sheep (idle = grazing)",
+   "footprint": [
+    1,
+    1
+   ],
+   "blocks": false,
+   "w": 164,
+   "h": 102,
+   "ax": 64,
+   "ay": 69,
+   "dirs": [
+    "S",
+    "SW",
+    "W",
+    "NW",
+    "N"
+   ],
+   "mirrored": {
+    "SE": "SW",
+    "E": "W",
+    "NE": "NW"
+   },
+   "frames": 9,
+   "layout": "rows=directions, col0=idle, cols1..=walk",
+   "fps": 12,
+   "speed": 1,
+   "bakeMs": 2604,
+   "files": {
+    "body": "assets/sprites/sheep.png",
+    "shadow": "assets/sprites/sheep_shadow.png"
+   }
+  }
+ ],
+ "terrain": [
+  {
+   "id": "deep",
+   "file": "assets/terrain/deep.png",
+   "size": 384,
+   "texelsPerTile": 96
+  },
+  {
+   "id": "shallow",
+   "file": "assets/terrain/shallow.png",
+   "size": 384,
+   "texelsPerTile": 96
+  },
+  {
+   "id": "sand",
+   "file": "assets/terrain/sand.png",
+   "size": 384,
+   "texelsPerTile": 96
+  },
+  {
+   "id": "grass",
+   "file": "assets/terrain/grass.png",
+   "size": 384,
+   "texelsPerTile": 96
+  },
+  {
+   "id": "grassLush",
+   "file": "assets/terrain/grassLush.png",
+   "size": 384,
+   "texelsPerTile": 96
+  },
+  {
+   "id": "dryGrass",
+   "file": "assets/terrain/dryGrass.png",
+   "size": 384,
+   "texelsPerTile": 96
+  },
+  {
+   "id": "dirt",
+   "file": "assets/terrain/dirt.png",
+   "size": 384,
+   "texelsPerTile": 96
+  },
+  {
+   "id": "road",
+   "file": "assets/terrain/road.png",
+   "size": 384,
+   "texelsPerTile": 96
+  },
+  {
+   "id": "forestFloor",
+   "file": "assets/terrain/forestFloor.png",
+   "size": 384,
+   "texelsPerTile": 96
+  },
+  {
+   "id": "rock",
+   "file": "assets/terrain/rock.png",
+   "size": 384,
+   "texelsPerTile": 96
+  },
+  {
+   "id": "snow",
+   "file": "assets/terrain/snow.png",
+   "size": 384,
+   "texelsPerTile": 96
+  }
+ ]
+}
