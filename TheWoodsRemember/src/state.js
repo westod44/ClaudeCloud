@@ -1,0 +1,20 @@
+// Shared runtime registry, populated by main.js.
+export const G = {
+  settings: null,
+  world: null,
+  player: null,
+  renderer: null,
+  input: null,
+  story: null,
+  survival: null,
+  inv: null,
+  ui: null,
+  audio: null,
+  saves: null,
+  watcher: null,
+  mode: 'title',
+  lightLevel: 0,
+  lightTarget: 0,
+  time: 0,
+  dev: false,
+};
