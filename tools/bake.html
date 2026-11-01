@@ -128,13 +128,7 @@ const LIST = [
   // ---- item icons (3x scale, body only)
   ...['log', 'stick', 'stone', 'fiber', 'rope', 'berries', 'meat_raw', 'meat_cooked', 'hide', 'cloth', 'herb', 'relic', 'arrow', 'axe', 'spear', 'bow', 'torch', 'salve', 'bandage', 'waterskin', 'armor', 'club', 'knife', 'greataxe', 'sling', 'fire_arrow', 'jerky', 'stew', 'seeds', 'bone']
     .map(k => ({ name: 'icon_' + k, cat: 'icon', desc: k, icon: k })),
-  // ---- portrait expressions (own camera)
-  ...Object.entries({
-    neutral: { lid: 0.12 }, content: { smile: 0.55, lid: 0.22 }, hungry: { smile: -0.35, lid: 0.3, browIn: 0.35, look: [0, -0.25] }, thirsty: { open: 0.25, lid: 0.32, browIn: 0.3 },
-    hurt: { lid: 0.42, browIn: 0.7, smile: -0.5, teeth: 1, open: 0.15 }, scared: { lid: -0.08, browUp: 0.9, open: 0.5 }, tired: { lid: 0.62, smile: -0.2, browUp: -0.1, tilt: 0.06 },
-    cold: { lid: 0.38, teeth: 1, open: 0.12, browIn: 0.5, smile: -0.1 }, weak: { lid: 0.58, open: 0.22, browIn: 0.6, browUp: 0.3, tilt: 0.12 }, sick: { lid: 0.48, smile: -0.6, browIn: 0.5, look: [0.2, -0.2] },
-    angry: { lid: 0.25, browIn: 1.0, smile: -0.3, teeth: 1, open: 0.08 }, dead: { lid: 1.05, open: 0.18, tilt: 0.2 }, blink: { lid: 1.05 },
-  }).map(([k, e]) => ({ name: 'portrait_' + k, cat: 'portrait', desc: 'Portrait — ' + k, portrait: e })),
+  // (the status portrait is drawn live by src/portrait.js, not baked)
 ];
 
 const log = document.getElementById('log');

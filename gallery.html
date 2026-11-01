@@ -34,6 +34,7 @@
 <footer>Generated from <code>src/style.js</code> and <code>src/models.js</code> by <code>tools/bake.js</code>. Units: 5 rendered directions, mirrored to 8, idle + 8 walk frames.</footer>
 <script src="src/style.js"></script>
 <script src="src/palette.js"></script>
+<script src="src/portrait.js"></script>
 <script src="assets/atlas.js"></script>
 <script>
 const S = STYLE, M = ATLAS.manifest;
@@ -60,7 +61,17 @@ const loadScript = src => new Promise((res, rej) => { const e = document.createE
     const name = S.terrain.types.find(q => q.id === t.id); document.getElementById('terrain').insertAdjacentHTML('beforeend', `<div class="card" id="t-${t.id}"></div>`);
     const card = document.getElementById('t-' + t.id); card.appendChild(c); card.insertAdjacentHTML('beforeend', `<div class="n">${name.name}</div><div class="d">priority ${name.priority} · ${name.blend}${name.walkable ? '' : ' · impassable'}</div>`);
   }
-  const cats = [['unit', 'Units: idle, walk, attack and death, all 8 directions'], ['portrait', 'Status portrait expressions (rendered from the survivor model)'], ['structure', 'Survival structures (player-built)'], ['wall', 'Wall & gate pieces (auto-connecting)'], ['icon', 'Item icons'], ['building', 'Buildings'], ['ruin', 'Ruins'], ['prop', 'Props & collectibles'], ['resource', 'Resources'], ['nature', 'Nature'], ['decor', 'Ground decor']];
+  // live status portrait: every mood, animated by src/portrait.js
+  document.getElementById('cats').insertAdjacentHTML('beforeend', `<h2>Status portrait <span style="opacity:.6;font-size:14px">(live, ${PORTRAIT.moods.length} animated moods)</span></h2><div class="grid" id="c-face"></div>`);
+  const faceStates = { neutral: {}, content: {}, hungry: {}, thirsty: {}, tired: { tired: 0.8 }, exert: { sweat: 0.8, exert: true }, angry: {}, scared: { sweat: 0.5 }, hurt: { blood: 0.5 }, cold: { cold: 0.9 }, sick: { sick: 0.8, sweat: 0.5 }, weak: { blood: 0.85, pale: 0.6, bleeding: true }, dead: { dead: true, blood: 0.6 } };
+  const faces = Object.entries(faceStates).map(([expr, st]) => {
+    const card = document.createElement('div'); card.className = 'card'; const c = document.createElement('canvas'); c.width = 96; c.height = 108; c.style.width = '192px'; c.style.height = '216px'; c.style.imageRendering = 'pixelated'; c.style.background = 'radial-gradient(ellipse at 50% 40%,#3a3024,#120d09)';
+    card.appendChild(c); card.insertAdjacentHTML('beforeend', `<div class="n">${expr}</div>`); document.getElementById('c-face').appendChild(card);
+    return { c, st: Object.assign({ expr }, st), inst: PORTRAIT.instance(), T: 0 };
+  });
+  const faceTick = () => { for (const f of faces) { f.T += 1 / 20; PORTRAIT.draw(f.c, null, Object.assign({ time: f.T }, f.st), f.inst); } };
+  setInterval(faceTick, 50);
+  const cats = [['unit', 'Units: idle, walk, attack and death, all 8 directions'], ['structure', 'Survival structures (player-built)'], ['wall', 'Wall & gate pieces (auto-connecting)'], ['icon', 'Item icons'], ['building', 'Buildings'], ['ruin', 'Ruins'], ['prop', 'Props & collectibles'], ['resource', 'Resources'], ['nature', 'Nature'], ['decor', 'Ground decor']];
   const anim = [];
   // only animate cards that are on screen, at a steady 12 fps (the page holds ~170 canvases)
   const io = new IntersectionObserver(es => { for (const e of es) { e.target._item.vis = e.isIntersecting; if (e.isIntersecting) e.target._item.dirty = true; } });

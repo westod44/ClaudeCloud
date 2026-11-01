@@ -55,8 +55,8 @@ The machine-readable version of this guide is [`dataset/style.json`](../dataset/
 | Player colours | blue, red, green, yellow, teal, purple, grey, orange. |
 | Units | All 8 directions rendered (no mirroring, so shadows always fall the correct way). Columns: 0 idle, 1–8 walk (12 fps), 9–12 attack, 13 death pose (the same model laid on its side). The survivor is baked once per weapon (unarmed, axe, spear, bow, club, knife, great axe, sling). |
 | Foliage | `src/foliage.js`, not the SDF ray-marcher. A branch skeleton is grown per species (oak, beech, maple, aspen, birch, pine, snowy pine, palm, dead, bushes, ferns), then covered in thousands of leaf particles. Each particle is lit by the canopy normal, a sun-space shadow map and inner occlusion, then the particles are drawn back-to-front at 3× and snapped to the palette. Trees cast dappled ground shadows. |
-| Wind | Trees: 3 leaf-flutter frames, plus a runtime bend of horizontal strips that grows with height, driven by the weather's wind field and gusts. Grass, flowers and reeds: 6 breeze + 6 gale sway frames, chosen by the local wind strength. |
-| Portrait | The survivor's head and shoulders rendered by the same ray-marcher through a close-up camera (`opts.cam`), with 13 expressions. State overlays (blood, bruise, dirt, sweat, rain, frost, pallor, sickness) are painted at runtime onto skin and hat regions found in the sprite. |
+| Wind | Trees: 3 leaf-flutter frames, plus a runtime bend of horizontal strips that grows with height, driven by the weather's wind field and gusts. Grass, flowers and reeds: 6 breeze + 6 gale sway frames, chosen by the local wind strength. Each plant integrates its own animation phase and eases toward the local wind. A gust therefore changes how far a plant leans and which frame set it uses, while the tempo rises only gently. Grass and flowers also bend away from anyone walking through them, on a damped spring. |
+| Portrait | Drawn live, not baked (`src/portrait.js`): a 96×108 pixel-art bust, shown at 2× (desktop) or 1× (touch). The same hat, hair, stubble, blue shirt and pack strap as the in-game survivor. Skin is lit by a small relief map (nose, brow ridge, cheekbones, chin) from the game's front-left sun, with a shadow under the hat brim. Every material uses a 5–8 step ramp with 4×4 ordered dithering and a dark silhouette outline. A rig (brows, lids, pupils, mouth shapes, teeth, tongue, wrinkles, head motion) is animated per mood at about 20 fps, and moods ease into one another. |
 | Item icons | The same models and lights rendered at 3× scale, body layer only, cropped. |
 | Walls | Wall and gate pieces are baked as a post plus half-segments in both diagonal directions, so the game joins neighbouring wall tiles automatically. |
 | Terrain | 11 tileable top-down textures, 384² px = 4×4 tiles (96 texels per tile), sampled in world space so there are no seams. |
@@ -90,7 +90,7 @@ human 0.62 · Hollow 0.72 (brute ×1.4) · wolf 0.5 · boar 0.42 · bear 0.75 ·
 | `assets/terrain/*.png` | The 11 tileable terrain textures. |
 | `assets/atlas.js`, `assets/atlas-N.js` | Everything above inlined for the browser: the manifest, plus the images split into ~5 MB chunks that load in sequence. |
 
-**Asset count:** 162 sprite assets: 19 units × 112 frames (8 directions × idle, 8 walk, 4 attack, 1 death), 27 survival structures, 14 wall and gate pieces, 13 portrait expressions, 7 buildings, 11 ruins, 5 props, 4 resources, 23 nature, 9 decor and 30 item icons. Plus 11 terrain textures.
+**Asset count:** 149 sprite assets: 19 units × 112 frames (8 directions × idle, 8 walk, 4 attack, 1 death), 27 survival structures, 14 wall and gate pieces, 7 buildings, 11 ruins, 5 props, 4 resources, 23 nature, 9 decor and 30 item icons. Plus 11 terrain textures.
 
 ---
 

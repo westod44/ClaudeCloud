@@ -22,7 +22,7 @@
   const angDiff = (a, b) => { let d = a - b; while (d > Math.PI) d -= Math.PI * 2; while (d < -Math.PI) d += Math.PI * 2; return Math.abs(d); };
 
   // ================================================================== assets
-  const SPR = {}, TEX = {}, ICON = {}, FACE = {};
+  const SPR = {}, TEX = {}, ICON = {};
   function loadImg(src) { return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; }); }
   function loadScript(src) { return new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = () => rej(new Error('failed to load ' + src)); document.head.appendChild(s); }); }
   async function loadAssets(progress) {
@@ -32,7 +32,6 @@
     await Promise.all(list.map(async a => {
       SPR[a.name] = Object.assign({}, a, { img: await loadImg(A.images[a.name]), sh: A.images[a.name + '_shadow'] ? await loadImg(A.images[a.name + '_shadow']) : null });
       if (a.name.startsWith('icon_')) ICON[a.name.slice(5)] = A.images[a.name];
-      if (a.name.startsWith('portrait_')) FACE[a.name.slice(9)] = SPR[a.name].img;
       progress(0.4 + 0.6 * (++n / total));
     }));
     for (const t of A.manifest.terrain) {
@@ -377,9 +376,47 @@
   }
 
   // ================================================================== player & inventory
-  const inv = {};
+  // ================================================================== inventory: Minecraft-style slots
+  // slots[0..5] are the hotbar (keys 1-6), slots[6..35] the pack. `inv` is a live count view over the slots,
+  // so `inv.log`, `inv.log -= 2`, `delete inv.log` and Object.keys(inv) all keep working.
+  const HOT = 6, PACK = 30, NSLOT = HOT + PACK;
+  const slots = new Array(NSLOT).fill(null);
+  const stackOf = k => Math.max(1, (ITEMS[k] && ITEMS[k].max) || 50);
+  const usable = k => { const it = ITEMS[k]; return !!(it && (it.weapon || it.eat || k === 'torch' || k === 'waterskin' || k === 'armor')); };
+  const range = (a, b) => Array.from({ length: b - a }, (_, i) => a + i);
+  const ORD_HOT = range(0, NSLOT), ORD_PACK = range(HOT, NSLOT).concat(range(0, HOT)), ORD_TAKE = range(HOT, NSLOT).reverse().concat(range(0, HOT).reverse());
+  let held = null, heldFrom = null, focus = null; // item stack on the cursor, where it came from, hovered slot
+  let takePref = -1; // when using an item from a hotbar slot, that slot is spent first
+  const countIn = (arr, k) => { let n = 0; for (const q of arr) if (q && q.id === k) n += q.n; return n; };
+  function putInto(arr, k, n, order) { // returns how many fitted: tops up matching stacks first, then empty slots
+    const max = stackOf(k); let left = n;
+    for (const i of order) { const q = arr[i]; if (q && q.id === k && q.n < max) { const a = Math.min(max - q.n, left); q.n += a; left -= a; if (!left) return n; } }
+    for (const i of order) if (!arr[i]) { const a = Math.min(max, left); arr[i] = { id: k, n: a }; left -= a; if (!left) return n; }
+    return n - left;
+  }
+  function takeFrom(arr, k, n, order) {
+    let left = n; const ord = takePref >= 0 && arr === slots ? [takePref].concat(order) : order;
+    for (const i of ord) { const q = arr[i]; if (q && q.id === k) { const a = Math.min(q.n, left); q.n -= a; left -= a; if (!q.n) arr[i] = null; if (!left) break; } }
+    return n - left;
+  }
+  const fitRoom = (arr, k) => { const max = stackOf(k); let r = 0; for (const q of arr) r += !q ? max : q.id === k ? max - q.n : 0; return r; };
+  const inv = new Proxy({}, {
+    get: (t, k) => typeof k === 'string' && ITEMS[k] ? countIn(slots, k) || undefined : undefined,
+    set: (t, k, v) => { if (!ITEMS[k]) return true; v = Math.max(0, Math.round(+v || 0)); const c = countIn(slots, k); if (v > c) { const add = putInto(slots, k, v - c, usable(k) ? ORD_HOT : ORD_PACK); if (add < v - c) dropItems(k, v - c - add); } else if (v < c) takeFrom(slots, k, c - v, ORD_TAKE); return true; },
+    deleteProperty: (t, k) => { if (ITEMS[k]) takeFrom(slots, k, 1e9, ORD_TAKE); return true; },
+    has: (t, k) => !!(ITEMS[k] && countIn(slots, k)),
+    ownKeys: () => [...new Set(slots.filter(Boolean).map(q => q.id))],
+    getOwnPropertyDescriptor: (t, k) => { const n = ITEMS[k] ? countIn(slots, k) : 0; return n ? { value: n, enumerable: true, configurable: true, writable: true } : undefined; },
+  });
+  // items that don't fit go into a sack on the ground (it can be looted like a crate)
+  function dropItems(k, n, at) {
+    if (n <= 0 || !P) return; const x = at ? at.x : P.x, y = at ? at.y : P.y;
+    let sack = objects.find(o => o.drop && !o.gone && Math.hypot(o.x - x, o.y - y) < 1.3);
+    if (!sack) { sack = addObj('chest', x + 0.35, y + 0.35, { drop: new Array(18).fill(null), blocks: false }); markDirty(sack); }
+    putInto(sack.drop, k, n, range(0, sack.drop.length));
+  }
   function newPlayerState() {
-    for (const k of Object.keys(inv)) delete inv[k];
+    slots.fill(null); held = null; takePref = -1;
     Object.assign(inv, { berries: 3, stick: 2 });
     Object.assign(P, { hp: 100, maxHp: 100, hunger: 100, thirst: 100, stamina: 100, warmth: 75, wet: 0, bleed: 0, sick: 0, comfort: 0, fear: 0, weapon: 'fists', armorHP: 0, torchT: 0, torchOn: false, water: 0,
       task: null, swing: null, dead: false, warn: {}, dodgeT: 0, dodgeCd: 0, invulnT: 0, exhausted: false, lastHurt: -99, warmBuff: 0, aim: Math.PI / 2, bruise: 0 });
@@ -387,9 +424,9 @@
   const have = cost => Object.entries(cost).every(([k, n]) => (inv[k] || 0) >= n);
   function pay(cost) { for (const [k, n] of Object.entries(cost)) { inv[k] -= n; if (inv[k] <= 0) delete inv[k]; } }
   function addItem(k, n, quiet) {
-    const cur = inv[k] || 0, room = ITEMS[k].max - cur, add = Math.min(room, n);
-    if (add > 0) { inv[k] = cur + add; if (!quiet) floatText(P.x, P.y, `+${add} ${ITEMS[k].name}`, '#ffe9a8'); }
-    if (add < n && !quiet) message(`You can't carry more ${ITEMS[k].name.toLowerCase()}.`);
+    const add = putInto(slots, k, n, usable(k) ? ORD_HOT : ORD_PACK);
+    if (add > 0 && !quiet) floatText(P.x, P.y, `+${add} ${ITEMS[k].name}`, '#ffe9a8');
+    if (add < n) { dropItems(k, n - add); message(`Your pack is full: ${n - add} ${ITEMS[k].name.toLowerCase()} dropped on the ground.`); }
     refreshUI(); return add;
   }
   function useItem(k) {
@@ -417,7 +454,7 @@
   const nearBench = () => objects.some(o => !o.gone && o.struct === 'workbench' && dist(o, P) < 3.2);
   function craft(r) {
     if (r.bench && !nearBench()) { message('You need to stand at a workbench to craft that.'); return; }
-    if (!have(r.cost)) return; if ((inv[r.out] || 0) + r.n > ITEMS[r.out].max) { message(`You can't carry more ${ITEMS[r.out].name.toLowerCase()}.`); return; }
+    if (!have(r.cost)) return;
     pay(r.cost); addItem(r.out, r.n, true); AU.sfx('craft'); message(`Crafted ${r.n > 1 ? r.n + ' ' : ''}${ITEMS[r.out].name}.`);
     if (ITEMS[r.out].weapon && P.weapon === 'fists') setWeapon(ITEMS[r.out].weapon);
     refreshUI();
@@ -430,7 +467,7 @@
     return 1 - 0.55 * NZ.smooth((t - 0.94) / 0.06);
   }
   const isNight = () => G.tod >= 0.68 || G.tod < 0.02;
-  function clockStr() { const h = (5 + G.tod * 24) % 24, hh = Math.floor(h), mm = Math.floor((h - hh) * 60); return `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`; }
+  function clockStr() { const h = (5 + G.tod * 24) % 24, hh = Math.floor(h), mm = Math.floor((h - hh) * 60); return `${hh % 12 || 12}:${String(mm).padStart(2, '0')} ${hh < 12 ? 'AM' : 'PM'}`; }
   function todLabel() { const t = G.tod; return t < 0.08 ? 'Dawn' : t < 0.3 ? 'Morning' : t < 0.45 ? 'Midday' : t < 0.62 ? 'Afternoon' : t < 0.72 ? 'Dusk' : t < 0.94 ? 'Night' : 'Before dawn'; }
   let lights = []; const tempLights = [];
   function collectLights() {
@@ -476,12 +513,14 @@
     }
     const a = o.asset;
     if (o.struct) return structActions(o);
-    if (TREE.test(a) || a === 'dead_tree') A('Chop down', 'chop', { repeat: true });
+    if (a === 'stump') A('Dig up stump', 'stump', { repeat: true });
+    else if (TREE.test(a) || a === 'dead_tree') A('Chop down', 'chop', { repeat: true });
     else if ((a === 'bush_1' || a === 'bush_2') && !o.empty) A('Gather sticks & fiber', 'gather', { range: 1.1 });
     else if (a === 'berry_bush') { A('Pick berries', 'berries', { range: 1.2 }); A('Gather sticks & fiber', 'gather', { range: 1.2 }); }
     else if (a.startsWith('grass_tuft') || a === 'reeds' || a.startsWith('fern_')) A('Pull fiber', 'fiber', { range: 1.0 });
     else if (a.startsWith('flowers_')) A('Pick herbs', 'herb', { range: 1.0 });
     else if (ROCK.test(a)) A('Gather stone', 'mine', { repeat: true });
+    else if (o.drop) { A('Pick up everything', 'pickup', { range: 1.1 }); A('Look through', 'storage', { range: 1.1 }); }
     else if (o.chest) A('Open chest', 'chest', { range: 1.1 });
     else if (o.search && !o.looted) A(a === 'market_stall' ? 'Search stall' : 'Search house', 'search', { range: 1.7 });
     else if (a === 'well') { A('Drink', 'drink', { range: 1.3 }); if (inv.waterskin) A('Fill waterskins', 'drink', { range: 1.3 }); }
@@ -531,7 +570,7 @@
     for (const [k, n] of got) addItem(k, n);
     message('You found: ' + got.map(([k, n]) => `${n} ${ITEMS[k].name.toLowerCase()}`).join(', ') + '.');
   }
-  const needsSwing = kind => kind === 'chop' || kind === 'mine' || kind === 'gather';
+  const needsSwing = kind => kind === 'chop' || kind === 'mine' || kind === 'gather' || kind === 'stump';
   function chopTree(o, power = 1) {
     o.hp = o.hp == null ? (o.asset === 'dead_tree' ? 3 : 5) : o.hp; o.hp -= power; AU.sfx('chop', panOf(o)); puff(o.x, o.y, '#8a6a45'); o.shake = 0.3;
     if (o.hp > 0) return true;
@@ -552,6 +591,12 @@
         const w = WEAPONS[P.weapon];
         if (!w.chop) { const best = inv.greataxe ? 'greataxe' : inv.axe ? 'axe' : null; if (best) setWeapon(best); else { message('You need a stone axe to chop trees. Craft one in your pack.'); return false; } }
         return chopTree(o, WEAPONS[P.weapon].chop);
+      }
+      case 'stump': { // hack the roots out: needs an axe (or a knife, slowly); leaves clear ground for building
+        if (!WEAPONS[P.weapon].chop) { const best = inv.greataxe ? 'greataxe' : inv.axe ? 'axe' : inv.knife ? 'knife' : null; if (best) setWeapon(best); else { message('You need an axe or a knife to dig out a stump.'); return false; } }
+        o.dig = (o.dig == null ? 4 : o.dig) - (WEAPONS[P.weapon].chop || 0.5); AU.sfx('chop', panOf(o)); puff(o.x, o.y, '#6a4e32'); markDirty(o);
+        if (o.dig > 0) return true;
+        addItem('stick', 2); if (Math.random() < 0.5) addItem('log', 1); o.gone = true; AU.sfx('fall', panOf(o)); message('You dig out the stump.'); return false;
       }
       case 'mine': return mineRock(o, WEAPONS[P.weapon].chop ? 2 : 1);
       case 'gather': addItem('fiber', 2); addItem('stick', 1); if (o.asset === 'bush_1' || o.asset === 'bush_2') { o.empty = true; o.regrow = 300; } markDirty(o); AU.sfx('rustle', panOf(o)); return false;
@@ -577,6 +622,8 @@
       case 'bench': openPack('craft'); return false;
       case 'sleep': trySleep(o); return false;
       case 'storage': openStorage(o); return false;
+      case 'pickup': { for (let i = 0; i < o.drop.length; i++) { const q = o.drop[i]; if (!q) continue; const a = putInto(slots, q.id, q.n, usable(q.id) ? ORD_HOT : ORD_PACK); if (a) floatText(P.x, P.y, `+${a} ${ITEMS[q.id].name}`, '#ffe9a8'); q.n -= a; if (!q.n) o.drop[i] = null; }
+        if (!o.drop.some(Boolean)) o.gone = true; else message('Your pack is full.'); AU.sfx('loot'); refreshUI(); return false; }
       case 'rain': if (o.water > 0) { o.water--; P.thirst = Math.min(100, P.thirst + 45); AU.sfx('drink'); } return false;
       case 'rainfill': { const need = inv.waterskin * 3 - P.water, n = Math.min(need, o.water); P.water += n; o.water -= n; message(`You fill your waterskin (${P.water}).`); AU.sfx('drink'); return false; }
       case 'beacon': lightBeacon(o); return false;
@@ -594,7 +641,7 @@
     const o = addObj(def.asset, x, y, Object.assign({ struct: t, hp: def.hp }, extra));
     if ((t === 'campfire' || t === 'brazier') && o.fuel == null) o.fuel = t === 'brazier' ? 360 : 200;
     if (t === 'rain_collector' && o.water == null) { o.water = 1; o.fillT = 0; }
-    if (def.store && !o.store) o.store = {};
+    if (def.store) { const n = def.store === true ? 24 : def.store; if (!Array.isArray(o.store)) { const old = o.store || {}; o.store = new Array(n).fill(null); for (const [k, c] of Object.entries(old)) if (ITEMS[k]) putInto(o.store, k, c, range(0, n)); } }
     if (t === 'spike_trap') { trapAt.set(idx(Math.floor(x), Math.floor(y)), o); if (o.uses == null) o.uses = 4; }
     if (t === 'gate' && !o.orient) o.orient = wallAt(Math.floor(x) - 1, Math.floor(y)) || wallAt(Math.floor(x) + 1, Math.floor(y)) ? 'i' : wallAt(Math.floor(x), Math.floor(y) - 1) || wallAt(Math.floor(x), Math.floor(y) + 1) ? 'j' : 'i';
     if (t === 'beacon') G.beacon = Object.assign(G.beacon || { lit: false, sawNight: false }, { obj: o });
@@ -665,6 +712,7 @@
     if (P.stamina < w.stam) { if (!P.warn.tired) { message('Too exhausted. Catch your breath.'); P.warn.tired = 1; setTimeout(() => P.warn.tired = 0, 3000); } return; }
     const ammo = w.ranged ? ammoFor(P.weapon) : null;
     if (w.ranged && !ammo) { message(P.weapon === 'bow' ? 'No arrows. Craft some in your pack.' : 'No stones to sling.'); return; }
+    P.fightT = time;
     if (target) aim = screenAng(target.x - P.x, target.y - P.y);
     P.aim = aim; const [fx, fy] = worldFromScreenAng(aim); P.dir = dirFromVec(fx, fy);
     P.stamina -= w.stam; P.cdT = w.cd;
@@ -898,13 +946,14 @@
     if (!P || P.dead) return false;
     const objs = {}, structs = [];
     for (const o of objects) {
-      if (o.id < baseObjCount && o.dirty) objs[o.id] = { gone: o.gone || 0, asset: o.asset, blocks: o.blocks, res: o.res, hp: o.hp, empty: o.empty, regrow: o.regrow, wasBerry: o.wasBerry, looted: o.looted, relic: o.relic, fuel: o.fuel, fp: o.fp };
+      if (o.id < baseObjCount && o.dirty) objs[o.id] = { gone: o.gone || 0, dig: o.dig, asset: o.asset, blocks: o.blocks, res: o.res, hp: o.hp, empty: o.empty, regrow: o.regrow, wasBerry: o.wasBerry, looted: o.looted, relic: o.relic, fuel: o.fuel, fp: o.fp };
       if (o.id >= baseObjCount && o.struct && !o.gone) structs.push({ t: o.struct, x: o.x, y: o.y, hp: o.hp, fuel: o.fuel, water: o.water, store: o.store, uses: o.uses, asset: o.asset, orient: o.orient, rack: o.rack, stage: o.stage, growT: o.growT });
     }
     const exp = new Uint8Array(Math.ceil(N * N / 8)); for (let k = 0; k < N * N; k++) if (explored[k]) exp[k >> 3] |= 1 << (k & 7);
-    const p = {}; for (const k of ['x', 'y', 'hp', 'hunger', 'thirst', 'stamina', 'warmth', 'wet', 'bleed', 'sick', 'weapon', 'armorHP', 'torchT', 'water']) p[k] = P[k]; p.inv = Object.assign({}, inv);
+    const p = {}; for (const k of ['x', 'y', 'hp', 'hunger', 'thirst', 'stamina', 'warmth', 'wet', 'bleed', 'sick', 'weapon', 'armorHP', 'torchT', 'water']) p[k] = P[k]; p.slots = slots.map(q => q && [q.id, q.n]);
+    const drops = objects.filter(o => o.drop && !o.gone && o.drop.some(Boolean)).map(o => ({ x: o.x, y: o.y, s: o.drop.map(q => q && [q.id, q.n]) }));
     const data = { v: 2, seed, day: G.day, tod: G.tod, won: G.won, killed: G.killed, beacon: G.beacon ? { lit: G.beacon.lit, sawNight: G.beacon.sawNight } : null,
-      weather: { type: WX.S.type, t: WX.S.t, snow: WX.S.snowCover }, sites: sites.map(s => s.found ? 1 : 0), p, objs, structs, exp: b64(exp) };
+      weather: { type: WX.S.type, t: WX.S.t, snow: WX.S.snowCover }, sites: sites.map(s => s.found ? 1 : 0), p, objs, structs, drops, exp: b64(exp) };
     try { localStorage.setItem(SAVE_KEY, JSON.stringify(data)); return true; } catch (e) { return false; }
   }
   function loadSave() { try { const s = localStorage.getItem(SAVE_KEY); const d = s ? JSON.parse(s) : null; return d && d.v === 2 ? d : null; } catch (e) { return null; } }
@@ -918,8 +967,10 @@
     d.sites.forEach((f, n) => { if (sites[n]) sites[n].found = !!f; });
     const exp = unb64(d.exp); for (let k = 0; k < N * N; k++) explored[k] = (exp[k >> 3] >> (k & 7)) & 1;
     spawnPlayer(d.p.x, d.p.y); newPlayerState();
-    for (const k of Object.keys(inv)) delete inv[k]; Object.assign(inv, d.p.inv);
-    for (const k of Object.keys(d.p)) if (k !== 'inv' && d.p[k] != null) P[k] = d.p[k];
+    if (d.p.slots) d.p.slots.forEach((q, i) => { slots[i] = q && ITEMS[q[0]] ? { id: q[0], n: q[1] } : null; });
+    else for (const [k, n] of Object.entries(d.p.inv || {})) if (ITEMS[k]) putInto(slots, k, n, usable(k) ? ORD_HOT : ORD_PACK); // older saves
+    for (const dr of d.drops || []) { const o = addObj('chest', dr.x, dr.y, { drop: dr.s.map(q => q && { id: q[0], n: q[1] }), blocks: false }); markDirty(o); }
+    for (const k of Object.keys(d.p)) if (k !== 'inv' && k !== 'slots' && d.p[k] != null) P[k] = d.p[k];
     setWeapon(d.p.weapon || 'fists');
   }
 
@@ -999,7 +1050,7 @@
   addEventListener('resize', resize);
   const zoom = () => ZOOMS[zi];
   const toScreen = (x, y) => { const h = hAt(x, y); return [(x - y) * HWp, (x + y) * HHp - h * ZPX]; };
-  let time = 0, marker = null, hoverObj = null, view = { ox: 0, oy: 0, vl: 0, vt: 0, vr: 0, vb: 0 };
+  let time = 0, marker = null, hoverObj = null, walkers = [], view = { ox: 0, oy: 0, vl: 0, vt: 0, vr: 0, vb: 0 };
 
   function animCol(a, u) {
     if (!a.anim) return 0;
@@ -1009,6 +1060,29 @@
     if (u.moving) return a.anim.walk[0] + (Math.floor(u.walkT * a.fps) % a.anim.walk[1]);
     return 0;
   }
+  // Per-object wind state. The phase is integrated (never time * rate), so a gust changes how far things bend,
+  // not how fast they flicker; tempo only rises gently with wind.
+  function windState(o, sx, sy, baseRate, gain) {
+    const w = WX.windAt(sx, sy), d = Math.min(0.1, Math.max(0, time - (o.wt == null ? time : o.wt)));
+    if (o.wt == null) { o.ws = w; o.wph = (o.x * 3.7 + o.y * 5.3) % 6; }
+    o.wt = time; o.ws += (w - o.ws) * Math.min(1, d * 1.2); o.wph += d * (baseRate + Math.min(1.2, o.ws) * gain);
+    return o;
+  }
+  // damped spring per plant: bends away (screen x) from nearby walkers and flattens under them, then springs back
+  function pushState(o) {
+    let tx = 0, tq = 0;
+    for (const u of walkers) {
+      const dx = o.x - u.x, dy = o.y - u.y; if (dx > 0.9 || dx < -0.9 || dy > 0.9 || dy < -0.9) continue;
+      const d = Math.hypot(dx, dy), r = u.kind === 'bear' || u.kind === 'brute' ? 0.9 : 0.68; if (d >= r) continue;
+      const pr = 1 - d / r, side = (dx - dy) / Math.max(0.12, d);
+      tx += clamp(Math.abs(dx - dy) < 0.08 ? (((o.x * 13.1 + o.y * 7.7) | 0) % 2 ? 1 : -1) : side, -1, 1) * pr; tq = Math.max(tq, pr);
+    }
+    const dd = Math.min(0.05, Math.max(0, time - (o.pt == null ? time : o.pt))); o.pt = time;
+    o.pp = o.pp || 0; o.pv = o.pv || 0; o.pq = o.pq || 0;
+    o.pv += ((clamp(tx, -1.2, 1.2) - o.pp) * 140 - o.pv * 11) * dd; o.pp += o.pv * dd;
+    o.pq += (tq - o.pq) * Math.min(1, dd * (tq > o.pq ? 18 : 3));
+    return o;
+  }
   function blit(img, a, col, row, X, Y) { ctx.drawImage(img, col * a.w, row * a.h, a.w, a.h, X - a.ax, Y - a.ay, a.w, a.h); }
   function drawAsset(name, o, sx, sy, shadowPass, alpha = 1, colOverride) {
     const a = SPR[name]; if (!a) return; const img = shadowPass ? a.sh : a.img; if (!img) return;
@@ -1017,15 +1091,31 @@
     let col = colOverride || 0;
     if (a.wind && a.wind.bend) {
       // trees: leaf flutter frames + whole-tree bending in the wind (strips shifted more toward the top)
-      const w = WX.windAt(sx, sy), fl = w > 0.05 ? Math.floor(time * (2 + w * 6) + o.x * 3) % 3 : 0; col = fl;
-      const sway = (Math.sin(time * (1.1 + w * 1.4) + o.x * 1.7 + o.y) * (0.6 + w * 3.2) + w * 2.4) * (o.shake ? 1 + o.shake * 6 : 1) + (o.shake ? Math.sin(time * 60) * o.shake * 4 : 0);
+      const ws = windState(o, sx, sy, 1.15, 0.45), w = ws.ws; col = w > 0.05 ? Math.floor(ws.wph * 2.6) % 3 : 0;
+      // strong wind: a deeper lean and wider sway, with a second faster harmonic for buffeting, at nearly the same tempo
+      const push = o.decor && !shadowPass ? pushState(o).pp * 6 : 0;
+      const sway = push + (Math.sin(ws.wph) * (0.6 + w * 2.6) + Math.sin(ws.wph * 2.3 + o.x) * w * w * 0.9 + w * 3.2) * (o.shake ? 1 + o.shake * 6 : 1) + (o.shake ? Math.sin(time * 60) * o.shake * 4 : 0);
       if (!shadowPass && !lowDetail && Math.abs(sway) > 0.45) {
         const top = 0, bottom = a.ay, strip = 8;
         for (let y = top; y < a.h; y += strip) { const hgt = Math.min(strip, a.h - y), f = y + hgt / 2 < bottom ? Math.pow((bottom - (y + hgt / 2)) / bottom, 1.6) : 0; ctx.drawImage(img, col * a.w, y, a.w, hgt, X - a.ax + Math.round(sway * f), Y - a.ay + y, a.w, hgt); }
         ctx.globalAlpha = 1; return;
       }
     } else if (a.wind) { // grass & flowers: baked sway frames, breeze or gale set
-      const w = WX.windAt(sx, sy); if (w > 0.07) { const set = w > 0.75 ? a.wind.gale : a.wind.breeze; col = set[0] + (Math.floor(time * (3 + w * 6) + o.x * 5 + o.y * 3) % set[1]); }
+      const ws = windState(o, sx, sy, 4.5, 1.5), w = ws.ws;
+      if (w > 0.07) { o.gale = o.gale ? w > 0.62 : w > 0.8; const set = o.gale ? a.wind.gale : a.wind.breeze; col = set[0] + (Math.floor(ws.wph) % set[1]); }
+      // pushed aside by anyone walking through (grass, flowers, reeds)
+      if (!shadowPass) {
+        pushState(o);
+        if (Math.abs(o.pp) > 0.04 || o.pq > 0.03) {
+          const shift = o.pp * 7, sq = o.pq * 0.45, ay = a.ay;
+          for (let y = 0; y < ay; y += 2) {
+            const hgt = Math.min(2, ay - y), f = Math.pow((ay - y - hgt / 2) / ay, 1.2), ny = ay - (ay - y) * (1 - sq * f);
+            ctx.drawImage(img, col * a.w, y, a.w, hgt, X - a.ax + Math.round(shift * f), Y - ay + Math.round(ny), a.w, Math.max(1, Math.round(hgt * (1 - sq * f))));
+          }
+          if (a.h > ay) ctx.drawImage(img, col * a.w, ay, a.w, a.h - ay, X - a.ax, Y, a.w, a.h - ay);
+          ctx.globalAlpha = 1; return;
+        }
+      }
     } else if (a.frames > 1 && !colOverride) col = Math.floor(time * (a.fps || 8) + o.x * 7) % a.frames;
     blit(img, a, col, 0, X, Y);
     ctx.globalAlpha = 1;
@@ -1068,12 +1158,12 @@
     ctx.fillStyle = 'rgba(235,248,255,0.85)';
     for (const s of sparkles) { const a = Math.sin(s.t / s.life * Math.PI); if (a <= 0) continue; ctx.globalAlpha = a * (1 - nightness() * 0.7) * (1 - WX.S.cur.cloud * 0.6); ctx.fillRect(Math.round(s.sx), Math.round(s.sy), 3, 1); }
     ctx.globalAlpha = 1;
-    // cloud shadows on the ground
-    WX.drawCloudShadows(ctx, 1 - nightness());
     const ring = (o, col) => { if (!o || o.gone) return; const [sx, sy] = toScreen(o.x, o.y), r = 14 + (o.fp ? (o.fp[0] - 1) * 30 : 0); ctx.strokeStyle = col; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.ellipse(sx, sy, r, r / 2, 0, 0, Math.PI * 2); ctx.stroke(); };
     if (hoverObj && hoverObj !== P) ring(hoverObj, 'rgba(255,255,255,0.5)');
     if (P.task && P.task.obj) ring(P.task.obj, P.task.obj.unit && !P.task.obj.dead ? 'rgba(255,90,70,0.85)' : 'rgba(255,214,110,0.85)');
     const list = [];
+    const c0 = vl / HWp, s0 = vt / HHp, c1 = vr / HWp, s1 = (vb + 400) / HHp; // screen -> world (s = x + y, c = x - y)
+    const vl0 = (s0 + c0) / 2 - 2, vr0 = (s1 + c1) / 2 + 2, vt0 = (s0 - c1) / 2 - 2, vb0 = (s1 - c0) / 2 + 2;
     const consider = (o, isUnit) => {
       const i = Math.floor(o.x), j = Math.floor(o.y); if (!inMap(i, j)) return;
       if (isUnit ? !visible[idx(i, j)] && o !== P : !explored[idx(i, j)]) return;
@@ -1082,11 +1172,14 @@
       const def = o.struct ? STRUCTS[o.struct] : null;
       list.push([o.x + o.y + (isUnit ? (o.dead ? -0.3 : 0.01) : 0) - (a.footprint[0] > 1 ? 0.3 : 0) + (def && def.flat || o.asset === 'spike_trap' || o.asset === 'stump' ? -0.6 : 0) + (o.decor ? -0.2 : 0), o, sx, sy, isUnit]);
     };
+    walkers.length = 0; for (const u of units) if (!u.dead && !u.dissolve && u.kind !== 'wisp' && u.x > vl0 && u.x < vr0 && u.y > vt0 && u.y < vb0) walkers.push(u);
     for (const o of objects) if (!o.gone) consider(o, false);
     for (const u of units) consider(u, true);
     list.sort((a, b) => a[0] - b[0]);
     for (const it of list) it[4] ? drawUnit(it[1], it[2], it[3], true, it[1].fade) : drawObject(it[1], it[2], it[3], true);
     for (const it of list) it[4] ? drawUnit(it[1], it[2], it[3], false, it[1].fade) : drawObject(it[1], it[2], it[3], false);
+    // rolling cloud shadows darken the ground and everything standing on it
+    WX.drawCloudShadows(ctx, 1 - nightness());
     // build ghost
     if (placing && ghost) {
       const def = STRUCTS[placing.type], a = SPR[def.asset];
@@ -1262,16 +1355,20 @@
       // player movement
       P.cdT = (P.cdT || 0) - dt; P.dodgeCd -= dt; P.invulnT -= dt;
       if (P.dodgeT > 0) { P.dodgeT -= dt; const nx = P.x + P.dodgeV[0] * dt, ny = P.y + P.dodgeV[1] * dt; if (walkableAt(nx, ny)) { P.x = nx; P.y = ny; } P.moving = true; P.walkT += dt * 2; }
-      else if (P.swing) { P.swing.t += dt; if (!P.swing.hit && P.swing.t >= P.swing.dur * 0.55) { P.swing.hit = true; P.swing.onHit(); } if (P.swing.t >= P.swing.dur) P.swing = null; }
       else {
+        // swings no longer freeze the player: while fighting, movement eases to a steady slower pace instead of stop-start
+        if (P.swing) { P.swing.t += dt; if (!P.swing.hit && P.swing.t >= P.swing.dur * 0.55) { P.swing.hit = true; P.swing.onHit(); } if (P.swing.t >= P.swing.dur) P.swing = null; }
+        const fighting = !!P.swing || rmbHeld || time - (P.fightT || -9) < 0.9;
+        P.combatF = (P.combatF || 1) + ((fighting ? 0.6 : 1) - (P.combatF || 1)) * Math.min(1, dt * 3);
         const kv = keyVector();
         if (kv) {
-          P.path = []; P.task = null; const [dx, dy] = kv, sp = P.speed * dt * (sprinting() ? 1.65 : 1) * (P.hp < 20 ? 0.8 : 1);
+          P.path = []; P.task = null; const [dx, dy] = kv, sp = P.speed * dt * (sprinting() ? 1.65 : 1) * (P.hp < 20 ? 0.8 : 1) * P.combatF;
           const tryMove = (mx, my) => { const nx = P.x + mx * sp, ny = P.y + my * sp; if (walkableAt(nx, ny)) { P.x = nx; P.y = ny; return true; } return false; };
           if (!tryMove(dx, dy)) { if (!tryMove(dx, 0)) tryMove(0, dy); }
-          if (time - mouseAimT > 0.6 || !matchMedia('(hover:hover)').matches) P.dir = dirFromVec(dx, dy, P.dir); P.moving = true; P.walkT += dt * (sprinting() ? 1.5 : 1); cam.follow = true;
-        } else if (P.task) updateTask(dt);
-        else stepUnit(P, dt, sprinting() ? 1.6 : 1);
+          if (!P.swing && (time - mouseAimT > 0.6 || !matchMedia('(hover:hover)').matches)) P.dir = dirFromVec(dx, dy, P.dir); P.moving = true; P.walkT += dt * (sprinting() ? 1.5 : 1) * P.combatF; cam.follow = true;
+        } else if (P.swing) P.moving = false;
+        else if (P.task) updateTask(dt);
+        else stepUnit(P, dt, (sprinting() ? 1.6 : 1) * P.combatF);
         if (rmbHeld) playerAttack(P.aim);
       }
       // face the mouse while fighting with a mouse
@@ -1378,32 +1475,29 @@
     $('hotbar').innerHTML = [1, 2, 3, 4, 5, 6].map(n => `<button class="hs frame" data-slot="${n - 1}"><span class="hn">${n}</span><img alt=""><span class="hc"></span></button>`).join('');
     for (const [id, ic] of [['b-pack', 'cloth'], ['b-build', 'log'], ['b-torch', 'torch'], ['b-use', 'herb'], ['b-attack', 'axe'], ['b-dodge', 'hide'], ['b-sprint', 'meat_cooked']]) { const b = $(id); if (b) b.querySelector('img').src = iconImg(ic); }
   }
-  let hotSlots = [];
-  function computeHotbar() {
-    const out = []; for (const w of ['club', 'knife', 'axe', 'spear', 'greataxe', 'bow', 'sling']) if (inv[w] && out.length < 4) out.push(w);
-    if (inv.torch || P.torchOn) out.push('torch');
-    const food = ['stew', 'meat_cooked', 'jerky', 'berries'].find(k => inv[k]); if (food) out.push(food);
-    const med = ['salve', 'bandage'].find(k => inv[k]); if (med) out.push(med);
-    if (inv.waterskin) out.push('waterskin');
-    return out.slice(0, 6);
+  function useSlot(n) { // hotbar keys 1-6 / taps: use whatever is in that slot
+    const q = slots[n]; if (!q) return;
+    if (!usable(q.id)) { message(`${ITEMS[q.id].name} can't be used directly.`); return; }
+    takePref = n; useItem(q.id); takePref = -1;
   }
   function refreshUI() {
     if (!P) return;
-    hotSlots = computeHotbar();
+    if (P.weapon !== 'fists' && !inv[P.weapon]) { P.weapon = 'fists'; P.asset = WEAPONS.fists.asset; }
     document.querySelectorAll('#hotbar .hs').forEach((b, n) => {
-      const k = hotSlots[n], img = b.querySelector('img'), c = b.querySelector('.hc');
+      const k = slots[n] && slots[n].id, img = b.querySelector('img'), c = b.querySelector('.hc');
       if (!k) { img.style.visibility = 'hidden'; c.textContent = ''; b.classList.remove('eq'); b.title = ''; return; }
       img.style.visibility = 'visible'; if (img.dataset.k !== k) { img.dataset.k = k; img.src = iconImg(k); }
       const it = ITEMS[k]; b.title = it.name; b.classList.toggle('eq', (it.weapon && P.weapon === it.weapon) || (k === 'torch' && P.torchOn));
-      c.textContent = it.weapon === 'bow' ? (inv.arrow || 0) + (inv.fire_arrow || 0) : it.weapon === 'sling' ? (inv.stone || 0) : k === 'waterskin' ? P.water : it.max > 1 ? inv[k] || 0 : '';
+      c.textContent = it.weapon === 'bow' ? (inv.arrow || 0) + (inv.fire_arrow || 0) : it.weapon === 'sling' ? (inv.stone || 0) : k === 'waterskin' ? P.water : slots[n].n > 1 ? slots[n].n : '';
     });
     const tb = $('b-torch'); if (tb) { tb.classList.toggle('on', P.torchOn); tb.querySelector('.n').textContent = (inv.torch || 0) + (P.torchOn ? '*' : ''); }
     const sb = $('b-sprint'); if (sb) sb.classList.toggle('on', sprintToggle);
     const ab = $('b-attack'); if (ab) { const im = ab.querySelector('img'), k = P.weapon === 'fists' ? 'stone' : P.weapon; if (im.dataset.k !== k) { im.dataset.k = k; im.src = iconImg(k); } }
     if (!$('pack').classList.contains('hidden')) renderPack();
+    if (!$('storage').classList.contains('hidden')) renderStorage();
     if (!$('build').classList.contains('hidden')) renderBuild();
   }
-  let faceT = 0, blinkT = 3;
+  let faceT = 0;
   const faceCv = $('face');
   function uiTick(dt) {
     if (!P) return;
@@ -1422,13 +1516,12 @@
     if (P.exhausted) B.push(['Exhausted', 'warn']); if (P.fear > 0.5) B.push(['Scared', 'warn']); if (P.comfort >= 5) B.push(['Comfortable', 'good']); if (P.warmBuff > 0) B.push(['Warm meal', 'good']);
     const bh = B.map(([t, c]) => `<span class="${c}">${t}</span>`).join(''); if (bh !== $('badges').dataset.h) { $('badges').dataset.h = bh; $('badges').innerHTML = bh; }
     // portrait
-    faceT -= dt; blinkT -= dt;
-    if (faceT <= 0) {
-      faceT = 0.16;
-      const hpf = P.hp / P.maxHp, hurtRecent = time - P.lastHurt < 1.2;
-      let expr = P.dead ? 'dead' : hpf < 0.25 ? 'weak' : hurtRecent ? 'hurt' : P.fear > 0.6 ? 'scared' : P.warmth < 25 ? 'cold' : P.sick > 0 ? 'sick' : P.thirst < 25 ? 'thirsty' : P.hunger < 25 ? 'hungry' : P.exhausted || P.stamina < 12 ? 'tired' : P.fear > 0.2 ? 'angry' : P.comfort >= 5 && P.hunger > 50 && P.thirst > 50 ? 'content' : 'neutral';
-      if (!P.dead && blinkT < 0) { if (blinkT < -0.14) blinkT = rand(2.5, 5.5); else if (FACE.blink) expr = 'blink'; }
-      PORTRAIT.draw(faceCv, FACE, { expr, blood: clamp((1 - hpf) * 1.15 - 0.1, 0, 1), bleeding: P.bleed > 0, bruise: P.bruise, cold: clamp((40 - P.warmth) / 35, 0, 1), wet: P.wet, sick: P.sick > 0 ? 0.8 : 0, pale: clamp((0.4 - hpf) * 2, 0, 1), sweat: sprinting() && P.moving ? 0.8 : P.warmth > 85 ? 0.4 : 0, dirt: clamp(G.day * 0.05, 0, 0.5), tired: P.stamina < 25 ? 0.8 : 0, flash: hurtFlash, time });
+    faceT -= dt;
+    if (faceT <= 0) { // the face is animated: redraw ~20 times a second
+      faceT = 0.05;
+      const hpf = P.hp / P.maxHp, hurtRecent = time - P.lastHurt < 1.1, exert = sprinting() && P.moving;
+      const expr = P.dead ? 'dead' : hurtRecent ? 'hurt' : hpf < 0.25 ? 'weak' : P.fear > 0.6 ? 'scared' : P.warmth < 25 ? 'cold' : P.sick > 0 ? 'sick' : P.thirst < 25 ? 'thirsty' : P.hunger < 25 ? 'hungry' : P.exhausted || P.stamina < 12 ? 'tired' : exert ? 'exert' : P.fear > 0.2 || (time - (P.fightT || -9) < 2.5) ? 'angry' : P.comfort >= 5 && P.hunger > 50 && P.thirst > 50 ? 'content' : 'neutral';
+      PORTRAIT.draw(faceCv, null, { expr, dead: P.dead, hurtAt: P.lastHurt, blood: clamp((1 - hpf) * 1.15 - 0.1, 0, 1), bleeding: P.bleed > 0, bruise: P.bruise, cold: clamp((40 - P.warmth) / 35, 0, 1), wet: P.wet, sick: P.sick > 0 ? 0.8 : 0, pale: clamp((0.4 - hpf) * 2, 0, 1), sweat: exert ? 0.8 : P.warmth > 85 ? 0.4 : expr === 'scared' || expr === 'sick' ? 0.5 : 0, dirt: clamp(G.day * 0.05, 0, 0.5), tired: P.stamina < 25 || nightness() > 0.8 ? 0.6 : 0, exert, flash: hurtFlash, time });
     }
     // context prompt & tooltip
     let label = '';
@@ -1447,12 +1540,7 @@
   }
   function costHTML(cost) { return '<div class="cost">' + Object.entries(cost).map(([k, n]) => `<span class="${(inv[k] || 0) >= n ? '' : 'no'}"><img src="${iconImg(k)}">${inv[k] || 0}/${n}</span>`).join('') + '</div>'; }
   function renderPack() {
-    const order = Object.keys(ITEMS).filter(k => inv[k]);
-    $('invgrid').innerHTML = order.length ? order.map(k => {
-      const it = ITEMS[k], eq = (it.weapon && P.weapon === it.weapon) || (k === 'torch' && P.torchOn), extra = k === 'waterskin' ? ` (${P.water}/${inv.waterskin * 3})` : '';
-      const verb = it.weapon ? (P.weapon === it.weapon ? 'Unequip' : 'Equip') : it.verb || '';
-      return `<div class="slot frame${eq ? ' eq' : ''}" data-item="${k}" title="${it.name}${it.note ? ' — ' + it.note : ''}"><span class="c">${inv[k]}</span><img src="${iconImg(k)}"><div>${it.name}${extra}</div><div style="opacity:.7">${verb}</div></div>`;
-    }).join('') : '<p>Your pack is empty.</p>';
+    renderSlots('pk-pack', slots, 'inv', HOT, NSLOT); renderSlots('pk-hot', slots, 'inv', 0, HOT); renderDetail('pk-detail');
     const bench = nearBench();
     $('recipes').innerHTML = RECIPES.map((r, i) => `<div class="rec${r.bench && !bench ? ' locked' : ''}"><img class="o" src="${iconImg(r.out)}"><div class="t"><b>${ITEMS[r.out].name}${r.n > 1 ? ' ×' + r.n : ''}</b>${r.bench ? ' <em>workbench</em>' : ''}<div style="opacity:.75;font-size:12px">${r.desc}</div>${costHTML(r.cost)}</div><button class="frame" data-craft="${i}" ${have(r.cost) && (!r.bench || bench) ? '' : 'disabled'}>Craft</button></div>`).join('');
   }
@@ -1468,22 +1556,121 @@
     const bench = nearBench();
     $('blist').innerHTML = Object.entries(STRUCTS).filter(([, d]) => d.cat === buildCat).map(([k, d]) => `<div class="rec${d.bench && !bench ? ' locked' : ''}"><img class="bthumb" src="${thumb(d.asset)}"><div class="t"><b>${d.name}</b>${d.bench ? ' <em>workbench</em>' : ''}<div style="opacity:.75;font-size:12px">${d.desc}</div>${costHTML(d.cost)}</div><button class="frame" data-build="${k}" ${have(d.cost) && (!d.bench || bench) ? '' : 'disabled'}>Build</button></div>`).join('');
   }
-  let storageObj = null;
-  function openStorage(o) { storageObj = o; renderStorage(); show('storage'); }
-  function renderStorage() { const st = storageObj.store, ks = Object.keys(st).filter(k => st[k] > 0); $('stgrid').innerHTML = ks.length ? ks.map(k => `<div class="slot frame" data-take="${k}"><span class="c">${st[k]}</span><img src="${iconImg(k)}"><div>${ITEMS[k].name}</div></div>`).join('') : '<p style="opacity:.7">Empty.</p>'; }
-  $('st-put').onclick = () => { const st = storageObj.store; for (const k of ['log', 'stick', 'stone', 'fiber', 'rope', 'hide', 'cloth', 'bone', 'herb', 'berries', 'seeds', 'jerky', 'meat_cooked', 'arrow']) if (inv[k]) { st[k] = (st[k] || 0) + inv[k]; delete inv[k]; } markDirty(storageObj); renderStorage(); refreshUI(); AU.sfx('loot'); };
-  $('st-take').onclick = () => { const st = storageObj.store; for (const k of Object.keys(st)) { const took = addItem(k, st[k], true); st[k] -= took; if (st[k] <= 0) delete st[k]; } markDirty(storageObj); renderStorage(); refreshUI(); AU.sfx('loot'); };
-  $('stgrid').addEventListener('click', e => { const s = e.target.closest('[data-take]'); if (!s) return; const k = s.dataset.take, st = storageObj.store; const took = addItem(k, st[k], true); st[k] -= took; if (st[k] <= 0) delete st[k]; renderStorage(); refreshUI(); });
-  $('invgrid').addEventListener('click', e => { const s = e.target.closest('[data-item]'); if (s) { useItem(s.dataset.item); renderPack(); } });
+  // ---------------------------------------------------------------- slot grids (pack & containers)
+  let storageObj = null, splitMode = false, quickMode = false;
+  const boxArr = () => storageObj ? storageObj.store || storageObj.drop : null;
+  function slotHTML(arr, i, area) {
+    const q = arr[i], it = q && ITEMS[q.id], eq = q && ((it.weapon && P.weapon === it.weapon) || (q.id === 'torch' && P.torchOn));
+    return `<div class="islot${eq ? ' eq' : ''}" data-a="${area}" data-i="${i}" title="${q ? it.name : ''}">${q ? `<img src="${iconImg(q.id)}" alt=""><span class="c">${q.n > 1 ? q.n : ''}</span>` : ''}${area === 'inv' && i < HOT ? `<span class="hn">${i + 1}</span>` : ''}</div>`;
+  }
+  function renderSlots(id, arr, area, a, b) { const el = $(id); if (el && arr) el.innerHTML = range(a, b).map(i => slotHTML(arr, i, area)).join(''); }
+  function describe(k) {
+    const it = ITEMS[k], e = it.eat, bits = [];
+    if (it.weapon) { const w = WEAPONS[it.weapon]; bits.push(w.ranged ? `ranged, ${w.dmg} damage` : `${w.dmg} damage, reach ${w.reach}`); }
+    if (e) { if (e.hunger) bits.push(`food ${e.hunger > 0 ? '+' : ''}${e.hunger}`); if (e.thirst) bits.push(`water ${e.thirst > 0 ? '+' : ''}${e.thirst}`); if (e.hp) bits.push(`health ${e.hp > 0 ? '+' : ''}${e.hp}`); if (e.bleed) bits.push('stops bleeding'); if (e.sick < 0) bits.push('eases sickness'); if (e.warm) bits.push('warms you'); }
+    return bits.join(' · ') + (it.note ? (bits.length ? ' · ' : '') + it.note : '');
+  }
+  function renderDetail(id) {
+    const el = $(id); if (!el) return; const arr = focus && (focus.area === 'box' ? boxArr() : slots), q = held || (arr && arr[focus.i]);
+    const help = touch ? 'Tap to pick up and place. Turn on Split to take half or drop one; Quick sends a stack across.' : 'Click: pick up / place · Right-click: take half / drop one · Shift-click: quick move · 1-6: swap with hotbar · E: use · Q: drop';
+    if (!q) { el.innerHTML = `<div class="dt"><div class="hint">${help}</div></div>`; return; }
+    const it = ITEMS[q.id], verb = it.weapon ? (P.weapon === it.weapon ? 'Unequip' : 'Equip') : it.verb;
+    el.innerHTML = `<img src="${iconImg(q.id)}" alt=""><div class="dt"><b>${it.name}</b> ×${q.n} <span class="hint">(stacks to ${stackOf(q.id)})</span><div class="hint">${describe(q.id) || 'Material'}</div></div>${usable(q.id) && verb ? `<button class="frame" data-iact="use">${verb}</button>` : ''}<button class="frame" data-iact="drop">Drop</button>`;
+  }
+  function invChanged() {
+    if (held && held.n <= 0) held = null;
+    if (storageObj) markDirty(storageObj);
+    refreshUI(); updateHeld();
+  }
+  function clickSlot(area, i, right, shift) {
+    const arr = area === 'box' ? boxArr() : slots; if (!arr) return; const q = arr[i];
+    if (shift && !held && q) return quickMove(area, i);
+    if (right) {
+      if (!held && q) { const h = Math.ceil(q.n / 2); held = { id: q.id, n: h }; heldFrom = { area, i }; q.n -= h; if (!q.n) arr[i] = null; }
+      else if (held && !q) { arr[i] = { id: held.id, n: 1 }; held.n--; }
+      else if (held && q.id === held.id && q.n < stackOf(q.id)) { q.n++; held.n--; }
+      else if (held) { arr[i] = held; held = q; }
+    } else {
+      if (!held) { if (q) { held = q; heldFrom = { area, i }; arr[i] = null; } }
+      else if (!q) { arr[i] = held; held = null; }
+      else if (q.id === held.id) { const a = Math.min(stackOf(q.id) - q.n, held.n); q.n += a; held.n -= a; }
+      else { arr[i] = held; held = q; }
+    }
+    AU.sfx('rustle', 0, 0.4); invChanged();
+  }
+  function quickMove(area, i) {
+    const arr = area === 'box' ? boxArr() : slots, q = arr[i]; if (!q) return; const box = boxArr();
+    let to, ord;
+    if (area === 'box') { to = slots; ord = usable(q.id) ? ORD_HOT : ORD_PACK; }
+    else if (box) { to = box; ord = range(0, box.length); }
+    else { to = slots; ord = i < HOT ? range(HOT, NSLOT) : range(0, HOT); }
+    const a = putInto(to, q.id, q.n, ord.filter(j => !(to === arr && j === i))); q.n -= a; if (!q.n) arr[i] = null;
+    AU.sfx('loot', 0, 0.5); invChanged();
+  }
+  function swapHot(n) { // hover a slot and press 1-6: swap it with that hotbar slot (like Minecraft)
+    if (!focus) return; const arr = focus.area === 'box' ? boxArr() : slots; if (!arr || (arr === slots && focus.i === n)) return;
+    const t = arr[focus.i]; arr[focus.i] = slots[n]; slots[n] = t; invChanged();
+  }
+  function returnHeld() { // closing a screen puts the held stack back
+    if (!held) return; const from = heldFrom && (heldFrom.area === 'box' ? boxArr() : slots);
+    if (from && !from[heldFrom.i]) { from[heldFrom.i] = held; held = null; }
+    else { const a = putInto(slots, held.id, held.n, usable(held.id) ? ORD_HOT : ORD_PACK); held.n -= a; if (held.n > 0) dropItems(held.id, held.n); held = null; }
+    invChanged();
+  }
+  function itemAction(act) {
+    const arr = focus && (focus.area === 'box' ? boxArr() : slots), q = held || (arr && arr[focus.i]); if (!q) return;
+    if (act === 'drop') { if (held) { dropItems(held.id, held.n); held = null; } else { dropItems(q.id, q.n); arr[focus.i] = null; } message('Dropped.'); invChanged(); return; }
+    if (act === 'use') { const k = q.id; if (held) returnHeld(); if (focus && focus.area === 'inv' && slots[focus.i] && slots[focus.i].id === k) takePref = focus.i; if (!inv[k]) { message('Move it into your pack first.'); return; } useItem(k); takePref = -1; invChanged(); }
+  }
+  const heldEl = document.createElement('div'); heldEl.id = 'held'; heldEl.className = 'hidden'; document.body.appendChild(heldEl);
+  let ptrX = 0, ptrY = 0;
+  function updateHeld() {
+    if (!held) { heldEl.classList.add('hidden'); return; }
+    heldEl.classList.remove('hidden'); if (heldEl.dataset.k !== held.id) { heldEl.dataset.k = held.id; heldEl.innerHTML = `<img src="${iconImg(held.id)}" alt=""><span class="c"></span>`; }
+    heldEl.querySelector('.c').textContent = held.n > 1 ? held.n : ''; heldEl.style.left = ptrX + 'px'; heldEl.style.top = ptrY + 'px';
+  }
+  addEventListener('pointermove', e => { ptrX = e.clientX; ptrY = e.clientY; if (held) updateHeld(); }, { passive: true });
+  let dragStart = null;
+  for (const id of ['pack', 'storage']) {
+    const m = $(id);
+    m.addEventListener('contextmenu', e => { if (e.target.closest('.islot')) e.preventDefault(); });
+    m.addEventListener('pointerdown', e => {
+      const el = e.target.closest('.islot'); if (!el) return; e.preventDefault(); ptrX = e.clientX; ptrY = e.clientY;
+      const hadHeld = !!held; clickSlot(el.dataset.a, +el.dataset.i, e.button === 2 || splitMode, e.shiftKey || quickMode);
+      dragStart = !hadHeld && held && e.button === 0 ? { a: el.dataset.a, i: +el.dataset.i } : null; // press-drag-release also works
+    });
+    m.addEventListener('pointerup', e => {
+      if (!dragStart || !held) { dragStart = null; return; }
+      const t = document.elementFromPoint(e.clientX, e.clientY), el = t && t.closest('.islot');
+      if (el && !(el.dataset.a === dragStart.a && +el.dataset.i === dragStart.i)) clickSlot(el.dataset.a, +el.dataset.i, false, false);
+      dragStart = null;
+    });
+    m.addEventListener('pointerover', e => { const el = e.target.closest('.islot'); if (el) { focus = { area: el.dataset.a, i: +el.dataset.i }; renderDetail(id === 'pack' ? 'pk-detail' : 'st-detail'); } });
+    m.addEventListener('click', e => { const b = e.target.closest('[data-iact]'); if (b) itemAction(b.dataset.iact); const t = e.target.closest('[data-mode]'); if (t) { if (t.dataset.mode === 'split') { splitMode = !splitMode; quickMode = false; } else { quickMode = !quickMode; splitMode = false; } document.querySelectorAll('[data-mode]').forEach(x => x.classList.toggle('on', x.dataset.mode === 'split' ? splitMode : quickMode)); } });
+  }
+  function openStorage(o) { storageObj = o; focus = null; $('st-title').textContent = o.drop ? 'Dropped items' : STRUCTS[o.struct].name; renderStorage(); show('storage'); }
+  function renderStorage() {
+    const box = boxArr(); if (!box) return;
+    renderSlots('st-box', box, 'box', 0, box.length); renderSlots('st-pack', slots, 'inv', HOT, NSLOT); renderSlots('st-hot', slots, 'inv', 0, HOT); renderDetail('st-detail');
+  }
+  $('st-sort').onclick = () => { // tidy: merge and sort the container's stacks
+    const box = boxArr(); const all = {}; for (const q of box) if (q) all[q.id] = (all[q.id] || 0) + q.n; box.fill(null);
+    for (const k of Object.keys(ITEMS)) if (all[k]) putInto(box, k, all[k], range(0, box.length)); invChanged();
+  };
   $('recipes').addEventListener('click', e => { const b = e.target.closest('[data-craft]'); if (b) { craft(RECIPES[+b.dataset.craft]); renderPack(); } });
   $('blist').addEventListener('click', e => { const b = e.target.closest('[data-build]'); if (b) startPlacing(b.dataset.build); });
   $('btabs').addEventListener('click', e => { const b = e.target.closest('[data-bcat]'); if (b) { buildCat = b.dataset.bcat; renderBuild(); } });
-  $('hotbar').addEventListener('click', e => { const b = e.target.closest('[data-slot]'); if (b && hotSlots[+b.dataset.slot]) { AU.init(); useItem(hotSlots[+b.dataset.slot]); } });
+  $('hotbar').addEventListener('click', e => { const b = e.target.closest('[data-slot]'); if (b) { AU.init(); useSlot(+b.dataset.slot); } });
   document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => { document.querySelectorAll('.tabs button').forEach(x => x.classList.toggle('on', x === b)); $('tab-inv').classList.toggle('hidden', b.dataset.tab !== 'inv'); $('tab-craft').classList.toggle('hidden', b.dataset.tab !== 'craft'); });
   const MODALS = ['pack', 'build', 'storage', 'menu', 'help'];
   function show(id) { $(id).classList.remove('hidden'); updatePause(); }
-  function hide(id) { $(id).classList.add('hidden'); updatePause(); }
-  function closeModals() { MODALS.forEach(m => $(m).classList.add('hidden')); closeMenu(); updatePause(); }
+  function leaveSlots() { // closing the pack or a container returns the held stack; empty dropped sacks vanish
+    returnHeld(); focus = null; splitMode = quickMode = false; document.querySelectorAll('[data-mode]').forEach(x => x.classList.remove('on'));
+    if (storageObj && storageObj.drop && !storageObj.drop.some(Boolean)) storageObj.gone = true;
+    if ($('storage').classList.contains('hidden')) storageObj = null;
+  }
+  function hide(id) { $(id).classList.add('hidden'); if (id === 'pack' || id === 'storage') leaveSlots(); updatePause(); }
+  function closeModals() { MODALS.forEach(m => $(m).classList.add('hidden')); leaveSlots(); closeMenu(); updatePause(); }
   function anyModal() { return MODALS.some(m => !$(m).classList.contains('hidden')) || ['title', 'dead', 'win'].some(m => !$(m).classList.contains('hidden')); }
   function updatePause() { G.paused = anyModal() || !!G.sleeping; }
   document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', () => { const m = b.closest('.modal'); if (m) hide(m.id); }));
@@ -1560,11 +1747,13 @@
     if (!G.started || P.dead) return;
     if (k === 'tab' || k === 'i') { e.preventDefault(); if ($('pack').classList.contains('hidden')) openPack(); else hide('pack'); return; }
     if (k === 'b') { if ($('build').classList.contains('hidden')) { renderBuild(); show('build'); } else hide('build'); return; }
+    const slotsOpen = !$('pack').classList.contains('hidden') && !$('tab-inv').classList.contains('hidden') || !$('storage').classList.contains('hidden');
+    if (slotsOpen) { if (k >= '1' && k <= '6') swapHot(+k - 1); else if (k === 'e') itemAction('use'); else if (k === 'q') itemAction('drop'); return; }
     if (anyModal()) return;
     keys.add(k); if (k.startsWith('arrow') || k === ' ') e.preventDefault();
     if (k === '+' || k === '=') setZoom(zi + 1); if (k === '-') setZoom(zi - 1);
     if (k === 'e') interactNearest(); if (k === 'f') attackKey(); if (k === ' ') dodge(); if (k === 'q') cycleWeapon(); if (k === 't') toggleTorch(); if (k === 'c') cam.follow = true;
-    if (k >= '1' && k <= '6' && hotSlots[+k - 1]) useItem(hotSlots[+k - 1]);
+    if (k >= '1' && k <= '6') useSlot(+k - 1);
   });
   addEventListener('keyup', e => keys.delete(e.key.toLowerCase()));
   addEventListener('blur', () => { keys.clear(); rmbHeld = false; });

@@ -23,8 +23,8 @@
   #tr button{width:40px;height:40px;font:700 17px Cinzel,serif;color:var(--accent)}
   /* status panel: portrait + bars + badges */
   #status{position:fixed;left:10px;bottom:10px;padding:8px;display:flex;gap:10px;align-items:stretch}
-  #facebox{width:144px;height:162px;background:radial-gradient(ellipse at 50% 40%,#3a3024,#120d09);border:2px solid var(--golddk);display:flex;align-items:flex-end;justify-content:center;overflow:hidden}
-  #face{width:144px;height:162px;image-rendering:pixelated;object-fit:contain}
+  #facebox{width:192px;height:216px;background:radial-gradient(ellipse at 50% 40%,#3a3024,#120d09);border:2px solid var(--golddk);display:flex;align-items:flex-end;justify-content:center;overflow:hidden}
+  #face{width:192px;height:216px;image-rendering:pixelated}
   #bars{display:flex;flex-direction:column;justify-content:center;gap:5px;width:220px}
   .stat{display:flex;align-items:center;gap:7px;font-size:14px}
   .stat .si{width:22px;height:20px;display:flex;align-items:center;justify-content:center}
@@ -73,6 +73,20 @@
   .slot img{width:46px;height:40px;object-fit:contain;image-rendering:pixelated}
   .slot .c{position:absolute;right:4px;top:2px;color:var(--accent);font-weight:700;font-size:13px}
   .slot.eq{border-color:#ffb347;box-shadow:inset 0 0 0 1px #ffb347}
+  .islots{display:grid;grid-template-columns:repeat(6,56px);gap:4px;justify-content:center}
+  .islots.hot{margin-top:10px;padding-top:10px;border-top:1px solid var(--golddk)}
+  .islot{width:56px;height:56px;background:#17110c;border:1px solid var(--golddk);box-shadow:inset 0 2px 6px rgba(0,0,0,.6);position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:none}
+  .islot:hover{background:#2a2016;border-color:#c9a45c}
+  .islot img,#held img{width:40px;height:36px;object-fit:contain;image-rendering:pixelated;pointer-events:none}
+  .islot .c,#held .c{position:absolute;right:3px;bottom:1px;font-weight:700;font-size:14px;color:#fff;text-shadow:1px 1px 0 #000,-1px 0 0 #000;pointer-events:none}
+  .islot .hn{position:absolute;left:3px;top:1px;font-size:10px;opacity:.55;pointer-events:none}
+  .islot.eq{box-shadow:inset 0 0 0 2px #ffb347}
+  #held{position:fixed;z-index:300;pointer-events:none;width:48px;height:48px;transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 3px 3px rgba(0,0,0,.7))}
+  .itools{display:flex;gap:6px;justify-content:center;margin:10px 0 4px}.itools button{min-width:0;font-size:13px;padding:4px 10px}.itools button.on{background:#5a3f1c;border-color:#ffd36a}
+  .ilabel{text-align:center;font-size:13px;opacity:.7;margin:6px 0 4px}
+  .idetail{min-height:52px;margin-top:8px;display:flex;gap:10px;align-items:center;font-size:13px;padding:6px 8px;background:rgba(0,0,0,.25);border:1px solid rgba(176,138,62,.35)}
+  .idetail img{width:40px;height:36px;object-fit:contain;image-rendering:pixelated}.idetail .dt{flex:1}.idetail .hint{opacity:.7;font-size:12px}.idetail button{min-width:0;font-size:13px;padding:4px 10px}
+  body.touch .islots{grid-template-columns:repeat(6,46px);gap:3px}body.touch .islot{width:46px;height:46px}body.touch .islot img{width:34px;height:30px}
   .recipes{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:6px}
   .rec{display:flex;gap:8px;align-items:center;background:#1b140e;border:1px solid var(--golddk);padding:6px}
   .rec.locked{opacity:.6}
@@ -99,10 +113,10 @@
   /* touch layout */
   body.touch .touchonly{display:flex!important}
   body.touch #status{left:6px;top:6px;bottom:auto;padding:5px;gap:6px}
-  body.touch #facebox{width:64px;height:72px}body.touch #face{width:64px;height:72px}
+  body.touch #facebox{width:96px;height:108px}body.touch #face{width:96px;height:108px}
   body.touch #bars{width:116px;gap:2px}body.touch .stat{font-size:10px;gap:3px}body.touch .stat .si{width:14px;height:13px}body.touch .stat .si img{width:14px;height:13px}body.touch .bar{height:7px}body.touch .stat b{width:22px}
   body.touch #badges span{font-size:9px;padding:0 3px}
-  body.touch #tl{left:auto;right:6px;top:52px;font-size:12px;gap:6px;padding:3px 7px}body.touch #clock{width:20px;height:20px}
+  body.touch #tl{left:6px;right:auto;top:134px;font-size:12px;gap:6px;padding:3px 7px}body.touch #clock{width:20px;height:20px}
   body.touch #tr{top:6px;right:6px;gap:4px}body.touch #tr button{width:34px;height:34px;font-size:15px}
   body.touch #minibox{bottom:auto;top:90px;right:6px;padding:3px}body.touch #mini{width:96px;height:96px}
   body.touch #msgs{top:auto;bottom:300px;font-size:14px;max-width:60vw}
@@ -141,7 +155,12 @@
 <div id="pack" class="modal hidden"><div class="panel frame">
   <h2><span>Pack</span><button class="x frame" data-close>✕</button></h2>
   <div class="tabs"><button class="frame on" data-tab="inv">Inventory</button><button class="frame" data-tab="craft">Crafting</button></div>
-  <div id="tab-inv"><div class="grid" id="invgrid"></div><p style="font-size:13px;opacity:.8">Tap an item to eat, drink, equip or use it. Items marked <em style="font-style:normal;color:#c0a060">workbench</em> need you to stand at a workbench.</p></div>
+  <div id="tab-inv">
+    <div class="islots" id="pk-pack"></div>
+    <div class="islots hot" id="pk-hot"></div>
+    <div class="itools"><button class="frame" data-mode="split">Split</button><button class="frame" data-mode="quick">Quick move</button></div>
+    <div class="idetail" id="pk-detail"></div>
+  </div>
   <div id="tab-craft" class="hidden"><div class="recipes" id="recipes"></div></div>
 </div></div>
 <div id="build" class="modal hidden"><div class="panel frame">
@@ -150,9 +169,13 @@
   <div class="recipes" id="blist"></div>
 </div></div>
 <div id="storage" class="modal hidden"><div class="panel frame">
-  <h2><span>Storage</span><button class="x frame" data-close>✕</button></h2>
-  <div style="display:flex;gap:8px;margin-bottom:8px"><button id="st-put" class="frame big" style="min-width:0;font-size:14px">Store all materials</button><button id="st-take" class="frame big" style="min-width:0;font-size:14px">Take everything</button></div>
-  <div class="grid" id="stgrid"></div>
+  <h2><span id="st-title">Storage</span><button class="x frame" data-close>✕</button></h2>
+  <div class="islots" id="st-box"></div>
+  <div class="itools"><button class="frame" id="st-sort">Sort</button><button class="frame" data-mode="split">Split</button><button class="frame" data-mode="quick">Quick move</button></div>
+  <div class="ilabel">Pack</div>
+  <div class="islots" id="st-pack"></div>
+  <div class="islots hot" id="st-hot"></div>
+  <div class="idetail" id="st-detail"></div>
 </div></div>
 <div id="menu" class="modal hidden"><div class="panel frame" style="width:min(420px,94vw);text-align:center">
   <h2><span>Paused</span><button class="x frame" data-close>✕</button></h2>
@@ -173,6 +196,7 @@
     <li><b>Build:</b> logs and stones build a base: walls that join up, gates, floors, a bed, a table, a drying rack, a cooking pot, a garden, storage, and a workbench for advanced gear.</li>
     <li><b>Night:</b> Hollows come out of the dark and fear fire. The outer reaches of the island are the most dangerous, and new creatures appear as the days pass.</li>
     <li><b>Goal:</b> find the <b>8 relics</b>, build the <b>Signal Beacon</b>, light it at dusk and survive until dawn.</li>
+    <li><b>Pack &amp; storage:</b> click a stack to pick it up and click a slot to place it (or drag). Right-click takes half or drops one. Shift-click sends it across. Hover and press 1–6 to put it on the hotbar, E to use it, Q to drop it.</li>
     <li><b>Keys:</b> E use · F/right-click attack · Space dodge · Shift sprint · Q switch weapon · 1–6 hotbar · T torch · I pack · B build · C centre · Esc menu.</li>
   </ul>
 </div></div>

@@ -1,20 +1,20 @@
 /* Game data: items, weapons, recipes, buildable structures, creatures and spawn rules. */
 (function (root) {
   const ITEMS = {
-    log: { name: 'Log', max: 12 }, stick: { name: 'Stick', max: 40 }, stone: { name: 'Stone', max: 30 }, fiber: { name: 'Plant fiber', max: 40 },
-    rope: { name: 'Rope', max: 15 }, hide: { name: 'Hide', max: 12 }, cloth: { name: 'Cloth', max: 12 }, bone: { name: 'Bone', max: 12 }, relic: { name: 'Relic', max: 8 }, seeds: { name: 'Seeds', max: 20 },
-    berries: { name: 'Berries', max: 20, eat: { hunger: 9, thirst: 4 }, verb: 'Eat' },
-    meat_raw: { name: 'Raw meat', max: 10, eat: { hunger: 12, hp: -8, sick: 30 }, verb: 'Eat raw', note: 'Cook it, dry it or stew it.' },
-    meat_cooked: { name: 'Cooked meat', max: 10, eat: { hunger: 36, hp: 5 }, verb: 'Eat' },
-    jerky: { name: 'Jerky', max: 15, eat: { hunger: 26, thirst: -4 }, verb: 'Eat' },
+    log: { name: 'Log', max: 20 }, stick: { name: 'Stick', max: 50 }, stone: { name: 'Stone', max: 40 }, fiber: { name: 'Plant fiber', max: 50 },
+    rope: { name: 'Rope', max: 20 }, hide: { name: 'Hide', max: 20 }, cloth: { name: 'Cloth', max: 20 }, bone: { name: 'Bone', max: 20 }, relic: { name: 'Relic', max: 8 }, seeds: { name: 'Seeds', max: 30 },
+    berries: { name: 'Berries', max: 30, eat: { hunger: 9, thirst: 4 }, verb: 'Eat' },
+    meat_raw: { name: 'Raw meat', max: 15, eat: { hunger: 12, hp: -8, sick: 30 }, verb: 'Eat raw', note: 'Cook it, dry it or stew it.' },
+    meat_cooked: { name: 'Cooked meat', max: 15, eat: { hunger: 36, hp: 5 }, verb: 'Eat' },
+    jerky: { name: 'Jerky', max: 20, eat: { hunger: 26, thirst: -4 }, verb: 'Eat' },
     stew: { name: 'Hearty stew', max: 5, eat: { hunger: 55, thirst: 25, hp: 12, warm: 30 }, verb: 'Eat' },
-    herb: { name: 'Herb', max: 20, eat: { hp: 4, sick: -20 }, verb: 'Chew' },
-    salve: { name: 'Herbal salve', max: 6, eat: { hp: 40, sick: -60 }, verb: 'Apply' },
-    bandage: { name: 'Bandage', max: 8, eat: { hp: 18, bleed: true }, verb: 'Apply' },
-    arrow: { name: 'Arrow', max: 40 }, fire_arrow: { name: 'Fire arrow', max: 20 },
+    herb: { name: 'Herb', max: 30, eat: { hp: 4, sick: -20 }, verb: 'Chew' },
+    salve: { name: 'Herbal salve', max: 10, eat: { hp: 40, sick: -60 }, verb: 'Apply' },
+    bandage: { name: 'Bandage', max: 10, eat: { hp: 18, bleed: true }, verb: 'Apply' },
+    arrow: { name: 'Arrow', max: 50 }, fire_arrow: { name: 'Fire arrow', max: 30 },
     club: { name: 'Club', max: 1, weapon: 'club' }, knife: { name: 'Flint knife', max: 1, weapon: 'knife' }, axe: { name: 'Stone axe', max: 1, weapon: 'axe' },
     spear: { name: 'Spear', max: 1, weapon: 'spear' }, greataxe: { name: 'Great axe', max: 1, weapon: 'greataxe' }, bow: { name: 'Bow', max: 1, weapon: 'bow' }, sling: { name: 'Sling', max: 1, weapon: 'sling' },
-    torch: { name: 'Torch', max: 6, verb: 'Light' }, waterskin: { name: 'Waterskin', max: 3, verb: 'Drink' }, armor: { name: 'Hide armor', max: 1, verb: 'Wear' },
+    torch: { name: 'Torch', max: 8, verb: 'Light' }, waterskin: { name: 'Waterskin', max: 3, verb: 'Drink' }, armor: { name: 'Hide armor', max: 1, verb: 'Wear' },
   };
   // arc in degrees (half-angle) for melee
   const WEAPONS = {
@@ -65,8 +65,8 @@
     drying_rack: { name: 'Drying rack', cat: 'food', asset: 'drying_rack', cost: { stick: 6, rope: 1 }, hp: 50, desc: 'Turns raw meat into jerky over time.' },
     stew_pot: { name: 'Cooking pot', cat: 'food', asset: 'stew_pot', cost: { stone: 4, stick: 3, bone: 1 }, hp: 70, desc: 'Cook hearty stew: meat, herb and berries.', light: 2.4 },
     garden: { name: 'Garden plot', cat: 'food', asset: 'garden', cost: { log: 2, fiber: 4 }, hp: 50, desc: 'Plant seeds; harvest berries and herbs.', flat: true },
-    crate: { name: 'Storage crate', cat: 'storage', asset: 'crate', cost: { log: 4 }, hp: 80, desc: 'Store materials.', store: true },
-    shelf: { name: 'Storage shelf', cat: 'storage', asset: 'shelf', cost: { log: 4, rope: 1 }, hp: 80, desc: 'Store materials. Adds comfort.', store: true, comfort: 0.5 },
+    crate: { name: 'Storage crate', cat: 'storage', asset: 'crate', cost: { log: 4 }, hp: 80, desc: 'Store items: 24 slots.', store: 24 },
+    shelf: { name: 'Storage shelf', cat: 'storage', asset: 'shelf', cost: { log: 4, rope: 1 }, hp: 80, desc: 'Store items: 18 slots. Adds comfort.', store: 18, comfort: 0.5 },
     workbench: { name: 'Workbench', cat: 'storage', asset: 'workbench', cost: { log: 4, stone: 2, rope: 1 }, hp: 120, desc: 'Stand near it to unlock advanced crafting and buildings.' },
     weapon_rack: { name: 'Weapon rack', cat: 'comfort', asset: 'weapon_rack', cost: { log: 2, stick: 4 }, hp: 60, desc: 'Decor. Adds comfort.', comfort: 0.5 },
     table: { name: 'Table', cat: 'comfort', asset: 'table', cost: { log: 2 }, hp: 60, desc: 'Adds comfort.', comfort: 1 },

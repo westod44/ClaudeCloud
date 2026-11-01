@@ -8,15 +8,27 @@ Lantern Isles is a survival game in the pre-rendered isometric style of classic 
 
 ## The game
 - **Survival stats:** health, food, water, stamina and warmth, shown with icons and numbers beside the status portrait. Stamina powers sprinting, dodging and swings, and refills when you rest, eat and sleep. Warmth falls at night, in rain, snow and wind, on high ground and when you are wet. Fires, shelters, hide armor, a hot stew, a comfortable home and moving fast raise it. There are also hidden conditions: **bleeding** (stop it with a bandage), **sickness** (cure it with herbs or salve), **wet** clothes, **fear** in the dark and **comfort** at home.
-- **Status portrait:** a pixel-art face rendered from the same 3D survivor you play. Its expression follows your state (content, hungry, thirsty, hurt, scared, tired, cold, weak, sick, angry, dead, and it blinks). Blood, bruises, dirt, sweat, rain, frost, pallor and a sickly tint are painted on as they happen.
-- **Day, night and weather:** a day lasts 8 minutes. The top-left panel shows the day, the time and the weather. The weather moves between clear, fair, cloudy, overcast, rain, storm, fog, snow and windy:
-  - Clouds roll across the land and their shadows drift over it, with more and larger clouds in worse weather.
-  - Gusts sweep through the trees and grass.
+- **Status portrait:** a live, animated pixel-art face of your survivor (same hat, hair, stubble and blue shirt as in the world).
+  - A rig moves the brows, eyelids, pupils, mouth, teeth, tongue, cheeks, nostrils and wrinkles, and the head, so moods blend into each other.
+  - Each mood has its own motion. Content smiles and sways. Hungry frowns, looks down, licks its lips and winces at a growling stomach. Thirsty pants and swallows. Tired nods off and yawns. Exertion pants. Angry scowls with bared teeth and flared nostrils. Scared stares wide-eyed, eyes darting, trembling. Hurt screws up its face and recoils on every hit. Cold shivers with chattering teeth and puffs of breath. Sick goes green and fights nausea. Weak droops with heavy eyelids. Dead goes grey and still. It blinks and glances around.
+  - Blood (it drips while you bleed), bruises, dirt, sweat, tears, rain, frost and pale, sickly, cold or flushed skin are painted on as they happen.
+- **Day, night and weather:** a day lasts 8 minutes. The top-left panel shows the day, the time (AM/PM) and the weather. The weather moves between clear, fair, cloudy, overcast, rain, storm, fog, snow and windy:
+  - Dark cloud shadows roll across the land, more and larger in worse weather.
+  - Gusts sweep through the trees and grass. Strong wind bends them further and changes how they move, rather than speeding the animation up.
+  - Grass and flowers part around you and the animals as you walk through them, then spring back.
   - Lightning can strike trees.
   - Fog shrinks your vision.
   - Snow settles on the ground.
-- **Interacting:** click or tap anything to walk there and use it. A tooltip says what clicking will do. If an object has several actions (a campfire: cook meat, add a log, add a stick, warm up, demolish), a menu lets you choose.
-- **Combat:** aim with the mouse and right-click or press F to strike toward the cursor. Space dodges with brief invulnerability, and Shift sprints. Weapons: fists, stone axe, knife, club, spear, great axe, bow (arrows and fire arrows) and sling. Melee weapons differ in damage, reach, speed, stamina cost and swing arc.
+- **Interacting:** click or tap anything to walk there and use it. A tooltip says what clicking will do. If an object has several actions (a campfire: cook meat, add a log, add a stick, warm up, demolish), a menu lets you choose. Tree stumps can be dug out with an axe (or slowly with a knife) to clear ground.
+- **Combat:** aim with the mouse and right-click or press F to strike toward the cursor. Space dodges with brief invulnerability, and Shift sprints. While you fight, you keep moving at a steady, slower pace instead of stopping for each swing. Weapons: fists, stone axe, knife, club, spear, great axe, bow (arrows and fire arrows) and sling. Melee weapons differ in damage, reach, speed, stamina cost and swing arc.
+- **Inventory (slot-based, like Minecraft):** 30 pack slots plus a 6-slot hotbar (keys 1–6). Items stack (logs to 20, sticks to 50, weapons to 1).
+  - Click to pick up a stack and click again to place, swap or merge it. Dragging works too.
+  - Right-click takes half a stack, or drops one item at a time from the stack you're holding.
+  - Shift-click sends a stack across (between the pack and the hotbar, or between your pack and an open container).
+  - Hover over a slot and press 1–6 to swap it into that hotbar slot. E uses the item, Q drops it.
+  - On touch screens, Split and Quick move toggles do the same.
+  - Storage crates hold 24 slots and shelves 18, and a Sort button tidies them.
+  - When your pack is full, extra items drop in a sack on the ground that you can pick up or look through.
 - **Base building:**
   - Log or stone walls that join up automatically, gates that open for you but not for enemies, palisades, spike walls, spike traps and a lookout.
   - Floors, rug, bed, table, bench, shelf, crate, campfire, standing torch, brazier and spirit lantern.
@@ -36,6 +48,7 @@ Lantern Isles is a survival game in the pre-rendered isometric style of classic 
 | Attack | Right-click toward the cursor, or F | Attack button (drag it to aim) |
 | Weapon / hotbar / torch | Q / 1–6 / T | Hotbar / Torch button |
 | Pack & crafting / build | I or Tab / B | Pack / Build buttons |
+| Move items | Click / drag, right-click to split, Shift-click to quick move, hover + 1–6 to swap into the hotbar, E use, Q drop | Tap to pick up and place; Split / Quick move toggles |
 | Camera | Drag, wheel to zoom, C to re-centre | Drag, pinch to zoom, ◎ button |
 
 ## How the art is made
@@ -50,7 +63,7 @@ Every asset is a 3D model rendered by a fixed camera and one sun into 2D sprites
 node tools/bake.js
 ```
 
-This re-renders all 162 sprite sets and the 11 terrain textures, then writes `assets/` and `dataset/`. It needs Playwright with Chromium and takes about 8 minutes. The browser atlas is split into `assets/atlas.js` (manifest) and `assets/atlas-N.js` (images, about 5 MB each).
+This re-renders all 149 sprite sets and the 11 terrain textures, then writes `assets/` and `dataset/`. It needs Playwright with Chromium and takes about 8 minutes. The browser atlas is split into `assets/atlas.js` (manifest) and `assets/atlas-N.js` (images, about 5 MB each).
 
 ```bash
 node tools/bake.js wolf,beacon_lit
@@ -65,13 +78,13 @@ This previews a subset in `/tmp/bake-preview` without writing anything to the re
 | `src/palette.js` | 256-colour palette and quantiser |
 | `src/noise.js` | Deterministic noise |
 | `src/render3d.js` | Pre-render ray-marcher (camera, sun, shadows, supersampling) |
-| `src/models.js` | SDF models: units with 8 weapons, creatures, buildings, ruins, structures, walls, furniture, the portrait bust, item icons |
+| `src/models.js` | SDF models: units with 8 weapons, creatures, buildings, ruins, structures, walls, furniture, item icons |
 | `src/foliage.js` | Leaf-particle tree, bush, fern and grass renderer with wind frames |
 | `src/terrainTex.js` | Tileable terrain textures |
 | `src/data.js` | Items, weapons, recipes, buildable structures, creature stats, night spawn table |
-| `src/weather.js` | Weather state machine, wind field, clouds, rain, snow, fog, lightning |
+| `src/weather.js` | Weather state machine, wind field, cloud shadows, rain, snow, fog, lightning |
 | `src/audio.js` | Synthesised sound effects and ambience (WebAudio) |
-| `src/portrait.js` | Status portrait overlays (blood, frost, pallor, sweat…) |
+| `src/portrait.js` | The live status portrait: a rigged, animated pixel-art face with mood animations and state overlays |
 | `src/game.js` | The game: world generation, terrain rendering, survival, combat, AI, building, saving, UI |
 | `tools/bake.html`, `tools/bake.js` | Asset bake pipeline and exporter |
 | `assets/` | Baked sprites, terrain, manifest and the chunked browser atlas |

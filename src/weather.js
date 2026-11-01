@@ -1,6 +1,6 @@
 /*
  * Weather: a state machine over clear / fair / cloudy / overcast / rain / storm / fog / snow / windy,
- * with smoothly blended parameters, rolling clouds (and their ground shadows), wind with travelling gusts,
+ * with smoothly blended parameters, rolling cloud shadows, wind with travelling gusts,
  * rain, snow (with ground accumulation), fog banks, lightning, and blowing leaves.
  * World-space drawing happens in art pixels (the game's camera transform); precipitation is screen space.
  */
@@ -43,7 +43,7 @@
       const id = g.getImageData(0, 0, w, h), d = id.data;
       for (let i = 0; i < d.length; i += 4) { const a = d[i + 3] / 255; const q = a < 0.12 ? 0 : a < 0.3 ? 0.35 : a < 0.5 ? 0.6 : 0.85; const shade = 0.82 + 0.18 * Math.min(1, a * 1.4); d[i] = 255 * shade; d[i + 1] = 255 * shade; d[i + 2] = 255 * Math.min(1, shade + 0.03); d[i + 3] = q * 255; }
       g.putImageData(id, 0, 0);
-      const s = document.createElement('canvas'); s.width = w; s.height = h; const sg = s.getContext('2d'); sg.drawImage(c, 0, 0); sg.globalCompositeOperation = 'source-in'; sg.fillStyle = '#0a0e18'; sg.fillRect(0, 0, w, h);
+      const s = document.createElement('canvas'); s.width = w; s.height = h; const sg = s.getContext('2d'); sg.drawImage(c, 0, 0); sg.globalCompositeOperation = 'source-in'; sg.fillStyle = '#05070c'; sg.fillRect(0, 0, w, h);
       CLOUD_IMGS.push({ img: c, shadow: s, w, h });
     }
   }
@@ -94,12 +94,11 @@
     return Math.min(1.6, S.cur.wind * (0.75 + 0.25 * Math.sin(S.time * 0.7 + along / 500)) + S.gust * wave * 1.1);
   }
   function drawCloudShadows(ctx, vis) {
-    for (const c of clouds) { const im = CLOUD_IMGS[c.v]; ctx.globalAlpha = 0.16 * c.a * vis * (0.7 + S.cur.cloud * 0.5); ctx.drawImage(im.shadow, c.x - im.w * c.s / 2, c.y - im.h * c.s / 2, im.w * c.s, im.h * c.s); }
+    // the clouds themselves are never drawn: only their dark shadows roll across the land
+    for (const c of clouds) { const im = CLOUD_IMGS[c.v]; ctx.globalAlpha = Math.min(0.5, 0.36 * c.a * vis * (0.8 + S.cur.cloud * 0.35)); ctx.drawImage(im.shadow, c.x - im.w * c.s / 2, c.y - im.h * c.s / 2, im.w * c.s, im.h * c.s); }
     ctx.globalAlpha = 1;
   }
   function drawClouds(ctx, night) {
-    for (const c of clouds) { const im = CLOUD_IMGS[c.v]; ctx.globalAlpha = (0.18 + 0.2 * S.cur.cloud) * c.a * (1 - night * 0.6); ctx.drawImage(im.img, c.x - im.w * c.s / 2 - c.alt * 0.5, c.y - im.h * c.s / 2 - c.alt, im.w * c.s, im.h * c.s); }
-    ctx.globalAlpha = 1;
     for (const l of leaves) { ctx.fillStyle = l.c; ctx.fillRect(Math.round(l.x), Math.round(l.y), 2 + (Math.sin(l.t * 9 + l.ph) > 0 ? 1 : 0), 2); }
   }
   // screen-space precipitation, fog and lightning; px = device pixels per art pixel
