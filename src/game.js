@@ -11,7 +11,7 @@
   const LV_UNITS = ZPX / S.projection.pxPerUnitZ;
   const N = 96, MAXLV = 7, CH = 128;
   const DAY_SECONDS = 480;
-  const SAVE_KEY = 'lantern-isles-survival-v2';
+  const SAVE_KEY = 'lantern-isles-survival-v3'; // v3: biome worlds
   const $ = id => document.getElementById(id);
   const TYPES = {}; S.terrain.types.forEach((t, k) => { TYPES[t.id] = k; t.k = k; });
   const TT = S.terrain.types;
@@ -59,7 +59,7 @@
   let objects = [], units = [], sites = [], baseObjCount = 0;
   let start = [N / 2, N / 2], seed = 1;
   const G = { day: 1, tod: 0.1, won: false, started: false, paused: false, spawnT: 5, animalT: 30, killed: 0, beacon: null, beaconNight: false };
-  const danger = (x, y) => clamp((Math.hypot(x - start[0], y - start[1]) - 12) / 26, 0, 1);
+  const danger = (x, y) => Math.max(clamp((Math.hypot(x - start[0], y - start[1]) - 12) / 26, 0, 1), BIO_DANGER[biomeAt(x, y)] || 0); // far away, and the harsh biomes, are dangerous
 
   const bw = new Float32Array(4), cw = new Float32Array(4);
   function bspl(t, o) { const t2 = t * t, t3 = t2 * t; o[0] = (1 - 3 * t + 3 * t2 - t3) / 6; o[1] = (4 - 6 * t2 + 3 * t3) / 6; o[2] = (1 + 3 * t + 3 * t2 - 3 * t3) / 6; o[3] = t3 / 6; }
@@ -85,47 +85,147 @@
   };
 
   // ================================================================== world generation
+  // The island has a climate: one side is cold and holds a mountain massif; temperature and moisture fields
+  // (very low frequency) carve the land into large, contiguous biomes, each with its own ground, trees and plants.
+  const BIO = { BEACH: 0, MEADOW: 1, FOREST: 2, TAIGA: 3, TUNDRA: 4, MOUNTAIN: 5, SCRUB: 6 };
+  const BIO_NAMES = ['the coast', 'the meadows', 'the woodland', 'the pine forest', 'the snowfields', 'the mountains', 'the dry plains'];
+  const BIO_DANGER = [0, 0, 0.15, 0.35, 0.6, 0.65, 0.3];
+  const BIO_LABELS = ['Coast', 'Meadows', 'Woodland', 'Pine forest', 'Snowfields', 'Mountains', 'Dry plains'];
+  const biome = new Uint8Array(N * N), grove = new Uint8Array(N * N), tempF = new Float32Array(N * N);
+  const biomeAt = (x, y) => biome[idx(clamp(Math.floor(x), 0, N - 1), clamp(Math.floor(y), 0, N - 1))];
   function genWorld(sd) {
     seed = sd; const R = rng(sd);
-    objects = []; units = []; sites = []; blocked.fill(0); explored.fill(0); visible.fill(0); type.fill(0); lvl.fill(0);
-    const E = new Float32Array(N * N), moist = new Float32Array(N * N), forestN = new Float32Array(N * N);
+    objects = []; units = []; sites = []; blocked.fill(0); explored.fill(0); visible.fill(0); type.fill(0); lvl.fill(0); biome.fill(0); grove.fill(0);
+    const ang = R() * Math.PI * 2, cdx = Math.cos(ang), cdy = Math.sin(ang); // direction of the island's cold side
+    const mc = [N / 2 + cdx * N * 0.19, N / 2 + cdy * N * 0.19]; // mountain massif centre
+    const E = new Float32Array(N * N), Mt = new Float32Array(N * N), M = new Float32Array(N * N), forestN = new Float32Array(N * N);
+    const stretch = v => clamp((v - 0.5) * 2.4 + 0.5, 0, 1); // low-frequency fbm has a narrow range; widen it
     for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) {
-      const x = i / N - 0.5, y = j / N - 0.5, d = Math.hypot(x, y) * 2;
-      E[idx(i, j)] = fbm2(i / 16, j / 16, 1e5, sd, 5) * 0.95 + fbm2(i / 6, j / 6, 1e5, sd + 3, 3) * 0.12 - d * d * 0.95 + 0.32;
-      moist[idx(i, j)] = fbm2(i / 12 + 50, j / 12, 1e5, sd + 7, 4);
-      forestN[idx(i, j)] = fbm2(i / 7, j / 7, 1e5, sd + 11, 4);
+      const k = idx(i, j), x = i / N - 0.5, y = j / N - 0.5;
+      const d = Math.hypot(x, y) * 2 + (fbm2(i / 11, j / 11, 1e5, sd + 41, 3) - 0.5) * 0.42; // ragged coastline
+      const hills = (fbm2(i / 17, j / 17, 1e5, sd, 4) - 0.5) * 0.2 + (fbm2(i / 6, j / 6, 1e5, sd + 3, 2) - 0.5) * 0.05;
+      const md = Math.hypot(i - mc[0], j - mc[1]) / (N * 0.21) + (fbm2(i / 9, j / 9, 1e5, sd + 43, 3) - 0.5) * 0.7;
+      const mask = NZ.smooth(clamp(1 - md, 0, 1)), ridge = 1 - Math.abs(fbm2(i / 7, j / 7, 1e5, sd + 45, 4) * 2 - 1);
+      E[k] = 0.73 - d * d * 0.9 + hills; // lowland height (decides land / water)
+      Mt[k] = mask * (1.5 + ridge * 2.9); // mountain levels added on top: ridged peaks and valleys
+      M[k] = stretch(fbm2(i / 24 + 50, j / 24, 1e5, sd + 7, 3));
+      forestN[k] = fbm2(i / 6.5, j / 6.5, 1e5, sd + 11, 4);
+      const proj = ((i - N / 2) * cdx + (j - N / 2) * cdy) / N; // -0.5 (warm side) .. 0.5 (cold side)
+      tempF[k] = 0.52 - proj * 1.25 + (stretch(fbm2(i / 26 + 9, j / 26 - 4, 1e5, sd + 47, 3)) - 0.5) * 0.38;
     }
     const WL = 0.36;
     for (let k = 0; k < N * N; k++) {
       if (E[k] < WL) { lvl[k] = 0; type[k] = TYPES.deep; continue; }
       type[k] = TYPES.grass;
-      const l = (E[k] - WL) / 0.075, f = Math.floor(l), fr = l - f;
+      const l = 3.1 * (1 - Math.exp(-(E[k] - WL) / 0.16)) + Mt[k], f = Math.floor(l), fr = l - f; // rolling lowlands up to ~3, the massif above
       lvl[k] = clamp(f + NZ.smooth(clamp((fr - 0.3) / 0.4, 0, 1)), 0.25, MAXLV);
     }
     bfsDist(k => !isWater(type[k]), waterDist);
     bfsDist(k => isWater(type[k]), landDist);
+    // biomes from climate, then a majority filter so regions are large and clean
+    const raw = new Uint8Array(N * N);
+    for (let k = 0; k < N * N; k++) {
+      if (isWater(type[k])) continue;
+      const L = lvl[k], T = tempF[k] - Math.max(0, L - 2) * 0.06, m = M[k]; tempF[k] = T;
+      raw[k] = L >= 4.6 ? BIO.MOUNTAIN : T < 0.25 ? BIO.TUNDRA : T < 0.4 ? BIO.TAIGA : T > 0.66 && m < 0.52 ? BIO.SCRUB : m > 0.55 ? BIO.FOREST : BIO.MEADOW;
+    }
+    for (let pass = 0; pass < 3; pass++) {
+      const src = pass ? biome.slice() : raw;
+      for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) {
+        const k = idx(i, j); if (isWater(type[k])) continue;
+        if (src[k] === BIO.MOUNTAIN && lvl[k] >= 4.6) { biome[k] = BIO.MOUNTAIN; continue; }
+        const cnt = [0, 0, 0, 0, 0, 0, 0];
+        for (let a = -2; a <= 2; a++) for (let b = -2; b <= 2; b++) if (inMap(i + a, j + b) && !isWater(type[idx(i + a, j + b)])) cnt[src[idx(i + a, j + b)]]++;
+        let best = src[k]; for (let q = 0; q < 7; q++) if (q !== BIO.MOUNTAIN && cnt[q] > cnt[best] + 1) best = q;
+        biome[k] = best === BIO.MOUNTAIN && lvl[k] < 4.6 ? src[k] : best;
+      }
+    }
+    for (let k = 0; k < N * N; k++) { // shores: sandy beaches, except snowfields which run down to the water
+      if (isWater(type[k])) continue;
+      if (biome[k] !== BIO.TUNDRA && biome[k] !== BIO.MOUNTAIN && lvl[k] < 1.8 && landDist[k] <= (biome[k] === BIO.TAIGA ? 1 : 2)) biome[k] = BIO.BEACH;
+    }
+    // groves (impassable stands of trees) and ground per biome
     for (let k = 0; k < N * N; k++) {
       if (isWater(type[k])) { type[k] = waterDist[k] <= 2 ? TYPES.shallow : TYPES.deep; continue; }
-      const L = lvl[k], m = moist[k], i = k / N | 0, j = k % N;
-      let t = m < 0.42 ? TYPES.dryGrass : m > 0.6 ? TYPES.grassLush : TYPES.grass;
-      if (fbm2(i / 5, j / 5, 1e5, sd + 21, 3) > 0.66) t = TYPES.dirt;
-      if (landDist[k] <= 1 && L < 1.6) t = TYPES.sand;
-      else if (landDist[k] <= 2 && L < 1.2 && m < 0.5) t = TYPES.sand;
-      const rn = fbm2(i / 4, j / 4, 1e5, sd + 31, 3);
-      if (L >= 6.6 + rn * 0.6) t = TYPES.snow; else if (L >= 5.3 + rn * 0.8) t = TYPES.rock; else if (L >= 4.2 && t !== TYPES.dirt) t = TYPES.dryGrass;
-      else if (t !== TYPES.sand && forestN[k] > 0.55 && L < 4.4) t = TYPES.forestFloor;
+      const i = k / N | 0, j = k % N, L = lvl[k], g = forestN[k], patch = fbm2(i / 5, j / 5, 1e5, sd + 21, 3), lush = fbm2(i / 9, j / 9, 1e5, sd + 23, 3);
+      let t = TYPES.grass;
+      switch (biome[k]) {
+        case BIO.BEACH: t = TYPES.sand; break;
+        case BIO.MEADOW: grove[k] = g > 0.71 ? 1 : 0; t = grove[k] ? TYPES.forestFloor : patch > 0.71 ? TYPES.dirt : lush > 0.55 ? TYPES.grassLush : TYPES.grass; break;
+        case BIO.FOREST: grove[k] = g > 0.43 ? 1 : 0; t = grove[k] ? TYPES.forestFloor : patch > 0.73 ? TYPES.dirt : TYPES.grassLush; break;
+        case BIO.TAIGA: grove[k] = g > 0.46 ? 1 : 0; t = grove[k] ? TYPES.forestFloor : tempF[k] < 0.33 && patch > 0.45 ? TYPES.snow : patch > 0.7 ? TYPES.dirt : TYPES.grass; break;
+        case BIO.TUNDRA: grove[k] = g > 0.66 ? 1 : 0; t = patch > 0.73 ? TYPES.rock : TYPES.snow; break;
+        case BIO.MOUNTAIN: grove[k] = g > 0.68 && L < 5.6 ? 1 : 0; t = L >= 6.4 + (patch - 0.5) * 0.9 || (tempF[k] < 0.06 && L >= 5.8) ? TYPES.snow : L < 5.3 && patch < 0.46 ? TYPES.dryGrass : TYPES.rock; break;
+        case BIO.SCRUB: t = patch > 0.6 ? TYPES.dirt : TYPES.dryGrass; break;
+      }
       type[k] = t;
     }
     computeVertices();
+    // start in the meadows, near the middle, away from the cold
     let best = 1e9;
     for (let i = 8; i < N - 8; i++) for (let j = 8; j < N - 8; j++) {
-      const k = idx(i, j); if (type[k] !== TYPES.grass && type[k] !== TYPES.grassLush) continue;
-      let cold = 0; for (let a = -6; a <= 6; a += 2) for (let b = -6; b <= 6; b += 2) if (inMap(i + a, j + b) && (type[idx(i + a, j + b)] === TYPES.snow || type[idx(i + a, j + b)] === TYPES.rock)) cold++;
-      const d = Math.hypot(i - N / 2, j - N / 2) * 0.6 + lvl[k] * 5 + cold * 4 + (landDist[k] < 4 ? 6 : 0); if (d < best) { best = d; start = [i, j]; }
+      const k = idx(i, j); if (biome[k] !== BIO.MEADOW || grove[k] || type[k] === TYPES.dirt) continue;
+      let cold = 0; for (let a = -6; a <= 6; a += 2) for (let b = -6; b <= 6; b += 2) if (inMap(i + a, j + b) && [BIO.TUNDRA, BIO.MOUNTAIN].includes(biome[idx(i + a, j + b)])) cold++;
+      const d = Math.hypot(i - N / 2, j - N / 2) * 0.6 + lvl[k] * 4 + cold * 5 + (landDist[k] < 4 ? 6 : 0); if (d < best) { best = d; start = [i, j]; }
     }
+    if (best === 1e9) for (let k = 0; k < N * N; k++) if (!isWater(type[k]) && !grove[k] && Math.hypot((k / N | 0) - N / 2, k % N - N / 2) < best) { best = Math.hypot((k / N | 0) - N / 2, k % N - N / 2); start = [k / N | 0, k % N]; }
     placeWorld(sd, R);
     computeVertices();
+    buildBlend();
     objects.forEach((o, n) => { o.id = n; }); baseObjCount = objects.length;
+  }
+  // ---- ground blending: each ground type's coverage is blurred over the map (wide for biome grounds,
+  // narrow for paths), and every pixel mixes the strongest few textures with noise-broken edges.
+  const NT = S.terrain.types.length, blendT = new Int8Array(N * N * 4), blendW = new Float32Array(N * N * 4);
+  const BLUR = { sand: [1, 2], grass: [2, 2], grassLush: [2, 2], dryGrass: [2, 2], forestFloor: [1, 2], dirt: [1, 1], road: [1, 1], rock: [2, 2], snow: [2, 3] };
+  function boxBlur(F, r) {
+    const tmp = new Float32Array(N * N), w = 2 * r + 1;
+    for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) { let a = 0; for (let d = -r; d <= r; d++) a += F[idx(i, clamp(j + d, 0, N - 1))]; tmp[idx(i, j)] = a / w; }
+    for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) { let a = 0; for (let d = -r; d <= r; d++) a += tmp[idx(clamp(i + d, 0, N - 1), j)]; F[idx(i, j)] = a / w; }
+  }
+  // how much of texture t covers tile k: the tile's own ground, plus each biome's own secondary ground
+  // (pine needles through the pine-forest grass, leaf litter in the woodland, dirt in the dry plains, scree on mountain grass)
+  const MIXES = [[BIO.TAIGA, 'grass', 'forestFloor', 0.55], [BIO.FOREST, 'grassLush', 'forestFloor', 0.3], [BIO.SCRUB, 'dryGrass', 'dirt', 0.25], [BIO.MOUNTAIN, 'dryGrass', 'rock', 0.35], [BIO.TUNDRA, 'snow', 'rock', 0.08]];
+  function groundMix(k, t) {
+    const ty = type[k], b = biome[k];
+    for (const [mb, from, to, share] of MIXES) if (b === mb && ty === TYPES[from]) return t === ty ? 1 - share : t === TYPES[to] ? share : 0;
+    return ty === t ? 1 : 0;
+  }
+  function buildBlend() {
+    const W = [], F = new Float32Array(N * N);
+    for (const tt of S.terrain.types) {
+      const t = TYPES[tt.id]; if (isWater(t)) { W[t] = null; continue; }
+      for (let k = 0; k < N * N; k++) F[k] = groundMix(k, t);
+      const [r, passes] = BLUR[tt.id] || [1, 2]; for (let p = 0; p < passes; p++) boxBlur(F, r);
+      W[t] = F.slice();
+    }
+    blendT.fill(-1); blendW.fill(0);
+    for (let k = 0; k < N * N; k++) {
+      const top = [];
+      for (let t = 0; t < NT; t++) if (W[t] && W[t][k] > 0.012) top.push([W[t][k], t]);
+      top.sort((a, b) => b[0] - a[0]);
+      top.slice(0, 4).forEach(([w, t], n) => { blendT[k * 4 + n] = t; blendW[k * 4 + n] = w; });
+    }
+  }
+  const accW = new Float32Array(NT);
+  function landColor(x, y, ti_) {
+    const fx = clamp(x - 0.5, 0, N - 1.001), fy = clamp(y - 0.5, 0, N - 1.001), i0 = fx | 0, j0 = fy | 0, u = fx - i0, v = fy - j0;
+    accW.fill(0);
+    const corner = (i, j, w) => { const k = idx(Math.min(i, N - 1), Math.min(j, N - 1)) * 4; for (let n = 0; n < 4; n++) { const t = blendT[k + n]; if (t < 0) break; accW[t] += w * blendW[k + n]; } };
+    corner(i0, j0, (1 - u) * (1 - v)); corner(i0 + 1, j0, u * (1 - v)); corner(i0, j0 + 1, (1 - u) * v); corner(i0 + 1, j0 + 1, u * v);
+    let r = 0, g = 0, b = 0, tot = 0, sand = 0, only = -1, many = false;
+    for (let t = 0; t < NT; t++) if (accW[t] >= 0.004) { if (only < 0) only = t; else { many = true; break; } }
+    if (!many && only >= 0 && only !== TYPES.sand) { const p = TEX[only][ti_]; return [p & 255, (p >> 8) & 255, (p >> 16) & 255]; } // inside a single ground: no mixing needed
+    for (let t = 0; t < NT; t++) {
+      const a = accW[t]; if (a < 0.004) continue;
+      const n = 0.55 * noise2(x * 0.85 + t * 17.3, y * 0.85 - t * 9.1, 1e5, 300 + t) + 0.45 * noise2(x * 3.4 + t * 5.7, y * 3.4 - t * 3.3, 1e5, 340 + t);
+      let m = a * (0.1 + 1.8 * n), m2 = m * m; m = m2 * m2 * m; // ^5: transitions break into clumps and drifts instead of averaging into haze
+      const p = TEX[t][ti_]; r += m * (p & 255); g += m * ((p >> 8) & 255); b += m * ((p >> 16) & 255); tot += m; if (t === TYPES.sand) sand += m;
+    }
+    if (tot <= 0) { const p = TEX[TYPES.sand][ti_]; return [p & 255, (p >> 8) & 255, (p >> 16) & 255]; }
+    r /= tot; g /= tot; b /= tot;
+    if (sand > 0) { const ld = bil(landDist, x - 0.5, y - 0.5); if (ld < 1.4) { const f = 1 - (sand / tot) * 0.18 * (1 - clamp(ld - 0.4, 0, 1)); r *= f; g *= f; b *= f; } } // wet sand at the waterline
+    return [r, g, b];
   }
   function computeVertices() {
     for (let a = 0; a <= N; a++) for (let b = 0; b <= N; b++) {
@@ -162,7 +262,7 @@
     return true;
   }
   function flatness(ci, cj, r) { let mn = 99, mx = -99; for (let i = ci - r; i <= ci + r; i++) for (let j = cj - r; j <= cj + r; j++) { if (!inMap(i, j)) return 99; const k = idx(i, j); if (isWater(type[k])) return 99; mn = Math.min(mn, lvl[k]); mx = Math.max(mx, lvl[k]); } return mx - mn; }
-  function clearArea(ci, cj, r, to) { for (let i = ci - r; i <= ci + r; i++) for (let j = cj - r; j <= cj + r; j++) if (inMap(i, j) && Math.hypot(i - ci, j - cj) <= r + 0.5) { const k = idx(i, j); if (type[k] === TYPES.forestFloor || type[k] === TYPES.rock || type[k] === TYPES.snow) type[k] = to; } }
+  function clearArea(ci, cj, r, to) { for (let i = ci - r; i <= ci + r; i++) for (let j = cj - r; j <= cj + r; j++) if (inMap(i, j) && Math.hypot(i - ci, j - cj) <= r + 0.5) { const k = idx(i, j); grove[k] = 0; if (type[k] === TYPES.forestFloor || type[k] === TYPES.rock || type[k] === TYPES.snow) type[k] = to; } }
   function pickSites(count, minDist, test, avoid, R) {
     const out = [];
     for (let n = 0; n < count; n++) {
@@ -178,21 +278,29 @@
   }
   const VILLAGE_NAMES = ['Ashford', 'Brackenmoor', 'Willowmere', 'Thornby', 'Eastwick'];
   const RUIN_NAMES = ['the Old Colonnade', 'Gloamstone Circle', 'the Broken Gate', 'the Pale Steps'];
-  function treeFor(i, j, L, r, sd) {
-    if (L >= 4.4 || (L >= 3.4 && r < 0.3)) return 'pine_snow_' + (1 + (r * 7 | 0) % 2);
-    if (L >= 2.8) return r < 0.72 ? 'pine_' + (1 + (r * 4 | 0) % 3) : 'oak_3';
-    if (r < 0.09) return 'maple_' + (1 + (r * 50 | 0) % 2);
-    if (r < 0.15) return 'aspen_1';
-    if (r < 0.28) return 'birch_' + (1 + (r * 20 | 0) % 2);
-    if (r < 0.38) return 'pine_' + (1 + (r * 30 | 0) % 3);
-    return 'oak_' + (1 + (r * 37 | 0) % 4);
+  function treeFor(i, j, r) { // species by biome; the woodland has birch/aspen stands and an autumn maple wood
+    const k = idx(i, j), T = tempF[k], pick = (base, n, m) => base + (1 + (r * m | 0) % n);
+    switch (biome[k]) {
+      case BIO.FOREST: {
+        const sub = fbm2(i / 13, j / 13, 1e5, seed + 71, 3);
+        if (sub > 0.57) return r < 0.6 ? pick('birch_', 2, 53) : r < 0.85 ? 'aspen_1' : pick('oak_', 4, 97);
+        if (sub < 0.42) return r < 0.62 ? pick('maple_', 2, 71) : pick('oak_', 4, 97);
+        return r < 0.7 ? pick('oak_', 4, 97) : r < 0.82 ? pick('birch_', 2, 53) : r < 0.92 ? pick('maple_', 2, 71) : pick('pine_', 3, 31);
+      }
+      case BIO.TAIGA: return T < 0.34 && r < 0.5 ? pick('pine_snow_', 2, 7) : r < 0.9 ? pick('pine_', 3, 31) : pick('birch_', 2, 53);
+      case BIO.TUNDRA: return r < 0.88 ? pick('pine_snow_', 2, 7) : 'dead_tree';
+      case BIO.MOUNTAIN: return lvl[k] >= 5 || T < 0.3 ? pick('pine_snow_', 2, 7) : pick('pine_', 3, 31);
+      case BIO.SCRUB: return 'dead_tree';
+      default: return r < 0.7 ? pick('oak_', 4, 97) : r < 0.85 ? pick('maple_', 2, 71) : pick('birch_', 2, 53);
+    }
   }
   function placeWorld(sd, R) {
     const avoid = [start];
     const grassy = k => k === TYPES.grass || k === TYPES.grassLush || k === TYPES.dryGrass;
     clearArea(start[0], start[1], 3, TYPES.grass);
     addObj('campfire_out', start[0] + 1.5, start[1] + 1.5, { struct: 'campfire', fuel: 0, hp: 80, world: true });
-    const vs = pickSites(3, 15, (i, j) => grassy(type[idx(i, j)]) && flatness(i, j, 5) < 2.2 && lvl[idx(i, j)] < 3.6 && Math.hypot(i - start[0], j - start[1]) > 13, avoid, R);
+    const temperate = (i, j) => { for (let a = -8; a <= 8; a += 2) for (let b = -8; b <= 8; b += 2) if (inMap(i + a, j + b) && [BIO.TUNDRA, BIO.MOUNTAIN].includes(biome[idx(i + a, j + b)])) return false; return [BIO.MEADOW, BIO.SCRUB, BIO.FOREST, BIO.TAIGA].includes(biome[idx(i, j)]); };
+    const vs = pickSites(3, 15, (i, j) => grassy(type[idx(i, j)]) && temperate(i, j) && flatness(i, j, 5) < 2.2 && lvl[idx(i, j)] < 3.6 && Math.hypot(i - start[0], j - start[1]) > 13, avoid, R);
     vs.forEach((v, n) => {
       const [ci, cj] = v; clearArea(ci, cj, 7, TYPES.grass); flatten(ci, cj, 6);
       sites.push({ kind: 'village', name: 'the abandoned village of ' + VILLAGE_NAMES[n], i: ci, j: cj, found: false });
@@ -205,7 +313,7 @@
     });
     const hubs = [start].concat(vs);
     for (let k = 1; k < hubs.length; k++) buildRoad(hubs[k - 1], hubs[k]);
-    const rs = pickSites(4, 13, (i, j) => !isWater(type[idx(i, j)]) && flatness(i, j, 3) < 2 && Math.hypot(i - start[0], j - start[1]) > 12, avoid, R);
+    const rs = pickSites(4, 13, (i, j) => !isWater(type[idx(i, j)]) && biome[idx(i, j)] !== BIO.MOUNTAIN && flatness(i, j, 3) < 2 && Math.hypot(i - start[0], j - start[1]) > 12, avoid, R);
     const shrinePos = [];
     rs.forEach((r, n) => {
       const [ci, cj] = r; clearArea(ci, cj, 4, TYPES.dirt); flatten(ci, cj, 3);
@@ -220,40 +328,66 @@
       }
       shrinePos.push([ci + 0.5, cj + 0.5]);
     });
-    const remote = pickSites(8 - shrinePos.length, 10, (i, j) => { const k = idx(i, j); return !isWater(type[k]) && type[k] !== TYPES.forestFloor && !blocked[k] && Math.hypot(i - start[0], j - start[1]) > 12; }, avoid.concat(rs), R);
-    remote.forEach(p => shrinePos.push([p[0] + 0.5, p[1] + 0.5]));
+    const openTile = (i, j) => { const k = idx(i, j); return !isWater(type[k]) && type[k] !== TYPES.forestFloor && !grove[k] && !blocked[k] && Math.hypot(i - start[0], j - start[1]) > 12; };
+    const taken = avoid.concat(rs);
+    for (const b of [BIO.TUNDRA, BIO.MOUNTAIN, BIO.TAIGA, BIO.SCRUB, BIO.FOREST, BIO.BEACH, BIO.MEADOW]) { // one relic per biome first, so every biome is worth exploring
+      if (shrinePos.length >= 8) break;
+      const p = pickSites(1, 9, (i, j) => openTile(i, j) && biome[idx(i, j)] === b, taken, R)[0]; if (p) { shrinePos.push([p[0] + 0.5, p[1] + 0.5]); taken.push(p); }
+    }
+    if (shrinePos.length < 8) pickSites(8 - shrinePos.length, 8, openTile, taken, R).forEach(p => shrinePos.push([p[0] + 0.5, p[1] + 0.5]));
     for (const [x, y] of shrinePos) { const k = idx(x | 0, y | 0); if (type[k] === TYPES.forestFloor) type[k] = TYPES.dirt; addObj('shrine_lit', x, y, { relic: true }); }
     const ts = pickSites(3, 14, (i, j) => { const k = idx(i, j); return lvl[k] >= 3.5 && type[k] !== TYPES.forestFloor && !blocked[k]; }, avoid.concat(rs), R);
     ts.forEach(t => { addObj('watchtower', t[0] + 0.5, t[1] + 0.5); sites.push({ kind: 'tower', name: 'a watchtower', i: t[0], j: t[1], found: false }); });
+    // trees: one per grove tile
     for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) {
-      const k = idx(i, j); if (type[k] !== TYPES.forestFloor || blocked[k]) continue;
-      addObj(treeFor(i, j, lvl[k], hash(i, j, sd + 1), sd), i + 0.5 + (hash(i, j, 3) - 0.5) * 0.3, j + 0.5 + (hash(i, j, 4) - 0.5) * 0.3);
+      const k = idx(i, j); if (!grove[k] || blocked[k]) continue;
+      const bz = biome[k], ok = type[k] === TYPES.forestFloor || ((bz === BIO.TUNDRA || bz === BIO.MOUNTAIN) && (type[k] === TYPES.snow || type[k] === TYPES.rock || type[k] === TYPES.dryGrass));
+      if (!ok) { grove[k] = 0; continue; }
+      addObj(treeFor(i, j, hash(i, j, sd + 1)), i + 0.5 + (hash(i, j, 3) - 0.5) * 0.3, j + 0.5 + (hash(i, j, 4) - 0.5) * 0.3);
     }
+    // undergrowth, rocks and flowers: each biome has its own mix
+    const FLOWERS = ['flowers_yellow', 'flowers_white', 'flowers_purple'];
     for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) {
       const k = idx(i, j); if (blocked[k] || isWater(type[k])) continue;
       if (Math.abs(i - start[0]) <= 1 && Math.abs(j - start[1]) <= 1) continue;
-      const t = type[k], r = hash(i, j, sd + 5), r2 = hash(i, j, sd + 9), x = i + 0.5 + (hash(i, j, 6) - 0.5) * 0.4, y = j + 0.5 + (hash(i, j, 7) - 0.5) * 0.4;
-      const nearForest = [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([a, b]) => inMap(i + a, j + b) && type[idx(i + a, j + b)] === TYPES.forestFloor);
-      const nearStart = Math.hypot(i - start[0], j - start[1]) < 9 ? 1.8 : 1;
-      if (t === TYPES.rock || t === TYPES.snow) {
-        if (r < 0.07) addObj('boulder_' + (1 + (r * 100 | 0) % 3), x, y); else if (r < 0.09) addObj('stone_pile', x, y); else if (r < 0.105) addObj(r < 0.1 ? 'gold_vein' : 'gold_boulder', x, y); else if (r < 0.16 && t === TYPES.rock) addObj('pine_snow_' + (1 + (r * 300 | 0) % 2), x, y);
-      } else if (t === TYPES.sand) {
-        if (r < 0.03) addObj('palm_' + (1 + (r * 100 | 0) % 2), x, y); else if (r < 0.045) addObj('boulder_2', x, y); else if (r < 0.09) addObj('grass_tuft_dry', x, y);
-        if (landDist[k] <= 1 && r > 0.8) addObj('reeds', x + 0.2, y - 0.2);
-      } else if (t !== TYPES.road) {
-        if (nearForest && r < 0.07) addObj(r < 0.03 ? 'berry_bush' : 'bush_' + (1 + (r * 100 | 0) % 2), x, y);
-        else if (nearForest && r < 0.12) addObj('fern_' + (1 + (r * 100 | 0) % 2), x, y);
-        else if (r < 0.008 * nearStart) addObj('boulder_' + (1 + (r * 1000 | 0) % 3), x, y);
-        else if (r < 0.011 * nearStart && t === TYPES.dryGrass) addObj('dead_tree', x, y);
-        else if (r < 0.014 * nearStart) addObj('stone_pile', x, y);
-        else if (r < 0.034 * nearStart) addObj('bush_' + (1 + (r * 100 | 0) % 2), x, y);
-        else if (r < 0.042 * nearStart) addObj('berry_bush', x, y);
-        else if (r < 0.075 * nearStart) addObj(['flowers_yellow', 'flowers_white', 'flowers_purple'][(r * 1000 | 0) % 3], x, y);
-        else if (r > 0.994 && !nearForest) addObj(treeFor(i, j, lvl[k], r2, sd), x, y);
-        // grass cover: lots of swaying tufts
-        if (r2 < (t === TYPES.dryGrass ? 0.32 : 0.4)) addObj(t === TYPES.dryGrass ? 'grass_tuft_dry' : r2 < 0.2 ? 'grass_tuft' : 'grass_tuft_2', i + hash(i, j, 12) * 0.9 + 0.05, j + hash(i, j, 13) * 0.9 + 0.05, { decor: true });
+      const t = type[k], bz = biome[k], r = hash(i, j, sd + 5), r2 = hash(i, j, sd + 9), x = i + 0.5 + (hash(i, j, 6) - 0.5) * 0.4, y = j + 0.5 + (hash(i, j, 7) - 0.5) * 0.4;
+      const tx = i + hash(i, j, 12) * 0.9 + 0.05, ty = j + hash(i, j, 13) * 0.9 + 0.05, tuft = (asset) => addObj(asset, tx, ty, { decor: true });
+      const ns = Math.hypot(i - start[0], j - start[1]) < 9 ? 1.6 : 1;
+      const edge = [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([a, b]) => inMap(i + a, j + b) && grove[idx(i + a, j + b)]);
+      const patch = fbm2(i / 4, j / 4, 1e5, sd + 61, 2) > 0.58, flower = FLOWERS[(fbm2(i / 10, j / 10, 1e5, sd + 63, 2) * 6 | 0) % 3];
+      if (t === TYPES.road) continue;
+      if (grove[k]) { if (r2 < 0.22 && (bz === BIO.FOREST || bz === BIO.TAIGA)) addObj('fern_' + (1 + (r2 * 100 | 0) % 2), i + 0.15, j + 0.8, { decor: true }); continue; }
+      switch (bz) {
+        case BIO.MEADOW:
+          if (r < 0.01 * ns) addObj('boulder_' + (1 + (r * 1000 | 0) % 3), x, y); else if (r < 0.018 * ns) addObj('stone_pile', x, y);
+          else if (r < 0.045 * ns) addObj('bush_' + (1 + (r * 100 | 0) % 2), x, y); else if (r < 0.06 * ns) addObj('berry_bush', x, y);
+          else if (patch && r < 0.26) addObj(flower, x, y); else if (r > 0.994) addObj(treeFor(i, j, r2), x, y);
+          if (r2 < 0.5) tuft(r2 < 0.22 ? 'grass_tuft' : 'grass_tuft_2'); break;
+        case BIO.FOREST:
+          if (edge && r < 0.1) addObj(r < 0.045 ? 'berry_bush' : 'bush_' + (1 + (r * 100 | 0) % 2), x, y);
+          else if (r < 0.22) addObj('fern_' + (1 + (r * 100 | 0) % 2), x, y, { decor: true });
+          else if (patch && r < 0.3) addObj('flowers_white', x, y); else if (r < 0.31) addObj('stone_pile', x, y);
+          if (r2 < 0.36) tuft('grass_tuft_2'); break;
+        case BIO.TAIGA:
+          if (r < 0.1) addObj('fern_' + (1 + (r * 100 | 0) % 2), x, y, { decor: true }); else if (r < 0.14) addObj('bush_' + (1 + (r * 100 | 0) % 2), x, y);
+          else if (r < 0.165) addObj('stone_pile', x, y); else if (r < 0.185) addObj('boulder_' + (1 + (r * 1000 | 0) % 3), x, y);
+          if (r2 < 0.24) tuft(t === TYPES.snow ? 'grass_tuft_dry' : 'grass_tuft_2'); break;
+        case BIO.TUNDRA:
+          if (r < 0.035) addObj('boulder_' + (1 + (r * 1000 | 0) % 3), x, y); else if (r < 0.055) addObj('stone_pile', x, y);
+          else if (r < 0.06) addObj('gold_vein', x, y); else if (r < 0.072) addObj('dead_tree', x, y);
+          if (r2 < 0.1) tuft('grass_tuft_dry'); break;
+        case BIO.MOUNTAIN:
+          if (r < 0.08) addObj('boulder_' + (1 + (r * 1000 | 0) % 3), x, y); else if (r < 0.1) addObj('stone_pile', x, y); else if (r < 0.116) addObj(r < 0.108 ? 'gold_vein' : 'gold_boulder', x, y);
+          if (t === TYPES.dryGrass && r2 < 0.3) tuft('grass_tuft_dry'); break;
+        case BIO.SCRUB:
+          if (r < 0.022) addObj('dead_tree', x, y); else if (r < 0.042) addObj('bush_' + (1 + (r * 100 | 0) % 2), x, y);
+          else if (r < 0.058) addObj('boulder_' + (1 + (r * 1000 | 0) % 3), x, y); else if (r < 0.068) addObj('stone_pile', x, y);
+          else if (patch && r < 0.1) addObj('flowers_yellow', x, y); else if (landDist[k] < 6 && tempF[k] > 0.6 && r > 0.988) addObj('palm_' + (1 + (r2 * 100 | 0) % 2), x, y);
+          if (r2 < 0.46) tuft('grass_tuft_dry'); break;
+        case BIO.BEACH:
+          if (tempF[k] > 0.62 && r < 0.035) addObj('palm_' + (1 + (r * 100 | 0) % 2), x, y); else if (r < 0.05) addObj('boulder_2', x, y);
+          if (landDist[k] <= 1 && r > 0.8) addObj('reeds', x + 0.2, y - 0.2); else if (r2 < 0.08) tuft('grass_tuft_dry'); break;
       }
-      if (t === TYPES.forestFloor && r2 < 0.12) addObj('fern_' + (1 + (r2 * 100 | 0) % 2), i + 0.15, j + 0.8, { decor: true });
     }
     const cs = pickSites(14, 6, (i, j) => { const k = idx(i, j); return !isWater(type[k]) && !blocked[k] && type[k] !== TYPES.forestFloor; }, avoid, R);
     cs.forEach(c => addObj('chest', c[0] + 0.5, c[1] + 0.5, { chest: true }));
@@ -262,18 +396,20 @@
   }
   function spawnWildlife(R, initial) {
     const count = k => units.filter(u => u.kind === k && !u.dead).length;
-    const grassOk = (i, j) => { const k = idx(i, j); return (type[k] === TYPES.grass || type[k] === TYPES.grassLush || type[k] === TYPES.dryGrass) && !blocked[k]; };
-    const forestEdge = (i, j) => [[2, 0], [-2, 0], [0, 2], [0, -2]].some(([a, b]) => inMap(i + a, j + b) && type[idx(i + a, j + b)] === TYPES.forestFloor);
+    const open = (i, j) => { const k = idx(i, j); return !blocked[k] && !grove[k] && !isWater(type[k]) && type[k] !== TYPES.road; };
+    const inB = (i, j, ...bs) => bs.includes(biome[idx(i, j)]);
+    const grassOk = (i, j) => open(i, j) && inB(i, j, BIO.MEADOW, BIO.FOREST, BIO.SCRUB);
+    const forestEdge = (i, j) => [[2, 0], [-2, 0], [0, 2], [0, -2]].some(([a, b]) => inMap(i + a, j + b) && grove[idx(i + a, j + b)]);
     const farFromPlayer = (i, j) => !P || Math.hypot(i - P.x, j - P.y) > 14;
-    pickSites(initial ? 6 : count('deer') < 16 ? 1 : 0, 8, (i, j) => grassOk(i, j) && danger(i, j) >= 0 && Math.hypot(i - start[0], j - start[1]) > 7 && farFromPlayer(i, j), [], R)
+    pickSites(initial ? 6 : count('deer') < 16 ? 1 : 0, 8, (i, j) => open(i, j) && inB(i, j, BIO.MEADOW, BIO.FOREST) && Math.hypot(i - start[0], j - start[1]) > 7 && farFromPlayer(i, j), [], R)
       .forEach(h => { for (let k = 0; k < 3 + (R() * 2 | 0); k++) addUnit('deer', h[0] + 0.5 + (R() - 0.5) * 2, h[1] + 0.5 + (R() - 0.5) * 2, { home: [h[0] + 0.5, h[1] + 0.5] }); });
-    pickSites(initial ? 4 : count('wolf') < 9 ? 1 : 0, 14, (i, j) => grassOk(i, j) && danger(i, j) > 0.15 && forestEdge(i, j) && farFromPlayer(i, j), [], R)
+    pickSites(initial ? 4 : count('wolf') < 9 ? 1 : 0, 14, (i, j) => open(i, j) && inB(i, j, BIO.TAIGA, BIO.TUNDRA, BIO.FOREST) && danger(i, j) > 0.15 && farFromPlayer(i, j), [], R)
       .forEach(h => { for (let k = 0; k < 2 + (R() * 2 | 0); k++) addUnit('wolf', h[0] + 0.5 + (R() - 0.5) * 2, h[1] + 0.5 + (R() - 0.5) * 2, { home: [h[0] + 0.5, h[1] + 0.5] }); });
     pickSites(initial ? 7 : count('boar') < 8 ? 1 : 0, 8, (i, j) => grassOk(i, j) && Math.hypot(i - start[0], j - start[1]) > 9 && farFromPlayer(i, j), [], R)
       .forEach(h => addUnit('boar', h[0] + 0.5, h[1] + 0.5, { home: [h[0] + 0.5, h[1] + 0.5] }));
-    pickSites(initial ? 3 : count('bear') < 4 ? 1 : 0, 16, (i, j) => grassOk(i, j) && danger(i, j) > 0.5 && forestEdge(i, j) && farFromPlayer(i, j), [], R)
+    pickSites(initial ? 3 : count('bear') < 4 ? 1 : 0, 16, (i, j) => open(i, j) && inB(i, j, BIO.TAIGA, BIO.FOREST, BIO.MOUNTAIN) && danger(i, j) > 0.4 && farFromPlayer(i, j), [], R)
       .forEach(h => addUnit('bear', h[0] + 0.5, h[1] + 0.5, { home: [h[0] + 0.5, h[1] + 0.5] }));
-    pickSites(initial ? 4 : count('spider') < 7 ? 1 : 0, 12, (i, j) => { const k = idx(i, j); return !blocked[k] && type[k] !== TYPES.forestFloor && !isWater(type[k]) && danger(i, j) > 0.45 && forestEdge(i, j) && farFromPlayer(i, j); }, [], R)
+    pickSites(initial ? 4 : count('spider') < 7 ? 1 : 0, 12, (i, j) => open(i, j) && inB(i, j, BIO.FOREST, BIO.SCRUB, BIO.TAIGA) && danger(i, j) > 0.4 && farFromPlayer(i, j), [], R)
       .forEach(h => { for (let k = 0; k < 1 + (R() * 2 | 0); k++) addUnit('spider', h[0] + 0.5 + (R() - 0.5), h[1] + 0.5 + (R() - 0.5), { home: [h[0] + 0.5, h[1] + 0.5] }); });
   }
   function ensureReachable() {
@@ -286,7 +422,7 @@
       const path = astar(start[0], start[1], i0, j0, cost); if (!path) continue;
       for (const [i, j] of path.slice(0, -1)) {
         const k = idx(i, j); if (!blocked[k]) continue;
-        for (const ob of objects) if (!ob.gone && removable(ob) && fpTiles(ob).some(([a, b]) => a === i && b === j)) { ob.gone = true; setBlock(ob, 0); }
+        for (const ob of objects) if (!ob.gone && removable(ob) && fpTiles(ob).some(([a, b]) => a === i && b === j)) { ob.gone = true; setBlock(ob, 0); grove[k] = 0; }
         if (type[k] === TYPES.forestFloor) type[k] = TYPES.dirt;
       }
     }
@@ -1007,12 +1143,11 @@
       if (isWater(t1) || isWater(t2)) {
         const wsh = sample(TYPES.shallow), wdp = sample(TYPES.deep), k = NZ.smooth(clamp((depth - 0.8) / 2.2, 0, 1));
         let col = [wsh[0] + (wdp[0] - wsh[0]) * k, wsh[1] + (wdp[1] - wsh[1]) * k, wsh[2] + (wdp[2] - wsh[2]) * k];
-        if (!isWater(t1) || !isWater(t2)) { const land = sample(isWater(t1) ? t2 : t1); col = col.map((v, i) => (v + land[i]) / 2); }
+        if (!isWater(t1) || !isWater(t2)) { const land = landColor(x, y, ti_); col = col.map((v, i) => (v + land[i]) / 2); }
         if (depth < 0.95 && noise2(x * 5, y * 5, 1e5, 77) > 0.35 + depth * 0.45) col = col.map((v, i) => v + (FOAM[i] - v) * 0.55);
         [r, gg, b] = col;
       } else {
-        let col = sample(t1); if (t2 !== t1) { const c2 = sample(t2); col = [(col[0] + c2[0]) / 2, (col[1] + c2[1]) / 2, (col[2] + c2[2]) / 2]; }
-        const ld = bil(landDist, x - 0.5, y - 0.5); if (ld < 1.4 && t1 === TYPES.sand) { const m = 0.82 + 0.18 * clamp(ld - 0.4, 0, 1); col = col.map(v => v * m); }
+        const col = landColor(x, y, ti_);
         const e = 0.08, hx = (hAt(x + e, y) - hAt(x - e, y)) / (2 * e) * LV_UNITS, hy = (hAt(x, y + e) - hAt(x, y - e)) / (2 * e) * LV_UNITS;
         const nl = Math.hypot(hx, hy, 1), ndl = (-hx * L[0] - hy * L[1] + L[2]) / nl; shade = (TSL.ambient + TSL.litSlopeGain * Math.max(0, ndl)) / FLAT;
         [r, gg, b] = [col[0] * shade, col[1] * shade, col[2] * shade];
@@ -1434,7 +1569,8 @@
     const inWater = isWater(type[idx(clamp(Math.floor(P.x), 0, N - 1), clamp(Math.floor(P.y), 0, N - 1))]);
     if (inWater) P.wet = Math.min(1, P.wet + dt / 3); else if (wc.rain > 0.1 && !sheltered) P.wet = Math.min(1, P.wet + dt * wc.rain / 25); else P.wet = Math.max(0, P.wet - dt * (nearFire > 0 ? 1 / 12 : 1 / 90));
     P.warmBuff = Math.max(0, (P.warmBuff || 0) - dt);
-    let target = 74 - night * 34 - wc.rain * 10 - wc.snow * 28 - WX.wind * 9 - Math.max(0, hAt(P.x, P.y) - 3) * 3 - P.wet * 18 - WX.S.snowCover * 8;
+    const bzone = biomeAt(P.x, P.y);
+    let target = 74 - (bzone === BIO.TUNDRA ? 14 : bzone === BIO.MOUNTAIN ? 7 : bzone === BIO.TAIGA ? 5 : bzone === BIO.SCRUB ? -4 : 0) - night * 34 - wc.rain * 10 - wc.snow * 28 - WX.wind * 9 - Math.max(0, hAt(P.x, P.y) - 3) * 3 - P.wet * 18 - WX.S.snowCover * 8;
     target += nearFire * 50 + (sheltered ? 22 : 0) + P.comfort * 1.5 + (P.armorHP > 0 ? 10 : 0) + (P.warmBuff > 0 ? 22 : 0) + (sprinting() && P.moving ? 6 : 0);
     target = clamp(target, 0, 100); P.warmth += (target - P.warmth) * Math.min(1, dt * 0.08);
     // needs
@@ -1508,6 +1644,8 @@
       const v = k === 'hp' ? P.hp / P.maxHp * 100 : k === 'armorHP' ? P.armorHP / 220 * 100 : P[k];
       el.querySelector('i:not(.heart):not(.bolt)').style.width = clamp(v, 0, 100) + '%'; el.querySelector('b').textContent = Math.round(k === 'hp' ? P.hp : k === 'armorHP' ? P.armorHP : v); el.classList.toggle('low', v < 20);
     }
+    { const b = biomeAt(P.x, P.y); if (b !== P.zone) { P.zoneT = (P.zoneT || 0) + dt; if (P.zoneT > 1.5) { if (P.zone != null && G.started) message(`You enter ${BIO_NAMES[b]}.`); P.zone = b; P.zoneT = 0; } } else P.zoneT = 0;
+      const rl = BIO_LABELS[P.zone == null ? b : P.zone]; if ($('region').textContent !== rl) $('region').textContent = rl; }
     $('day').textContent = G.day; $('time').textContent = clockStr(); $('wx').textContent = WX.S.label; $('relics').textContent = `${inv.relic || 0}/8`;
     drawClock();
     // status badges
@@ -1860,7 +1998,8 @@
     closeModals(); ['title', 'dead', 'win'].forEach(id => $(id).classList.add('hidden'));
     $('loading').classList.remove('hidden'); $('lmsg').textContent = 'shaping a new island…'; await new Promise(r => setTimeout(r, 30));
     Object.assign(G, { day: 1, tod: 0.1, won: false, spawnT: 5, animalT: 60, killed: 0, beacon: null, beaconNight: false }); WX.force('fair'); WX.S.snowCover = 0;
-    genWorld((Math.random() * 1e9) | 0);
+    const seedQ = +(new URLSearchParams(location.search).get('seed')) || 0; // ?seed=123 replays a particular island
+    genWorld(seedQ || (Math.random() * 1e9) | 0);
     spawnPlayer(start[0] + 0.5, start[1] + 0.5); newPlayerState(); setWeapon('fists');
     startView(); $('loading').classList.add('hidden'); updatePause();
     message('You wake on the Lantern Isles beside a cold fire pit.');
@@ -1895,7 +2034,7 @@
       requestAnimationFrame(loop);
     })(last);
     window.GAME = { G, get P() { return P; }, inv, get objects() { return objects; }, get units() { return units; }, get sites() { return sites; }, newGame, continueGame, saveGame, addItem, addStruct, setTask, craft, RECIPES, STRUCTS,
-      revealAll: () => { explored.fill(1); for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) miniPaint(i, j); miniDirty = true; }, cam, setZoom, toScreen, spawn: (k, x, y) => addUnit(k, x, y), startPlacing, placeAt, perform, actionsFor, playerAttack, WX, view: () => view, pickAt, openMenuFor };
+      revealAll: () => { explored.fill(1); for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) miniPaint(i, j); miniDirty = true; }, cam, setZoom, toScreen, spawn: (k, x, y) => addUnit(k, x, y), startPlacing, placeAt, perform, actionsFor, playerAttack, WX, view: () => view, pickAt, openMenuFor, world: () => ({ biome, type, lvl, grove, start, N, BIO, TYPES, seed }), chunkStats: () => ({ queued: chunkQueue.length, rendered: chunks.size }), timeChunk: (cx, cy) => { const t0 = performance.now(); renderChunk(cx, cy); return performance.now() - t0; } };
     window.__ready = true;
   })().catch(e => { $('lmsg').textContent = 'Error: ' + e.message; console.error(e); });
 })();

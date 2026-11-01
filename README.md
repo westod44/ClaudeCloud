@@ -12,6 +12,16 @@ Lantern Isles is a survival game in the pre-rendered isometric style of classic 
   - A rig moves the brows, eyelids, pupils, mouth, teeth, tongue, cheeks, nostrils and wrinkles, and the head, so moods blend into each other.
   - Each mood has its own motion. Content smiles and sways. Hungry frowns, looks down, licks its lips and winces at a growling stomach. Thirsty pants and swallows. Tired nods off and yawns. Exertion pants. Angry scowls with bared teeth and flared nostrils. Scared stares wide-eyed, eyes darting, trembling. Hurt screws up its face and recoils on every hit. Cold shivers with chattering teeth and puffs of breath. Sick goes green and fights nausea. Weak droops with heavy eyelids. Dead goes grey and still. It blinks and glances around.
   - Blood (it drips while you bleed), bruises, dirt, sweat, tears, rain, frost and pale, sickly, cold or flushed skin are painted on as they happen.
+- **Biomes:** each island has a climate. One side is cold and holds a mountain massif, and temperature and moisture split the land into large regions. The top-left panel names the region you're in, and you get a message as you cross into a new one.
+  - **Meadows:** open grass with flower patches, scattered oaks, bushes and berry bushes. Deer graze here, and it is where you start.
+  - **Woodland:** dense oak woods with birch and aspen stands and an autumn maple wood, ferns and berry bushes underneath.
+  - **Pine forest:** pine stands on a needle-and-grass floor, snow-dusted near the cold. Wolves and bears roam.
+  - **Snowfields:** snow with rocky outcrops, snow-laden pines, dead trees and boulders. Bitterly cold and dangerous.
+  - **Mountains:** rock and scree with snow on the high ridges, gold veins and boulders. Watchtowers stand here.
+  - **Dry plains:** dry grass and bare earth, dead trees and boulders; slightly warmer.
+  - **Coast:** sandy beaches with reeds, and palms only on the warm side.
+  - Each biome has its own ground, plants and animals, and one relic is placed in each where possible. Ground textures fade into each other over several tiles in natural drifts and patches.
+  - Add `?seed=123` to the page address to replay a particular island.
 - **Day, night and weather:** a day lasts 8 minutes. The top-left panel shows the day, the time (AM/PM) and the weather. The weather moves between clear, fair, cloudy, overcast, rain, storm, fog, snow and windy:
   - Dark cloud shadows roll across the land, more and larger in worse weather.
   - Gusts sweep through the trees and grass. Strong wind bends them further and changes how they move, rather than speeding the animation up.
