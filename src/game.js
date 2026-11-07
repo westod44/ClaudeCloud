@@ -859,7 +859,7 @@
         // leave from the bow/sling hand: forward and to the side of the body, at chest height
         const side = [-fy, fx], hx = P.x + fx * 0.18 + side[0] * -0.06, hy = P.y + fy * 0.18 + side[1] * -0.06;
         const sp = ammo === 'stone' ? 9 : 11, dmg = ammo === 'fire_arrow' ? 45 : w.dmg;
-        projectiles.push({ x: hx, y: hy, z: 0.45, vz: 0.35, vx: fx * sp, vy: fy * sp, life: w.reach / sp, dmg, kind: ammo, from: P });
+        projectiles.push({ x: hx, y: hy, z: AIM_Z, vz: 0.35, vx: fx * sp, vy: fy * sp, life: w.reach / sp, dmg, kind: ammo, from: P });
         AU.sfx(P.weapon === 'bow' ? 'bow' : 'sling'); return;
       }
       let hits = 0;
@@ -1334,11 +1334,14 @@
       ctx.fillStyle = 'rgba(0,0,0,.7)'; ctx.fillRect(Math.round(it[2] - w / 2) - 1, Math.round(y) - 1, w + 2, 5);
       ctx.fillStyle = it[4] && KINDS[o.kind] && KINDS[o.kind].hostile ? '#d8463a' : '#e0b040'; ctx.fillRect(Math.round(it[2] - w / 2), Math.round(y), Math.round(w * clamp(o.hp / maxHp, 0, 1)), 3);
     }
-    // aim indicator (desktop mouse or mobile drag)
+    // aim indicator (desktop mouse or mobile drag); with a still mouse, re-aim every frame so the line stays on the
+    // cursor while the player walks or the camera moves
+    if (!touch && lastMouse && aimVis > 0 && !P.dead && (time - mouseAimT < 1.2 || rmbHeld)) P.aim = aimAt(lastMouse[0], lastMouse[1]);
     if (aimVis > 0 && !P.dead) {
-      const [sx, sy] = toScreen(P.x, P.y), w = WEAPONS[P.weapon], a = P.aim, len = (w.ranged ? 5 : w.reach) * HWp;
+      // a world distance r spans r * sqrt(2) * HWp along the ground ellipse, so the line ends at the weapon's real range
+      const [sx, sy] = toScreen(P.x, P.y), w = WEAPONS[P.weapon], a = P.aim, len = w.reach * Math.SQRT2 * HWp;
       ctx.globalAlpha = aimVis * 0.6; ctx.strokeStyle = w.ranged ? '#ffe39a' : '#ffffff'; ctx.lineWidth = 1;
-      if (w.ranged) { ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.moveTo(sx, sy - 22); ctx.lineTo(sx + Math.cos(a) * len, sy - 22 + Math.sin(a) * len * 0.5); ctx.stroke(); ctx.setLineDash([]); }
+      if (w.ranged) { ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.moveTo(sx, sy - AIM_PX); ctx.lineTo(sx + Math.cos(a) * len, sy - AIM_PX + Math.sin(a) * len * 0.5); ctx.stroke(); ctx.setLineDash([]); }
       else { const arc = w.arc * Math.PI / 180; ctx.beginPath(); ctx.ellipse(sx, sy, len, len / 2, 0, a - arc, a + arc); ctx.stroke(); }
       ctx.globalAlpha = 1;
     }
@@ -1470,6 +1473,7 @@
   let sprintToggle = false;
   const sprinting = () => (keys.has('shift') || sprintToggle) && !P.exhausted && P.stamina > 0;
   let aimVis = 0, mouseAimT = -9, rmbHeld = false;
+  const AIM_Z = 0.42, AIM_PX = AIM_Z * 78; // shots leave from the bow hand, and aiming is measured from the same point
   function update(dt) {
     time += dt; lastDt = dt;
     collectLights();
@@ -1878,7 +1882,10 @@
     tt.style.left = (lastMouse[0] + 16) + 'px'; tt.style.top = (lastMouse[1] + 12) + 'px'; tt.classList.remove('hidden');
   }
   cv.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') { lastMouse = null; refreshHover(); } });
-  function updateMouseAim(cx, cy) { const [sx, sy] = toScreen(P.x, P.y), px = (sx * view.z + view.ox) / dpr, py = (sy * view.z + view.oy) / dpr - 20; P.aim = Math.atan2((cy - py) * 1, cx - px); mouseAimT = time; }
+  // Aim angles use the ground-ellipse convention (screen y doubled, like screenAng): a screen offset (dx, dy)
+  // from the aim point is angle atan2(2*dy, dx), and the shot / aim line runs along (cos a, sin a / 2) on screen.
+  function aimAt(cx, cy) { const [sx, sy] = toScreen(P.x, P.y), px = (sx * view.z + view.ox) / dpr, py = ((sy - AIM_PX) * view.z + view.oy) / dpr; return Math.atan2((cy - py) * 2, cx - px); }
+  function updateMouseAim(cx, cy) { P.aim = aimAt(cx, cy); mouseAimT = time; }
   addEventListener('keydown', e => {
     const k = e.key.toLowerCase(); AU.init();
     if (e.target.tagName === 'INPUT') return;
@@ -1976,7 +1983,7 @@
   let aimDrag = false, aimStart = null;
   const ab = $('b-attack');
   ab.addEventListener('pointerdown', e => { AU.init(); ab.setPointerCapture(e.pointerId); aimStart = [e.clientX, e.clientY]; aimDrag = false; });
-  ab.addEventListener('pointermove', e => { if (!aimStart) return; const dx = e.clientX - aimStart[0], dy = e.clientY - aimStart[1]; if (Math.hypot(dx, dy) > 14) { aimDrag = true; P.aim = Math.atan2(dy, dx); P.dir = dirFromVec(...worldFromScreenAng(P.aim)); } });
+  ab.addEventListener('pointermove', e => { if (!aimStart) return; const dx = e.clientX - aimStart[0], dy = e.clientY - aimStart[1]; if (Math.hypot(dx, dy) > 14) { aimDrag = true; P.aim = Math.atan2(dy * 2, dx); P.dir = dirFromVec(...worldFromScreenAng(P.aim)); } });
   ab.addEventListener('pointerup', () => { if (!aimStart) return; if (aimDrag) playerAttack(P.aim); else attackKey(); aimStart = null; aimDrag = false; });
 
   // ================================================================== boot & flow
@@ -2033,8 +2040,8 @@
       if (G.started && P) { update(G.paused && !P.dead ? 0 : dt); draw(); }
       requestAnimationFrame(loop);
     })(last);
-    window.GAME = { G, get P() { return P; }, inv, get objects() { return objects; }, get units() { return units; }, get sites() { return sites; }, newGame, continueGame, saveGame, addItem, addStruct, setTask, craft, RECIPES, STRUCTS,
-      revealAll: () => { explored.fill(1); for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) miniPaint(i, j); miniDirty = true; }, cam, setZoom, toScreen, spawn: (k, x, y) => addUnit(k, x, y), startPlacing, placeAt, perform, actionsFor, playerAttack, WX, view: () => view, pickAt, openMenuFor, world: () => ({ biome, type, lvl, grove, start, N, BIO, TYPES, seed }), chunkStats: () => ({ queued: chunkQueue.length, rendered: chunks.size }), timeChunk: (cx, cy) => { const t0 = performance.now(); renderChunk(cx, cy); return performance.now() - t0; } };
+    window.GAME = { G, get P() { return P; }, inv, get objects() { return objects; }, get units() { return units; }, get projectiles() { return projectiles; }, get sites() { return sites; }, newGame, continueGame, saveGame, addItem, addStruct, setTask, craft, RECIPES, STRUCTS,
+      revealAll: () => { explored.fill(1); for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) miniPaint(i, j); miniDirty = true; }, cam, setZoom, toScreen, spawn: (k, x, y) => addUnit(k, x, y), startPlacing, placeAt, perform, actionsFor, playerAttack, WX, view: () => view, pickAt, openMenuFor, world: () => ({ biome, type, lvl, grove, start, N, BIO, TYPES, seed }), chunkStats: () => ({ queued: chunkQueue.length, rendered: chunks.size }), blockedAt: (i, j) => inMap(i, j) ? blocked[idx(i, j)] : 1, timeChunk: (cx, cy) => { const t0 = performance.now(); renderChunk(cx, cy); return performance.now() - t0; } };
     window.__ready = true;
   })().catch(e => { $('lmsg').textContent = 'Error: ' + e.message; console.error(e); });
 })();
